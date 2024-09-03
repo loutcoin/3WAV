@@ -1,0 +1,6 @@
+[submodule "module-4-w3w/lib/forge-std"]
+	path = module-4-w3w/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "module-4-w3w/lib/chainlink-brownie-contracts"]
+	path = module-4-w3w/lib/chainlink-brownie-contracts
+	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
