@@ -33,13 +33,10 @@ contract WavStore {
         public s_musicFiles;
     mapping(address => uint256) public s_earnings;
 
-    function ethForWav(
-        string memory _artistId,
-        uint256 _contentId
-    ) public payable {}
+    function ethForWav(address _artistId, uint256 _contentId) public payable {}
 
     // Function to withdraw funds
-    function withdrawFunds(
+    function withdrawEarnings(
         address _to, // Address to send the funds to
         uint256 _amount // Amount to withdraw
     ) public {
