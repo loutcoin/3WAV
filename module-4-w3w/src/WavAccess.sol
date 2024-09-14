@@ -33,14 +33,15 @@ contract WavAccess is WavRoot {
     // added access (function call) restrictions needed
     function wavAccess(
         address user,
-        uint256 contentId,
-        address artist
+        address _artistId,
+        uint256 _contentId,
+        uint16 _numCollaborators
     ) external {
         uint256 userContentIndex = s_userContentIndex[user];
         s_ownershipAudio[user][userContentIndex] = Music({
-            artistId: artist,
-            contentId: contentId,
-            tokenURI: "", // Add appropriate tokenURI
+            artistId: _artistId,
+            contentId: _contentId,
+            numCollaborators: _numCollaborators,
             isOwner: true
         });
         s_userContentIndex[user]++;

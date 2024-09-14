@@ -56,14 +56,15 @@ contract WavStore is WavRoot {
     function ethForWav(
         address _artistId,
         uint256 _contentId,
-        uint256 _contentPriceInEth
+        uint256 _contentPriceInEth,
+        uint16 _numCollaborators
     ) public payable {
         // Ensure the music exists
         if (s_musicFiles[_artistId][_contentId].artistId == address(0)) {
             revert WavStore__ArtistOrContentIdInvalid();
-        }
-        // Retrieve the music details from storage
-        Music storage music = s_musicFiles[_artistId][_contentId];
+        } /*
+        // Retrieve the music details from storage // implement through front-end gasless call
+        Music storage music = s_musicFiles[_artistId][_contentId]; */
 
         // Ensure the payment is sufficient
         if (msg.value < _contentPriceInEth) {
@@ -72,20 +73,25 @@ contract WavStore is WavRoot {
 
         // Update the earnings of the artist and the service
         s_earnings[_artistId] += (msg.value * 80) / 100;
-        s_earnings[address(this)] += (msg.value * 20) / 100;
+        s_earnings[address(this)] += (msg.value * 20) / 100; // swap for dynamic values
 
         // Update the ownership of the music
         uint256 currentIndex = s_userContentIndex[msg.sender];
         s_ownershipAudio[msg.sender][currentIndex] = Music({
             artistId: _artistId,
             contentId: _contentId,
-            tokenURI: music.tokenURI,
+            numCollaborators: _numCollaborators,
             isOwner: true
         });
-        s_userContentIndex[msg.sender] += 1; // Increment the content index
+        s_userContentIndex[msg.sender] += 1; // Likely remove if leave in WavAccess
 
         // Grant access to the purchased music
-        WavAccess(s_WavAccess).wavAccess(msg.sender, _contentId, _artistId);
+        WavAccess(s_WavAccess).wavAccess(
+            msg.sender,
+            _artistId,
+            _contentId,
+            _numCollaborators
+        );
 
         // Emit an event for the purchase
         emit MusicPurchased(_artistId, _contentId, msg.sender);
@@ -106,11 +112,24 @@ contract WavStore is WavRoot {
         payable(_to).transfer(_amount);
     }
 
-    // Function to get music details
+    /**
+     * @notice Retrieves the music details for a given artist and content ID.
+     * @dev This function is called internally to fetch the details of a specific piece of music from the s_musicFiles mapping.
+     *      It ensures that the music exists before returning its details.
+     * @param _artistId The address of the artist.
+     * @param _contentId The unique ID of the content.
+     * @return Music struct details.
+     * @custom:usage This function is used to retrieve music details in a gasless manner before making on-chain transactions.
+     *               It should be called by the front-end to get the necessary details for further processing.
+     */
     function getMusicDetails(
-        address _artistId, // Artist's unique ID
-        uint256 _contentId // Content's unique ID
+        address _artistId,
+        uint256 _contentId
     ) internal view returns (Music storage) {
+        // Ensure the music exists
+        if (s_musicFiles[_artistId][_contentId].artistId == address(0)) {
+            revert WavStore__ArtistOrContentIdInvalid();
+        }
         // Return the details of the specified music file
         return s_musicFiles[_artistId][_contentId];
     }
