@@ -26,6 +26,8 @@ import {WavFeed} from "../src/WavFeed.sol";
 import {WavToken} from "../src/WavToken.sol";
 
 contract WavStore is WavRoot {
+    WavToken WAVT;
+
     event MusicPurchased(
         address indexed artistId,
         uint256 indexed contentId,
@@ -36,6 +38,7 @@ contract WavStore is WavRoot {
     error WavStore__InsufficientPayment();
     error WavStore__IsNotLout();
     error WavStore__ArtistOrContentIdInvalid();
+    error WavStore__IsNotCollection();
 
     address s_lout;
     address s_WavAccess;
@@ -74,16 +77,6 @@ contract WavStore is WavRoot {
         // Update the earnings of the artist and the service
         s_earnings[_artistId] += (msg.value * 80) / 100;
         s_earnings[address(this)] += (msg.value * 20) / 100; // swap for dynamic values
-
-        // Update the ownership of the music
-        uint256 currentIndex = s_userContentIndex[msg.sender];
-        s_ownershipAudio[msg.sender][currentIndex] = Music({
-            artistId: _artistId,
-            contentId: _contentId,
-            numCollaborators: _numCollaborators,
-            isOwner: true
-        });
-        s_userContentIndex[msg.sender] += 1; // Likely remove if leave in WavAccess
 
         // Grant access to the purchased music
         WavAccess(s_WavAccess).wavAccess(

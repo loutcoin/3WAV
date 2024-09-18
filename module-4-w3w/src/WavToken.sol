@@ -5,6 +5,7 @@ import {WavRoot} from "../src/WavRoot.sol";
 
 contract WavToken is WavRoot {
     error WavToken__CollaboratorSplitLengthMismatch();
+    error WavToken__IsNotCollection();
 
     struct MusicToken {
         // totalSupply in context of collection == totalSupply of collection as entire entity itself, where indv songs...
@@ -22,7 +23,13 @@ contract WavToken is WavRoot {
 
     struct MusicTokenCollection {
         uint16 numAudio; // number of audio being released as single body (10 song album == 10 numAudio)
-        bool enableIndividualSale;
+        bool enableIndividualSale; // allows for individual sale of ALL or SPECIFIC songs independent of collective experience
+        mapping(uint16 => uint256) songContentIds; // Mapping of song index to contentId
+    }
+
+    struct IndividualSale {
+        bool enableSeperateSaleAll;
+        mapping(uint16 => uint256) songPrices;
     }
 
     struct MusicTokenVariants {
@@ -36,13 +43,20 @@ contract WavToken is WavRoot {
     }
 
     struct MultiSupply {
-        uint256 initialSupply; // add to core struct possible, set to auto == totalSupply, if 'multiSupply' is not enabled
-        mapping(address artistId => mapping(uint256 contentId => mapping(uint256 totalSupply => uint256 currentSupply))) dynamicSupply; // every selected song could have a different supply leading to less of a particular song
+        uint256 initialSupply;
+        mapping(uint16 => uint256) songSupplies;
     }
 
-    mapping(address => mapping(uint256 => MusicToken)) public s_musicTokens;
+    mapping(address => mapping(uint256 => MusicToken)) public s_musicToken;
+    mapping(address => mapping(uint256 => MusicTokenCollection))
+        public s_musicCollections;
     mapping(address => mapping(uint256 => mapping(uint16 => Collaborator)))
         public s_collaborators;
+    mapping(address => mapping(uint256 => MultiSupply)) public s_multiSupplies;
+    mapping(address => mapping(uint256 => IndividualSale))
+        public s_individualSales;
+    mapping(address => mapping(uint256 => MusicTokenVariants))
+        public s_variants;
 
     /**
      * @notice Adds collaborators to a specific piece of music.
@@ -108,6 +122,59 @@ contract WavToken is WavRoot {
     }
 
     /**
+     * @notice Retrieves the details of a music collection.
+     * @dev This function is a view function that returns the details of a music collection.
+     * @param _artistId The address of the artist.
+     * @param _contentId The unique ID of the collection.
+     */
+    function getCollectionDetails(
+        address _artistId,
+        uint256 _contentId
+    )
+        public
+        view
+        returns (
+            uint16 numAudio,
+            bool enableIndividualSale,
+            uint256[] memory songContentIds,
+            bool enableSeperateSaleAll,
+            uint256[] memory songPrices
+        )
+    {
+        // Ensure the collection exists
+        if (!s_musicToken[_artistId][_contentId].isCollection) {
+            revert WavToken__IsNotCollection();
+        }
+
+        // Retrieve the collection details
+        MusicTokenCollection storage collectionDetails = s_musicCollections[
+            _artistId
+        ][_contentId];
+        IndividualSale storage individualSaleDetails = s_individualSales[
+            _artistId
+        ][_contentId];
+
+        // Prepare arrays for songContentIds and song prices
+        songContentIds = new uint256[](collectionDetails.numAudio);
+        songPrices = new uint256[](collectionDetails.numAudio);
+
+        // Populate the arrays
+        for (uint16 i = 0; i < collectionDetails.numAudio; i++) {
+            songContentIds[i] = collectionDetails.songContentIds[i];
+            songPrices[i] = individualSaleDetails.songPrices[i];
+        }
+
+        // Return the details of the specified music collection and individual sale details
+        return (
+            collectionDetails.numAudio,
+            collectionDetails.enableIndividualSale,
+            songContentIds,
+            individualSaleDetails.enableSeperateSaleAll,
+            songPrices
+        );
+    }
+
+    /**
      * @notice Retrieves the price of a music token in USD.
      * @dev This function is a view function that returns the price of a specific music token.
      * @param _artistId The address of the artist.
@@ -118,7 +185,7 @@ contract WavToken is WavRoot {
         address _artistId,
         uint256 _contentId
     ) public view returns (uint256) {
-        return s_musicTokens[_artistId][_contentId].priceInUsd;
+        return s_musicToken[_artistId][_contentId].priceInUsd;
     }
 
     /**
