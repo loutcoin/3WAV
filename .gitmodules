@@ -4,3 +4,6 @@
 [submodule "module-4-w3w/lib/chainlink-brownie-contracts"]
 	path = module-4-w3w/lib/chainlink-brownie-contracts
 	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
+[submodule "module-4-w3w/lib/openzeppelin-contracts"]
+	path = module-4-w3w/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts

@@ -8,8 +8,7 @@ contract WavAccess is WavRoot {
     error WavAccess__IsNotApprovedArtist();
     error WavStore__IsNotLout();
 
-    address s_lout;
-    address s_WavStore;
+    address internal s_lout;
 
     mapping(address => bool) public s_loutTeam;
     mapping(string => address) public s_artistAddr;
@@ -17,17 +16,8 @@ contract WavAccess is WavRoot {
 
     // called externally outside of DApp, allowing user to register artist account with 'registerArtist'
     function approveArtist(address _userAddress) external {
-        onlyLoutDev();
+        onlyAuthorized();
         s_approvedArtist[_userAddress] = true;
-    }
-
-    // Function called by approvedArtist set or update their artist profile username
-    function updateArtistTag(string memory _name, address _userAddress) public {
-        if (s_approvedArtist[msg.sender] != true) {
-            revert WavAccess__IsNotApprovedArtist();
-        }
-        checkNameTaken(_name);
-        s_artistAddr[_name] = _userAddress;
     }
 
     // added access (function call) restrictions needed
@@ -47,16 +37,13 @@ contract WavAccess is WavRoot {
         s_userContentIndex[user]++;
     }
 
-    function onlyLout() internal view {
-        if (msg.sender != s_lout) {
-            revert WavStore__IsNotLout();
+    // Function called by approvedArtist set or update their artist profile username
+    function updateArtistTag(string memory _name, address _userAddress) public {
+        if (s_approvedArtist[msg.sender] != true) {
+            revert WavAccess__IsNotApprovedArtist();
         }
-    }
-
-    function onlyLoutDev() internal view {
-        if (msg.sender != s_lout && !s_loutTeam[msg.sender]) {
-            revert WavStore__IsNotLout();
-        }
+        checkNameTaken(_name);
+        s_artistAddr[_name] = _userAddress;
     }
 
     function returnOwnership(
@@ -75,6 +62,12 @@ contract WavAccess is WavRoot {
     function checkNameTaken(string memory _name) public view {
         if (s_artistAddr[_name] != address(0)) {
             revert WavAccess__NameIsTaken();
+        }
+    }
+
+    function onlyAuthorized() internal view {
+        if (msg.sender != s_lout && !s_authorizedAddr[msg.sender]) {
+            revert WavStore__IsNotLout();
         }
     }
 }

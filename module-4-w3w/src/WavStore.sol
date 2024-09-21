@@ -21,6 +21,7 @@ Within grouping, view and pure functions last.
 */
 // Simple Unit + Fuzz Tests + Initial Testnet deployment testing
 import {WavRoot} from "../src/WavRoot.sol";
+import {WavFortress} from "../src/WavFortress.sol";
 import {WavAccess} from "../src/WavAccess.sol";
 import {WavFeed} from "../src/WavFeed.sol";
 import {WavToken} from "../src/WavToken.sol";
@@ -32,6 +33,13 @@ contract WavStore is WavRoot {
         address indexed artistId,
         uint256 indexed contentId,
         address indexed buyer
+    );
+
+    event MusicResale(
+        address indexed seller,
+        address indexed buyer,
+        uint256 indexed contentId,
+        uint256 priceInEth
     );
 
     error WavStore__InsufficientEarnings();
@@ -90,6 +98,92 @@ contract WavStore is WavRoot {
         emit MusicPurchased(_artistId, _contentId, msg.sender);
     }
 
+    // *** tbh might need to make function buyer calls, that then calls this function, that only let's msg.sender...
+    function _purchaseResale(
+        // be approvedAddr (ie: Contract, LOUT/LOUT_DEV)
+        address seller,
+        uint256 contentId,
+        uint256 priceInEth,
+        uint256 ownershipIndex,
+        uint256 nonce,
+        bytes memory signature
+    ) internal payable {
+        if (msg.value < priceInEth) {
+            revert WavStore__InsufficientPayment();
+        }
+
+        // Verify ownership using the provided ownership index
+        Music storage music = s_ownershipAudio[seller][ownershipIndex];
+        if (
+            music.artistId == address(0) ||
+            !music.isOwner ||
+            music.contentId != contentId
+        ) {
+            revert WavStore__NotOwner();
+        }
+
+        // ***** PROBABLY MOVE ALL THIS UPWARDS ****
+        // Verify the signature
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(nonce, msg.sender, priceInEth)
+        );
+        address signer = verifySignature(messageHash, signature);
+        if (signer != msg.sender) {
+            revert WavFortress__InvalidSignature();
+        }
+
+        // Check use update nonce
+        checkUseUpdateNonce(nonce);
+
+        // Calculate fees
+        uint256 sellingUserShare = (msg.value * 90) / 100;
+        uint256 artistShare = (msg.value * 5) / 100;
+        uint256 serviceShare = (msg.value * 2.5) / 100;
+        uint256 collaboratorShare = (msg.value * 2.5) / 100;
+
+        // Revoke seller's ownership
+        music.isOwner = false;
+
+        // Transfer ownership to buyer
+        WavAccess(s_WavAccess).wavAccess(
+            msg.sender,
+            music.artistId,
+            contentId,
+            music.numCollaborators
+        );
+
+        // Distribute fees
+        // payable(seller).transfer(sellingUserShare);
+        // Logic to transfer artistShare to the artist
+        //  payable(s_lout).transfer(serviceShare);
+        // Logic to transfer collaboratorShare to collaborators (if any)
+
+        // Emit an event for the resale
+        emit MusicResale(seller, msg.sender, contentId, priceInEth);
+    }
+
+    function purchaseResale(
+        address seller,
+        uint256 contentId,
+        uint256 priceInEth,
+        uint256 ownershipIndex,
+        uint256 nonce,
+        bytes memory signature
+    ) public payable {
+        if (!s_authorizeddAddrs[msg.sender]) {
+            revert WavStore__IsNotLout();
+        }
+
+        _purchaseResale(
+            seller,
+            contentId,
+            priceInEth,
+            ownershipIndex,
+            nonce,
+            signature
+        );
+    }
+
     // Function to withdraw funds
     function withdrawEarnings(
         address _to, // Address to send the funds to
@@ -136,5 +230,13 @@ contract WavStore is WavRoot {
         if (msg.sender != s_lout) {
             revert WavStore__IsNotLout();
         }
+    }
+
+    function addApprovedAddr(address _addr) external onlyOwner {
+        s_authorizedAddr[_addr] = true;
+    }
+
+    function removeApprovedAddr(address _addr) external onlyOwner {
+        s_authorizedAddr[_addr] = false;
     }
 }

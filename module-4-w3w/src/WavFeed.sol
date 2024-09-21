@@ -13,7 +13,8 @@ contract WavFeed {
     }
 
     /**
-     * Returns the latest price
+     * @notice Returns the latest price
+     * @return int256 The latest price
      */
     function getLatestPrice() public view returns (int256) {
         (, int256 price, , , ) = s_priceFeed.latestRoundData();
@@ -21,7 +22,9 @@ contract WavFeed {
     }
 
     /**
-     * Converts ETH amount to USD
+     * @notice Converts ETH amount to USD
+     * @param ethAmount The amount of ETH in wei
+     * @return uint256 The equivalent amount in USD
      */
     function convertEthToUsd(uint256 ethAmount) public view returns (uint256) {
         int256 price = getLatestPrice();
@@ -30,6 +33,11 @@ contract WavFeed {
         return (ethAmount * uint256(price)) / 10 ** 8;
     }
 
+    /**
+     * @notice Converts USD amount to ETH
+     * @param usdAmount The amount of USD in 8 decimal places
+     * @return uint256 The equivalent amount in ETH
+     */
     function convertUsdToEth(uint256 usdAmount) public view returns (uint256) {
         int256 price = getLatestPrice();
         // USD amount is in 8 decimal places
