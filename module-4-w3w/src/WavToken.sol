@@ -25,11 +25,6 @@ contract WavToken is WavRoot {
         SeperateSaleSpecific
     }
 
-    enum VariantSaleType {
-        UsdSale,
-        RaritySale
-    }
-
     enum DynamicSupplyType {
         Fixed,
         TimeRelease
@@ -68,17 +63,40 @@ contract WavToken is WavRoot {
     /**
      * @title Variants
      * @notice Stores information about different variants of a music token.
-     * @dev Defines sale type, number of variants, and bonus audio, stemming from base collection/audio.
+     * @dev Defines numerical index, total audio content, and variant-specific supply.
      */
     struct Variants {
-        /// @notice The type of sale variant (e.g., USD sale, rarity sale).
-        VariantSaleType typeSaleVariant;
-        /// @notice The number of NFT-style variations of the core audio (single or collection).
+        /// @notice Numerical index of particular variant from core audio in specific published context (single or collection).
         uint16 numVariant;
-        /// @notice Number of bonus audio tracks. If token is not collection, numBonusAudio always == 1.
-        uint16 numBonusAudio;
+        /// @notice Number of variant-specific audio tracks. If token is not collection, numVariantAudio always == 1.
+        uint16 numVariantAudio;
+        /// @notice Total supply of specific variant derivative.
+        uint256 variantSupply;
     }
-    // add enum 'release types (random chance, rarity-based, static/dynamic USD prices)
+
+    /**
+     * @title UsdSaleVariant
+     * @notice Stores information about USD sale variants of a music token.
+     * @dev Defines variant details and price in USD.
+     */
+    struct UsdSaleVariant {
+        /// @notice Details of the variant.
+        Variants variant;
+        /// @notice Price of the variant in USD.
+        uint256 priceUsdVariant;
+    }
+
+    /**
+     * @title RaritySaleVariant
+     * @notice Stores information about rarity sale variants of a music token.
+     * @dev Defines variant details and rarity percentage.
+     */
+    struct RaritySaleVariant {
+        /// @notice Details of the variant.
+        Variants variant;
+        /// @notice Percentage chance to obtain variant upon purchase of base content.
+        uint256 rarityPercentage;
+    }
 
     struct TrackMod {
         mapping(uint16 => uint16[]) variantTrackOrder;
@@ -126,20 +144,25 @@ contract WavToken is WavRoot {
         uint256 timeReleaseInterval; // specific date and time interval for each batch release
     }
 
-    // Defined bit positions for MusicToken and sub-structs
-    uint8 constant MUSIC_TOKEN__IS_COLLECTION = 0;
-    uint8 constant MUSIC_TOKEN__HAS_COLLABORATORS = 1;
-    uint8 constant MUSIC_TOKEN__ENABLE_VARIANTS = 2;
-    uint8 constant MUSIC_TOKEN__ENABLE_DYNAMIC_SUPPLY = 3;
-    uint8 constant MUSIC_TOKEN__OF_FUTURE_COLLECTION = 4;
-    uint8 constant MUSIC_TOKEN__ENABLE_UPDATED_VERSIONS = 5;
-    uint8 constant MUSIC_TOKEN__ENABLE_STEMS = 6;
-    uint8 constant MUSIC_TOKEN__ENABLE_ARTIST_RESERVE = 7;
-    uint8 constant MUSIC_TOKEN__ENABLE_REWARDS = 8;
-    uint8 constant MUSIC_TOKEN__PRE_RELEASE = 9;
-    uint8 constant IS_COLLECTION__ENABLE_INDIVIDUAL_SALE = 10;
-    uint8 constant INDIVIDUAL_SALE__ENABLE_PRICE_TIERS = 11; // Enables tiered pricing each song: Accessible, Standard, Designer
-    uint8 constant VARIANTS__MODIFY_CONTENT_FROM_BASE = 12; // Remove songs contained in base collection
+    /**
+     * @notice Defined bit positions for MusicToken and sub-structs.
+     * @dev These constants represent various properties and functionalities
+     *      that can be enabled or disabled for a music token.
+     */
+    uint8 internal constant MUSIC_TOKEN__IS_COLLECTION = 0;
+    uint8 internal constant MUSIC_TOKEN__HAS_COLLABORATORS = 1;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_VARIANTS = 2;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_DYNAMIC_SUPPLY = 3;
+    uint8 internal constant MUSIC_TOKEN__OF_FUTURE_COLLECTION = 4;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_UPDATED_VERSIONS = 5;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_STEMS = 6;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_ARTIST_RESERVE = 7;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_REWARDS = 8;
+    uint8 internal constant MUSIC_TOKEN__PRE_RELEASE = 9;
+    uint8 internal constant IS_COLLECTION__ENABLE_INDIVIDUAL_SALE = 10;
+    uint8 internal constant INDIVIDUAL_SALE__ENABLE_PRICE_TIERS = 11;
+    uint8 internal constant VARIANTS__MODIFY_CONTENT_FROM_BASE = 12;
+    uint8 internal constant VARIANTS__RARITY_SALE = 13;
 
     /**
      * @notice Stores detailed information about each music token, including supply, price, and features.
@@ -429,7 +452,7 @@ contract WavToken is WavRoot {
      * @dev Combines artist's address, content ID, variant number, audio number, and track version to generate a unique bytes32 hash.
      * @param _artistId The address of the artist.
      * @param _contentId The unique ID of the content.
-     * @param _numVariant The number of variants for the content.
+     * @param _numVariant Variant index in published context of the content.
      * @param _numAudio The number of audio tracks in the content.
      * @param _trackVersion The version index of the track.
      * @return bytes32 The unique hash identifier for the track or version.
