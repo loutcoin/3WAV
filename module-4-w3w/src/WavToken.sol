@@ -3,6 +3,18 @@ pragma solidity ^0.8.24;
 
 import {WavRoot} from "../src/WavRoot.sol";
 
+/*
+WIP: OBVIOUSLY WIP! WORKING DAILY, BUT CONTRACT HAS OBVIOUS ISSUES IN CURRENT STATE AND IS INCOMPELTE.
+WORKING TO CREATE CREATIVE INNOVATIVE, *useful* ZERO-CODE CUSTOM TEMPLATE SOLUTION FEATURES
+ONCE COMPLETE WILL CREATE ACCESS CONTROLLED 'publishWav' FUNCTION.
+WILL INTERPRET INTEGRATED FRONT-END USER INTERACTIONS, AND WITH FRONT-END SCRIPT,
+GASLESS HELPER FUNCTIONS, ETC. WILL AUTONOMOUSLY PASS IN THE APPROPRIATE VALUES ON THE ARTIST'S BEHALF
+AND PUBLISH THEIR AUDIO-BASED CONTENT TO THEIR PERSONALIZED NEEDS. -LOUT
+*/
+
+//Struct, Event and Error Definitions
+//If struct or error is used across many files, define in own file. Multiple structs and errors defined together single file.
+
 contract WavToken is WavRoot {
     error WavToken__CollaboratorSplitLengthMismatch();
     error WavToken__IsNotCollection();
@@ -18,20 +30,23 @@ contract WavToken is WavRoot {
         RaritySale
     }
 
+    enum DynamicSupplyType {
+        Fixed,
+        TimeRelease
+    }
+
     struct MusicToken {
-        // totalSupply in context of collection == totalSupply of collection as entire entity itself, where indv songs...
-        // IE: singles, for instace, could have a greater supply individually, but still be part of collection
-        uint256 totalSupply; // Max Supply that can ever circulate or be owned (either fixed/limited, or nearly unlimited)
+        uint256 totalSupply;
         uint256 priceInUsd; // Price in USD for simplicity (converted to ETH) (future plans to accept LOUT as well)
         uint256 releaseDate;
         uint16 numAudio;
-        uint256 bitmap; // block.timestamp of when audio becomes available for purchase
+        uint256 bitmap;
         /*
         bool hasCollaborators; // Automates process of single transaction compensation upon sale of audio to featured collaborators
         bool enableVariants; // Enables variations of core audio
         bool enableDynamicSupply; // Enables initial:totalSupply and additional parameters related to varied release schedule, etc. (think limited sneaker releases/roll-out(allows for "pre-release" also, IE: pre-release purchase of video game))
         bool enableOwnerRewards; // Enables a lot of different potential functionality. (IE: You can only purchase or access this song, if you own this song, or this number of songs, fine-tuned reward control, etc.)
-        bool enableBurnRewards; // Promotes the circulation of limited media. Burn your ownership to put it back in circulation for someone else and get a reward of some kind for doing so. */
+         */
     }
 
     struct IndividualSale {
@@ -39,29 +54,60 @@ contract WavToken is WavRoot {
         uint256 standardPriceUsd;
     }
 
-    struct audioPriceTiers {
+    struct SpecificSale {
+        bytes32 hashId;
+        bool sellSeperate;
+    }
+
+    struct AudioPriceTiers {
         uint256 accessiblePriceUsd;
         uint256 designerPriceUsd; // likely needs slight update, ONLY songs designated for specific/ALL sale to be indv sold
         mapping(uint16 => uint256) songPrices; // Mapping of numAudio index to price tier
     }
 
-    //mapping(uint16 => uint256) songPrices;
-
-    struct MusicTokenVariants {
+    /**
+     * @title Variants
+     * @notice Stores information about different variants of a music token.
+     * @dev Defines sale type, number of variants, and bonus audio, stemming from base collection/audio.
+     */
+    struct Variants {
+        /// @notice The type of sale variant (e.g., USD sale, rarity sale).
         VariantSaleType typeSaleVariant;
-        uint16 numVariant; // number of NFT-style 'variations' of core audio (single or collection)
-        //uint16 numBonusAudio;
-        //mapping(uint16 numVariant => uint16 numBonusAudio) variantBonusContent; // allow bonus audio, but also (optional) allow the modification of the core audio
-    } // add enum 'release types (random chance, rarity-based, static/dynamic USD prices)
+        /// @notice The number of NFT-style variations of the core audio (single or collection).
+        uint16 numVariant;
+        /// @notice Number of bonus audio tracks. If token is not collection, numBonusAudio always == 1.
+        uint16 numBonusAudio;
+    }
+    // add enum 'release types (random chance, rarity-based, static/dynamic USD prices)
 
+    struct TrackMod {
+        mapping(uint16 => uint16[]) variantTrackOrder;
+        mapping(uint16 => uint16) variantBonusContent;
+    }
+
+    struct VariantMod {
+        Variants variants;
+        TrackMod trackMod;
+    }
+
+    /**
+     * @title Collaborator
+     * @notice Stores collaborator values of music tokens
+     */
     struct Collaborator {
         address collaborator; // address of collaboratorAddress
         uint256 earningsContentSplit; // numerical split of total earnings they should recieve for each sale
     }
 
     struct DynamicSupply {
+        DynamicSupplyType dynamicSupplyType;
         uint256 initialSupply; // each song in collection starts at initialSupply
-        mapping(uint16 => uint256) songSupplies; // specific song supply can be increased independently of one another
+        bytes32 hashId; // specific variant supply can be increased independently of one another
+    }
+
+    struct PreRelease {
+        bytes32 hashId;
+        uint256 preReleaseReserve; // up to 10% of totalSupply
     }
 
     struct ArtistReserve {
@@ -69,17 +115,31 @@ contract WavToken is WavRoot {
         uint256 fanRewardReserve; // Additional reserve for fan rewards, total reserve (artist + fan) <= 30%
     }
 
+    struct DynamicReserveRelease {
+        DynamicSupply dynamicSupply;
+        PreRelease preRelease;
+        ArtistReserve artistReserve;
+    }
+
+    struct TimedRelease {
+        uint256 numAudioBatchRelease; // += increases circulating supply, limit is totalSupply
+        uint256 timeReleaseInterval; // specific date and time interval for each batch release
+    }
+
     // Defined bit positions for MusicToken and sub-structs
     uint8 constant MUSIC_TOKEN__IS_COLLECTION = 0;
     uint8 constant MUSIC_TOKEN__HAS_COLLABORATORS = 1;
     uint8 constant MUSIC_TOKEN__ENABLE_VARIANTS = 2;
     uint8 constant MUSIC_TOKEN__ENABLE_DYNAMIC_SUPPLY = 3;
-    uint8 constant MUSIC_TOKEN__ENABLE_ARTIST_RESERVE = 4;
-    uint8 constant MUSIC_TOKEN__ENABLE_REWARDS = 5;
-    uint8 constant IS_COLLECTION__ENABLE_INDIVIDUAL_SALE = 6;
-    uint8 constant INDIVIDUAL_SALE__ENABLE_PRICE_TIERS = 7; // Enables tiered pricing each song: Accessible, Standard, Designer
-    uint8 constant VARIANTS__HAS_BONUS_CONTENT = 8; // remove songs defined in 'base audio'
-    uint8 constant VARIANTS__MODIFY_CONTENT_FROM_BASE = 9;
+    uint8 constant MUSIC_TOKEN__OF_FUTURE_COLLECTION = 4;
+    uint8 constant MUSIC_TOKEN__ENABLE_UPDATED_VERSIONS = 5;
+    uint8 constant MUSIC_TOKEN__ENABLE_STEMS = 6;
+    uint8 constant MUSIC_TOKEN__ENABLE_ARTIST_RESERVE = 7;
+    uint8 constant MUSIC_TOKEN__ENABLE_REWARDS = 8;
+    uint8 constant MUSIC_TOKEN__PRE_RELEASE = 9;
+    uint8 constant IS_COLLECTION__ENABLE_INDIVIDUAL_SALE = 10;
+    uint8 constant INDIVIDUAL_SALE__ENABLE_PRICE_TIERS = 11; // Enables tiered pricing each song: Accessible, Standard, Designer
+    uint8 constant VARIANTS__MODIFY_CONTENT_FROM_BASE = 12; // Remove songs contained in base collection
 
     /**
      * @notice Stores detailed information about each music token, including supply, price, and features.
@@ -95,13 +155,6 @@ contract WavToken is WavRoot {
         public s_artistReserves;
 
     /**
-     * @notice Stores information about collections of music, including the number of songs and individual sale options.
-     * @dev Maps an artist's address and content ID to the MusicTokenCollection struct.
-     */
-    //  mapping(address => mapping(uint256 => MusicTokenCollection))
-    //    public s_musicCollections;
-
-    /**
      * @notice Stores information about collaborators for each piece of music.
      * @dev Maps an artist's address, content ID, and collaborator index to the Collaborator struct.
      */
@@ -115,6 +168,9 @@ contract WavToken is WavRoot {
     mapping(address => mapping(uint256 => DynamicSupply))
         public s_DynamicSupplies;
 
+    mapping(uint256 singleContentId => uint256 reservedCollectionContentId)
+        public s_ofFutureCollection;
+
     /**
      * @notice Stores information about the prices of individual songs within a collection.
      * @dev Maps an artist's address and content ID to the IndividualSale struct.
@@ -126,10 +182,26 @@ contract WavToken is WavRoot {
      * @notice Stores information about variants of the music tokens.
      * @dev Maps an artist's address and content ID to the MusicTokenVariants struct.
      */
-    mapping(address => mapping(uint256 => MusicTokenVariants))
-        public s_variants;
+    mapping(address => mapping(uint256 => Variants)) public s_variants;
 
-    mapping(uint16 => uint256) songContentIds; // Mapping of numAudio index to contentId
+    mapping(address => mapping(uint256 => mapping(uint16 => uint16[])))
+        public s_variantTrackOrder;
+    mapping(address => mapping(uint256 => mapping(uint16 => uint16)))
+        public s_variantBonusContent;
+
+    /**
+     * @notice Stores STEM track information for each piece of content.
+     * @dev Maps an artist's address and content ID to the track hash and STEM identifiers.
+     */
+    mapping(address => mapping(uint256 => mapping(bytes32 => uint8)))
+        public s_stemTracks;
+
+    /**
+     * @notice Stores version information for each piece of content.
+     * @dev Maps an artist's address and content ID to the version index and track identifier hash.
+     */
+    mapping(address => mapping(uint256 => mapping(uint8 => bytes32)))
+        public s_songVersions;
 
     /**
      * @notice Adds collaborators to a specific piece of music.
@@ -215,6 +287,8 @@ contract WavToken is WavRoot {
         return true; // Reserves are valid
     }
 
+    // *** Still needs to be refactored for posibility of dynamic prices
+
     /**
      * @notice Retrieves the details of a music collection.
      * @dev This function is a view function that returns the details of a music collection.
@@ -241,27 +315,27 @@ contract WavToken is WavRoot {
         }
 
         // Retrieve the collection details
-        MusicTokenCollection storage collectionDetails = s_musicCollections[
-            _artistId
-        ][_contentId];
+        MusicToken storage musicTokenDetails = s_musicTokens[_artistId][
+            _contentId
+        ];
         IndividualSale storage individualSaleDetails = s_individualSales[
             _artistId
         ][_contentId];
 
         // Prepare arrays for songContentIds and song prices
-        songContentIds = new uint256[](collectionDetails.numAudio);
-        songPrices = new uint256[](collectionDetails.numAudio);
+        songContentIds = new uint256[](musicTokenDetails.numAudio);
+        songPrices = new uint256[](musicTokenDetails.numAudio);
 
         // Populate the arrays
-        for (uint16 i = 0; i < collectionDetails.numAudio; i++) {
-            songContentIds[i] = collectionDetails.songContentIds[i];
+        for (uint16 i = 0; i < musicTokenDetails.numAudio; i++) {
+            songContentIds[i] = musicTokenDetails.songContentIds[i];
             songPrices[i] = individualSaleDetails.songPrices[i];
         }
 
         // Return the details of the specified music collection and individual sale details
         return (
-            collectionDetails.numAudio,
-            collectionDetails.enableIndividualSale,
+            musicTokenDetails.numAudio,
+            musicTokenDetails.enableIndividualSale,
             songContentIds,
             individualSaleDetails.enableSeperateSaleAll,
             songPrices
@@ -348,5 +422,34 @@ contract WavToken is WavRoot {
             results[i] = (_bitmap & (1 << positions[i])) != 0;
         }
         return results;
+    }
+
+    /**
+     * @notice Generates a unique hash identifier for a specific track or version.
+     * @dev Combines artist's address, content ID, variant number, audio number, and track version to generate a unique bytes32 hash.
+     * @param _artistId The address of the artist.
+     * @param _contentId The unique ID of the content.
+     * @param _numVariant The number of variants for the content.
+     * @param _numAudio The number of audio tracks in the content.
+     * @param _trackVersion The version index of the track.
+     * @return bytes32 The unique hash identifier for the track or version.
+     */
+    function generateTrackHashId(
+        address _artistId,
+        uint256 _contentId,
+        uint16 _numVariant,
+        uint16 _numAudio,
+        uint8 _trackVersion
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _artistId,
+                    _contentId,
+                    _numVariant,
+                    _numAudio,
+                    _trackVersion
+                )
+            );
     }
 }

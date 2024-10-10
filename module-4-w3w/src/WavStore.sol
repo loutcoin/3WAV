@@ -3,6 +3,12 @@ pragma solidity ^0.8.24;
 
 /* Operating on Polygon zkEVM for L2 reduced gas fees.
 Using ETH as payment leveraging trust, & pre-existing common understanding associated with ETH.
+-
+~ General Timeline:
+Finish back-end foundation => unit, fuzz, integration testing => Polygon zkEVM testnet deployment + front-end integration ==
+Functional portfolio iteration => job camp + continue improving where possible => (once thoroughly vetted/iterated) => market release
+-
+[Personal Reference- Order of OP:
 constructor
 
 receive function (if exists)
@@ -17,9 +23,8 @@ internal
 
 private
 
-Within grouping, view and pure functions last.
+Within grouping, view and pure functions last.]
 */
-// Simple Unit + Fuzz Tests + Initial Testnet deployment testing
 import {WavRoot} from "../src/WavRoot.sol";
 import {WavFortress} from "../src/WavFortress.sol";
 import {WavAccess} from "../src/WavAccess.sol";
@@ -98,7 +103,6 @@ contract WavStore is WavRoot {
         emit MusicPurchased(_artistId, _contentId, msg.sender);
     }
 
-    // *** tbh might need to make function buyer calls, that then calls this function, that only let's msg.sender...
     function _purchaseResale(
         // be approvedAddr (ie: Contract, LOUT/LOUT_DEV)
         address seller,
@@ -107,9 +111,18 @@ contract WavStore is WavRoot {
         uint256 ownershipIndex,
         uint256 nonce,
         bytes memory signature
-    ) internal payable {
+    ) internal {
         if (msg.value < priceInEth) {
             revert WavStore__InsufficientPayment();
+        }
+
+        // Verify the signature
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(nonce, msg.sender, priceInEth)
+        );
+        address signer = verifySignature(messageHash, signature);
+        if (signer != msg.sender) {
+            revert WavFortress__InvalidSignature();
         }
 
         // Verify ownership using the provided ownership index
@@ -120,16 +133,6 @@ contract WavStore is WavRoot {
             music.contentId != contentId
         ) {
             revert WavStore__NotOwner();
-        }
-
-        // ***** PROBABLY MOVE ALL THIS UPWARDS ****
-        // Verify the signature
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(nonce, msg.sender, priceInEth)
-        );
-        address signer = verifySignature(messageHash, signature);
-        if (signer != msg.sender) {
-            revert WavFortress__InvalidSignature();
         }
 
         // Check use update nonce
@@ -155,7 +158,7 @@ contract WavStore is WavRoot {
         // Distribute fees
         // payable(seller).transfer(sellingUserShare);
         // Logic to transfer artistShare to the artist
-        //  payable(s_lout).transfer(serviceShare);
+        //  payable(address(this)).transfer(serviceShare);
         // Logic to transfer collaboratorShare to collaborators (if any)
 
         // Emit an event for the resale

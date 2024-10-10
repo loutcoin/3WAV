@@ -3,6 +3,11 @@ pragma solidity ^0.8.24;
 
 import {WavRoot} from "../src/WavRoot.sol";
 
+/* Allows for myself/team to grant access to individuals to become official artists (capable of publishing content)
+Preforms automated cryptographic key checks to return verified 'owned content' accessible in library.
+(Can only access content either YOU published as an artist, OR that you've PURCHASED!)
+*/
+
 contract WavAccess is WavRoot {
     error WavAccess__NameIsTaken();
     error WavAccess__IsNotApprovedArtist();
