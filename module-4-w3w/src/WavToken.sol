@@ -20,44 +20,31 @@ contract WavToken is WavRoot {
     error WavToken__IsNotCollection();
     error WavToken__BitmapOverflow();
 
-    enum AudioSaleType {
-        SeperateSaleAll,
-        SeperateSaleSpecific
-    }
-
-    enum DynamicSupplyType {
-        Fixed,
-        TimeRelease
-    }
-
     struct MusicToken {
         uint256 totalSupply;
-        uint256 priceInUsd; // Price in USD for simplicity (converted to ETH) (future plans to accept LOUT as well)
+        uint256 priceInUsd;
         uint256 releaseDate;
         uint16 numAudio;
         uint256 bitmap;
         /*
-        bool hasCollaborators; // Automates process of single transaction compensation upon sale of audio to featured collaborators
-        bool enableVariants; // Enables variations of core audio
-        bool enableDynamicSupply; // Enables initial:totalSupply and additional parameters related to varied release schedule, etc. (think limited sneaker releases/roll-out(allows for "pre-release" also, IE: pre-release purchase of video game))
         bool enableOwnerRewards; // Enables a lot of different potential functionality. (IE: You can only purchase or access this song, if you own this song, or this number of songs, fine-tuned reward control, etc.)
          */
     }
 
     struct IndividualSale {
-        AudioSaleType typeSaleAudio;
         uint256 standardPriceUsd;
-    }
+        uint256 seperateSaleSupplySurplus;
+    } // if allow indv sale of specific tracks, should nvr exceed supply of collection itself, so indv tracks nvr sale out...
+    // in collective-context
 
     struct SpecificSale {
-        bytes32 hashId;
-        bool sellSeperate;
+        bool soldSeperate;
     }
 
     struct AudioPriceTiers {
+        IndividualSale individualSale;
         uint256 accessiblePriceUsd;
         uint256 designerPriceUsd; // likely needs slight update, ONLY songs designated for specific/ALL sale to be indv sold
-        mapping(uint16 => uint256) songPrices; // Mapping of numAudio index to price tier
     }
 
     /**
@@ -72,6 +59,11 @@ contract WavToken is WavRoot {
         uint16 numVariantAudio;
         /// @notice Total supply of specific variant derivative.
         uint256 variantSupply;
+    }
+
+    struct IndividualSaleVariant {
+        Variants variant;
+        IndividualSale individualSale;
     }
 
     /**
@@ -98,14 +90,9 @@ contract WavToken is WavRoot {
         uint256 rarityPercentage;
     }
 
-    struct TrackMod {
-        mapping(uint16 => uint16[]) variantTrackOrder;
-        mapping(uint16 => uint16) variantBonusContent;
-    }
-
-    struct VariantMod {
-        Variants variants;
-        TrackMod trackMod;
+    struct DynamicSupplyVariant {
+        Variants variant;
+        DynamicSupply dynamicSupply;
     }
 
     /**
@@ -118,19 +105,18 @@ contract WavToken is WavRoot {
     }
 
     struct DynamicSupply {
-        DynamicSupplyType dynamicSupplyType;
-        uint256 initialSupply; // each song in collection starts at initialSupply
-        bytes32 hashId; // specific variant supply can be increased independently of one another
-    }
+        uint256 initialSupply; // specific variant supply can be increased independently of one another
+    } // is fixed release by default, can enable TIMED automatic release
 
     struct PreRelease {
-        bytes32 hashId;
-        uint256 preReleaseReserve; // up to 10% of totalSupply
+        uint256 preReleaseReserve; // up to 10% of totalSupply || <= initialSupply
+        uint256 preReleaseStart;
+        uint256 pausedAt; // 0 by default, if < 0, correlates to timestamp when pause should occur
     }
 
     struct ArtistReserve {
-        uint256 artistCopyReserve; // artists can 'mint' 20% of collection copies to self (totalSupply even if InitialSupply==true)
-        uint256 fanRewardReserve; // Additional reserve for fan rewards, total reserve (artist + fan) <= 30%
+        uint256 wavReserve; // Up to 20% totalSupply reserve to be allocated through alternative means
+        // IE: Live Event QR Code Reward, Future Airdrop Integration, etc.
     }
 
     struct DynamicReserveRelease {
@@ -139,7 +125,7 @@ contract WavToken is WavRoot {
         ArtistReserve artistReserve;
     }
 
-    struct TimedRelease {
+    struct SupplyIntervalRelease {
         uint256 numAudioBatchRelease; // += increases circulating supply, limit is totalSupply
         uint256 timeReleaseInterval; // specific date and time interval for each batch release
     }
@@ -159,10 +145,11 @@ contract WavToken is WavRoot {
     uint8 internal constant MUSIC_TOKEN__ENABLE_ARTIST_RESERVE = 7;
     uint8 internal constant MUSIC_TOKEN__ENABLE_REWARDS = 8;
     uint8 internal constant MUSIC_TOKEN__PRE_RELEASE = 9;
-    uint8 internal constant IS_COLLECTION__ENABLE_INDIVIDUAL_SALE = 10;
-    uint8 internal constant INDIVIDUAL_SALE__ENABLE_PRICE_TIERS = 11;
-    uint8 internal constant VARIANTS__MODIFY_CONTENT_FROM_BASE = 12;
+    uint8 internal constant MUSIC_TOKEN__RESERVED_EXCLUSIVE = 10;
+    uint8 internal constant IS_COLLECTION__ENABLE_INDIVIDUAL_SALE = 11;
+    uint8 internal constant INDIVIDUAL_SALE__ENABLE_PRICE_TIERS = 12;
     uint8 internal constant VARIANTS__RARITY_SALE = 13;
+    uint8 internal constant DYNAMIC_SUPPLY__TIMED_AUTO_RELEASE = 14;
 
     /**
      * @notice Stores detailed information about each music token, including supply, price, and features.
@@ -206,11 +193,6 @@ contract WavToken is WavRoot {
      * @dev Maps an artist's address and content ID to the MusicTokenVariants struct.
      */
     mapping(address => mapping(uint256 => Variants)) public s_variants;
-
-    mapping(address => mapping(uint256 => mapping(uint16 => uint16[])))
-        public s_variantTrackOrder;
-    mapping(address => mapping(uint256 => mapping(uint16 => uint16)))
-        public s_variantBonusContent;
 
     /**
      * @notice Stores STEM track information for each piece of content.
