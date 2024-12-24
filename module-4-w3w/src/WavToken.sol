@@ -19,6 +19,8 @@ contract WavToken is WavRoot {
     error WavToken__CollaboratorSplitLengthMismatch();
     error WavToken__IsNotCollection();
     error WavToken__BitmapOverflow();
+    error WavToken__RSaleMismatch();
+    error WavToken__RSaleOverflow();
 
     struct MusicToken {
         uint256 totalSupply;
@@ -36,10 +38,6 @@ contract WavToken is WavRoot {
         uint256 seperateSaleSupplySurplus;
     } // if allow indv sale of specific tracks, should nvr exceed supply of collection itself, so indv tracks nvr sale out...
     // in collective-context
-
-    struct SpecificSale {
-        bool soldSeperate;
-    }
 
     struct AudioPriceTiers {
         IndividualSale individualSale;
@@ -79,20 +77,25 @@ contract WavToken is WavRoot {
     }
 
     /**
-     * @title RaritySaleVariant
+     * @title RSaleVariant
      * @notice Stores information about rarity sale variants of a music token.
-     * @dev Defines variant details and rarity percentage.
+     * @dev Defines variant details for singular RSale-type.
      */
-    struct RaritySaleVariant {
+    struct RSaleVariant {
         /// @notice Details of the variant.
         Variants variant;
         /// @notice Percentage chance to obtain variant upon purchase of base content.
         uint256 rarityPercentage;
     }
 
-    struct DynamicSupplyVariant {
+    /**
+     * @title RSaleVariant23
+     * @notice Stores information about multiple variant content-tokens associated RSale values.
+     * @dev Defines variant details for RSale23-type.
+     */
+    struct RSaleVariant23 {
         Variants variant;
-        DynamicSupply dynamicSupply;
+        uint256 rVal; // xx_xxxx_
     }
 
     /**
@@ -108,6 +111,11 @@ contract WavToken is WavRoot {
         uint256 initialSupply; // specific variant supply can be increased independently of one another
     } // is fixed release by default, can enable TIMED automatic release
 
+    struct AutoRelease {
+        uint256 numAudioBatchRelease; // += increases circulating supply, limit is totalSupply
+        uint256 timeReleaseInterval; // specific date and time interval for each batch release
+    }
+
     struct PreRelease {
         uint256 preReleaseReserve; // up to 10% of totalSupply || <= initialSupply
         uint256 preReleaseStart;
@@ -115,19 +123,8 @@ contract WavToken is WavRoot {
     }
 
     struct ArtistReserve {
-        uint256 wavReserve; // Up to 20% totalSupply reserve to be allocated through alternative means
+        uint256 wavReserve; // Up to 30% totalSupply reservable for allocation through alternative means
         // IE: Live Event QR Code Reward, Future Airdrop Integration, etc.
-    }
-
-    struct DynamicReserveRelease {
-        DynamicSupply dynamicSupply;
-        PreRelease preRelease;
-        ArtistReserve artistReserve;
-    }
-
-    struct SupplyIntervalRelease {
-        uint256 numAudioBatchRelease; // += increases circulating supply, limit is totalSupply
-        uint256 timeReleaseInterval; // specific date and time interval for each batch release
     }
 
     /**
@@ -136,20 +133,23 @@ contract WavToken is WavRoot {
      *      that can be enabled or disabled for a music token.
      */
     uint8 internal constant MUSIC_TOKEN__IS_COLLECTION = 0;
-    uint8 internal constant MUSIC_TOKEN__HAS_COLLABORATORS = 1;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_VARIANTS = 2;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_DYNAMIC_SUPPLY = 3;
-    uint8 internal constant MUSIC_TOKEN__OF_FUTURE_COLLECTION = 4;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_UPDATED_VERSIONS = 5;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_STEMS = 6;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_ARTIST_RESERVE = 7;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_REWARDS = 8;
-    uint8 internal constant MUSIC_TOKEN__PRE_RELEASE = 9;
-    uint8 internal constant MUSIC_TOKEN__RESERVED_EXCLUSIVE = 10;
-    uint8 internal constant IS_COLLECTION__ENABLE_INDIVIDUAL_SALE = 11;
-    uint8 internal constant INDIVIDUAL_SALE__ENABLE_PRICE_TIERS = 12;
-    uint8 internal constant VARIANTS__RARITY_SALE = 13;
-    uint8 internal constant DYNAMIC_SUPPLY__TIMED_AUTO_RELEASE = 14;
+    uint8 internal constant IS_COLLECTION__SEPARATE_SALE_ALL = 1;
+    uint8 internal constant IS_COLLECTION__SEPERATE_SALE_SPECIFIC = 2;
+    uint8 internal constant SEPARATE_SALE__ENABLE_PRICE_TIERS = 3;
+    uint8 internal constant MUSIC_TOKEN__IS_BONUS = 4;
+    uint8 internal constant MUSIC_TOKEN__IS_EXCLUSIVE = 5;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_VARIANTS = 6;
+    uint8 internal constant ENABLE_VARIANTS__RARITY_SALE = 7;
+    uint8 internal constant RARITY_SALE__RSALE_2 = 16;
+    uint8 internal constant RARITY_SALE__RSALE_3 = 17;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_VERSIONS = 8;
+    uint8 internal constant MUSIC_TOKEN__OF_FUTURE_COLLECTION = 9;
+    uint8 internal constant MUSIC_TOKEN__ENABLE_STEMS = 10;
+    uint8 internal constant MUSIC_TOKEN__DYNAMIC_SUPPLY = 11;
+    uint8 internal constant DYNAMIC_SUPPLY__AUTO_RELEASE = 12;
+    uint8 internal constant MUSIC_TOKEN__ARTIST_RESERVE = 13;
+    uint8 internal constant MUSIC_TOKEN__PRE_RELEASE = 14;
+    uint8 internal constant MUSIC_TOKEN__HAS_COLLABORATORS = 15;
 
     /**
      * @notice Stores detailed information about each music token, including supply, price, and features.
@@ -178,7 +178,11 @@ contract WavToken is WavRoot {
     mapping(address => mapping(uint256 => DynamicSupply))
         public s_DynamicSupplies;
 
-    mapping(uint256 singleContentId => uint256 reservedCollectionContentId)
+    /**
+     * @notice Associates content hash to next chronologically available contentId position.
+     * @dev Maps bytes32 hashId to an artist's next available contentId location, reserving it.
+     */
+    mapping(bytes32 hashId => uint256 reservedCollectionContentId)
         public s_ofFutureCollection;
 
     /**
@@ -192,7 +196,18 @@ contract WavToken is WavRoot {
      * @notice Stores information about variants of the music tokens.
      * @dev Maps an artist's address and content ID to the MusicTokenVariants struct.
      */
-    mapping(address => mapping(uint256 => Variants)) public s_variants;
+
+    mapping(address artist => mapping(uint256 contentId => RSaleVariant)) public s_rVariantIndex; 
+
+    mapping(uint256 rMap => RSaleVariant23) public s_rVariantIndex23;
+    
+    // rMap defines content (multi) rarity defs, rVal defines "what those defs are"
+    /* ~First Val of rMap == collection (if collection) itself~ (notes to self)
+    Album: 'TRAP' | Variants: 'Yes', NumVariants: '1', NumVariantAudio: '10' (VariantName == 'vTrap')
+    vTrap (5 tiers of rarity) | rVal: ('001_20%', '010_10%', '100_5%', '110_1%', '011_0.005%', '000_N/A)
+    vTrap (rMap): 000001010110011000100001010110000 (6 TOTAL POSSIBLE RARITIES + N/A rarity)
+
+    */
 
     /**
      * @notice Stores STEM track information for each piece of content.
@@ -429,6 +444,7 @@ contract WavToken is WavRoot {
         return results;
     }
 
+
     /**
      * @notice Generates a unique hash identifier for a specific track or version.
      * @dev Combines artist's address, content ID, variant number, audio number, and track version to generate a unique bytes32 hash.
@@ -439,7 +455,7 @@ contract WavToken is WavRoot {
      * @param _trackVersion The version index of the track.
      * @return bytes32 The unique hash identifier for the track or version.
      */
-    function generateTrackHashId(
+    function generateContentHashId(
         address _artistId,
         uint256 _contentId,
         uint16 _numVariant,
@@ -457,4 +473,6 @@ contract WavToken is WavRoot {
                 )
             );
     }
+
+
 }

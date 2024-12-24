@@ -5,7 +5,7 @@ pragma solidity ^0.8.24;
 Preforms gasless live price calculations, uses data to pass along function calls
 */
 
-import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 contract WavFeed {
     AggregatorV3Interface internal s_priceFeed;
