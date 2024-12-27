@@ -197,10 +197,11 @@ contract WavToken is WavRoot {
      * @dev Maps an artist's address and content ID to the MusicTokenVariants struct.
      */
 
-    mapping(address artist => mapping(uint256 contentId => RSaleVariant)) public s_rVariantIndex; 
+    mapping(address artist => mapping(uint256 contentId => RSaleVariant))
+        public s_rVariantIndex;
 
     mapping(uint256 rMap => RSaleVariant23) public s_rVariantIndex23;
-    
+
     // rMap defines content (multi) rarity defs, rVal defines "what those defs are"
     /* ~First Val of rMap == collection (if collection) itself~ (notes to self)
     Album: 'TRAP' | Variants: 'Yes', NumVariants: '1', NumVariantAudio: '10' (VariantName == 'vTrap')
@@ -307,15 +308,13 @@ contract WavToken is WavRoot {
         return true; // Reserves are valid
     }
 
-    // *** Still needs to be refactored for posibility of dynamic prices
-
-    /**
+    /**      *** To be refactored ***
      * @notice Retrieves the details of a music collection.
      * @dev This function is a view function that returns the details of a music collection.
      * @param _artistId The address of the artist.
      * @param _contentId The unique ID of the collection.
      */
-    function getCollectionDetails(
+    /*   function getCollectionDetails(
         address _artistId,
         uint256 _contentId
     )
@@ -333,7 +332,7 @@ contract WavToken is WavRoot {
         if (!s_musicTokens[_artistId][_contentId].isCollection) {
             revert WavToken__IsNotCollection();
         }
-
+    
         // Retrieve the collection details
         MusicToken storage musicTokenDetails = s_musicTokens[_artistId][
             _contentId
@@ -351,7 +350,7 @@ contract WavToken is WavRoot {
             songContentIds[i] = musicTokenDetails.songContentIds[i];
             songPrices[i] = individualSaleDetails.songPrices[i];
         }
-
+    
         // Return the details of the specified music collection and individual sale details
         return (
             musicTokenDetails.numAudio,
@@ -361,6 +360,7 @@ contract WavToken is WavRoot {
             songPrices
         );
     }
+    */
 
     /**
      * @notice Retrieves the price of a music token in USD.
@@ -444,7 +444,6 @@ contract WavToken is WavRoot {
         return results;
     }
 
-
     /**
      * @notice Generates a unique hash identifier for a specific track or version.
      * @dev Combines artist's address, content ID, variant number, audio number, and track version to generate a unique bytes32 hash.
@@ -473,6 +472,4 @@ contract WavToken is WavRoot {
                 )
             );
     }
-
-
 }
