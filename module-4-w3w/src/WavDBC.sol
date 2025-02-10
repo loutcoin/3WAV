@@ -22,10 +22,11 @@ contract WavDBC {
     function tokenBSDetermine(
         uint256[] memory _inputVal
     ) public pure returns (uint256) {
-        if (_inputVal.length == 2) {
+        if (_inputVal.length == 1) {
+            return token0BSInterpreter(_inputVal);
+        } else if (_inputVal.length == 2) {
             return token1BSInterpreter(_inputVal);
-        }
-        if (_inputVal >= 3 && _inputVal.length <= 4) {
+        } else if (_inputVal >= 3 && _inputVal.length <= 4) {
             return token2BSInterpreter(_inputVal);
         } else if (_inputVal.length > 4 && _inputVal.length <= 8) {
             return token3BSInterpreter(_inputVal);
@@ -34,11 +35,37 @@ contract WavDBC {
         }
     }
 
-    //
+    /** 0-bit possibilities: (1: Fully disabled state (0)) (2: 'Fully' enabled state, set to defined value)
+    *Low hanging fruit* store single value, bitmap can be assigned to all possible tokens in same var
+    
+     */
 
-    function token1BSInterpreter(
+    function token0BSInterpreter(
         uint256[] memory _inputVal
     ) public pure returns (uint256) {}
+
+    /**
+     * @notice Interprets input values using a 1-bit system and compacts them.
+     * @dev Formats values to six digits, appends bit-state identifiers, and compacts them into a single uint256.
+     * @param _inputValArray numerical array of input values.
+     * @return uint256 representing the compacted values.
+     */
+    function token1BSInterpreter(
+        uint256[] memory _inputValArray
+    ) public pure returns (uint256) {
+        bool has0Val = detect0Val(_inputValArray);
+        uint256[] memory appendVals = assign1BIdentifiers(_inputValArray);
+
+        // Check if the last value is 0Val and format if needed
+        if (has0Val) {
+            appendVals = format1BZeroVal(appendVals);
+        }
+
+        // Compact the values
+        uint256 result = (appendVals[0] * 10000000) + appendVals[1];
+
+        return result;
+    }
 
     /**
      * @notice Interprets input data following a 2-bit system.
@@ -80,10 +107,29 @@ contract WavDBC {
         uint256[] memory appendVals = append2BState(_inputVal);
 
         if (has0Val) {
-            appendVals = format0Val(appendVals);
+            appendVals = format2BZeroVal(appendVals);
         }
 
         return appendVals;
+    }
+
+    /**
+     * @notice Formats values to six digits and appends numerical 1-bit state identifiers.
+     * @dev Formats each value to six digits, multiplies by 10, and adds corresponding 1-bit state identifier (0 or 1).
+     * @param _rInput numerical array of values to which 1-bit state identifiers are appended.
+     * @return array of values with formatted and appended 1-bit state identifiers.
+     */
+    function assign1BIdentifiers(
+        uint256[] memory _inputVal
+    ) public pure returns (uint256[] memory) {
+        uint256[] memory appendedValues = new uint256[](_inputVal.length);
+        uint256[2] memory bitStates = [0, 1];
+
+        for (uint256 i = 0; i < _inputVal.length; i++) {
+            appendedValues[i] = (_inputVal[i] * 10) + bitStates[i];
+        }
+
+        return appendedValues;
     }
 
     /**
@@ -96,11 +142,11 @@ contract WavDBC {
         uint256[] memory _inputVal
     ) public pure returns (uint256[] memory) {
         uint256[] memory appendVals = new uint256[](_inputVal.length);
-        uint256[4] memory bitStateID = [0, 1, 10, 11];
+        uint256[4] memory bitStateId = [0, 1, 10, 11];
         uint256 bitIndex = 0;
 
         for (uint256 i = 0; i < _inputVal.length; i++) {
-            appendVals[i] = (_inputVal[i] * 100) + bitStateID[bitIndex];
+            appendVals[i] = (_inputVal[i] * 100) + bitStateId[bitIndex];
             bitIndex++;
 
             if (bitIndex == 3 && _inputVal.length == 3) {
@@ -111,10 +157,27 @@ contract WavDBC {
             appendVals[_inputVal.length - 1] =
                 appendVals[_inputVal.length - 1] *
                 100 +
-                bitStateID[bitIndex];
+                bitStateId[bitIndex];
         }
 
         return appendVals;
+    }
+
+    /**
+     * @notice Finalizes the appended values by ensuring 0Val is correctly formatted for 1-bit system.
+     * @dev Checks if the last value is 0Val and formats it accordingly.
+     * @param appendedValues numerical array of values with appended 1-bit state identifiers.
+     * @return array of finalized values.
+     */
+    function format1BZeroVal(
+        uint256[] memory appendedValues
+    ) public pure returns (uint256[] memory) {
+        uint256 lastIndex = appendedValues.length - 1;
+        if (appendedValues[lastIndex] == 1) {
+            // Checks if the last value is 0Val
+            appendedValues[lastIndex] = 1; // Set 0Val as '0000001'
+        }
+        return appendedValues;
     }
 
     /**
@@ -123,7 +186,7 @@ contract WavDBC {
      * @param appendVals numerical array of values with appended bit-state identifiers.
      * @return array of finalized values.
      */
-    function format0Val(
+    function format2BZeroVal(
         uint256[] memory appendVals
     ) public pure returns (uint256[] memory) {
         uint256 lastIndex = appendVals.length - 1;
@@ -147,4 +210,91 @@ contract WavDBC {
         }
         return false;
     }
+
+    /**
+     * @notice Assigns a value to enabled flag positions based on 3-bit encoding.
+     * @dev Returns bitmap of defined flag states as a chronologically ordered array.
+     * @param _flagVal numerical array of defined bit position states.
+     */
+    function flagValCalculator(
+        uint8[] memory _flagVal
+    ) internal pure returns (uint256) {
+        uint256 bitmap = 0;
+
+        // Loops through _flagVal assigns 3-bit values accordingly
+        for (uint8 i = 0; i < _flagVal.length; i++) {
+            // Ensure valid flag position for 3-bit system
+            if (_flagVal[i] > 85) {
+                // Because 3-bit allows only up to 85 unique flags
+                revert WavDBC__LengthValIssue();
+            }
+            // Update bitmap based on _flagVal (3-bit encoding)
+            bitmap |= (uint256(_flagVal[i] & 0x7) << ((85 - i) * 3)); // 3 bits per flag
+        }
+        return bitmap;
+    }
+
+    /* -- Functions are to be adjusted in next push   function processTypeFlags(
+        uint8[] memory rawFlags
+    ) internal pure returns (uint8[] memory) {
+        uint8[] memory processedFlags = new uint8[](rawFlags.length);
+
+        for (uint8 i = 0; i < rawFlags.length; i++) {
+            // Convert to 3-bit format: token type '1' -> '100', '2' -> '101', etc.
+            processedFlags[i] = (rawFlags[i] == 1)
+                ? 4
+                : (rawFlags[i] == 2)
+                    ? 5
+                    : rawFlags[i] & 0x7;
+        }
+        return processedFlags;
+    }
+
+    function processSaleFlags(
+        uint8[] memory rawFlags
+    ) internal pure returns (uint8[] memory) {
+        uint8[] memory processedFlags = new uint8[](rawFlags.length);
+
+        for (uint8 i = 0; i < rawFlags.length; i++) {
+            // Convert to 3-bit format: sale property '1' -> '100', etc.
+            processedFlags[i] = (rawFlags[i] == 0)
+                ? 0
+                : (rawFlags[i] == 1)
+                    ? 4
+                    : rawFlags[i] & 0x7;
+        }
+        return processedFlags;
+    }
+
+    function processSupplyFlags(
+        uint8[] memory rawFlags
+    ) internal pure returns (uint8[] memory) {
+        uint8[] memory processedFlags = new uint8[](rawFlags.length);
+
+        for (uint8 i = 0; i < rawFlags.length; i++) {
+            // Convert to 3-bit format: supply property '1' -> '100', etc.
+            processedFlags[i] = (rawFlags[i] == 0)
+                ? 0
+                : (rawFlags[i] == 1)
+                    ? 4
+                    : rawFlags[i] & 0x7;
+        }
+        return processedFlags;
+    }
+
+    function processExtraFlags(
+        uint8[] memory rawFlags
+    ) internal pure returns (uint8[] memory) {
+        uint8[] memory processedFlags = new uint8[](rawFlags.length);
+
+        for (uint8 i = 0; i < rawFlags.length; i++) {
+            // Convert to 3-bit format: extra property '1' -> '100', etc.
+            processedFlags[i] = (rawFlags[i] == 0)
+                ? 0
+                : (rawFlags[i] == 1)
+                    ? 4
+                    : rawFlags[i] & 0x7;
+        }
+        return processedFlags;
+    } */
 }

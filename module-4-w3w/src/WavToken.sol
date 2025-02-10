@@ -22,27 +22,85 @@ contract WavToken is WavRoot {
     error WavToken__RSaleMismatch();
     error WavToken__RSaleOverflow();
 
+    //ONLY things directly relevant to our coure collection and or individual tokens within it
+    //IE: price tiers, total supply and possible total supply tiers / initial supply tiers for indv content tokens == okay
+    // WavReserve/PreRelease should only be present in SupplyVal as %
+    // :) Everything except for totalSupply and initalSupply should be % to save space lol (math checks out, 72 digits)
+    MusicToken internal MTKN;
+
+    // compaction refactors // ContentToken
     struct MusicToken {
-        uint256 totalSupply;
-        uint256 priceInUsd;
-        uint256 releaseDate;
+        uint256 supplyVal; // 0B *initial*totalSupply[0], | 2B wav*Pre*Reserve[2], | 3B singleSupply*total*Standard, singleSupply2Tier, totalSingleSupply2Tier, AutoRe1or2Tier
+        // 1000 <x_xxx_xxx.xx$>
+        uint256 priceUsdVal; // 0B primary_priceInUsd[0], | 1B standard_indv[1], | 2B accessible_indv[2], exclusive_indv[3]
+        uint256 releaseVal; // 0B standard/Start( val(<x>[1])), | 2B end[2] | 3B preStart*pauseAt*[3] AutoRelease
         uint16 numAudio;
-        uint256 bitmap;
-        /*
-        bool enableOwnerRewards; // Enables a lot of different potential functionality. (IE: You can only purchase or access this song, if you own this song, or this number of songs, fine-tuned reward control, etc.)
-         */
-    }
+        uint256 bitVal;
+    } // max uint256 ~75 digits
 
-    struct IndividualSale {
-        uint256 standardPriceUsd;
-        uint256 seperateSaleSupplySurplus;
-    } // if allow indv sale of specific tracks, should nvr exceed supply of collection itself, so indv tracks nvr sale out...
-    // in collective-context
+    // ********* priceUsdVal *********:
+    /**$ ~Max Primary <999,999.99
+    - 0B-A: primary[1] (uniform in any case) | 
 
-    struct AudioPriceTiers {
-        IndividualSale individualSale;
-        uint256 accessiblePriceUsd;
-        uint256 designerPriceUsd; // likely needs slight update, ONLY songs designated for specific/ALL sale to be indv sold
+    - 1B-A: primary[1], standard[0] (uniform, no 0Val),
+    - 1B-B: primary[1], firstShare[0]
+    - 1B-C: primary[1], disabled[0] (uniform primary, unusual) |
+
+    - 2B-A: primary[10], standard[01], disabled[00] (only "3-states" possibility (1))
+    - 2B-B  primary[10], firstSplit[11], standard[01]  (only "3-states" possibility (2))
+    - 2B-C: primary[10], firstSplit[11], secondShare[01]  (only "3-states" possibility (3))
+    - 2B-D: primary[10], firstSplit[11], secondShare[01], thirdSplit[00] 
+    - 2B-E: primary[10], firstSplit[11], standard[01], disabled[00]
+    - 2B-F: primary[10], firstSplit[11], standard[01], disabled[00]
+    - 2B-G: primary[10], firstSplit[11], secondSplit[01], disabled[00] 
+    - 2B-H: primary[10], standard[01], accessible[00], exclusive[11] |
+   
+    - 3B-A: primary[100], standard[010], accessible[001], exclusive[101], disabled[000] (only "5-states" possibility (1))
+    - 3B-B: primary[100], firstSplit[110], standard[010], accessible[001], exclusive[101] (only "5-states" possibility (2))
+    - 3B-C: primary[100], firstSplit[110], secondSplit[011], ThirdSplit[111], standard[010] (only "5-states" possibility (3))
+    - 3B-D: primary[100], firstSplit[110], standard[010], accessible[001], exclusive[101] disabled[000] (only "6-states" possibility (1))
+    - 3B-E: primary[100], firstSplit[110], secondSplit[011], standard[010], accessible[001], exclusive[101] disabled[000] (only "7-states" possibility (1))
+    - 3B-F: primary[100], firstSplit[110], secondSplit[011], thirdSplit[111], standard[010], accessible[001], exclusive[101] disabled[000]  
+    ---------
+    **** Formality ****: 
+    -Primary- [1/10/100] 
+    -   "Always first value. Always non-zero value. Always leading '1' followed by zero's dependant on bit-system"  
+    - -
+    -0Val/Disabled- [0/00/000] 
+    -   "Always '0' if present"                                                                                  
+    - -
+    -Standard- [0/01/010]
+    -   "May be assigned in absence of price tiers to seperate sale content tokens."
+    - -
+    -Accessible- [00/001]
+    -   "1/2 optionally additional price tiers. Defined value must be less than defined 'Standard' value.
+    - -
+    -Exclusive- [11/101]
+    -   "1/2 optionally additional price tiers. Defined value must be greater than defined 'Standard' value.
+    - - 
+    -firstSplit- [0/11/110]
+    -
+    - -
+    -secondSplit- [01/011]
+    -
+    - -
+    -thirdSplit- [00/111]
+    ------------------
+    // ********* releaseVal *********:
+    - 0B-A: standard/Start[1]
+    - 0B-B  End/Disabled/Undefined[0] (if token doesn't have absolute release date)
+
+    - 1B-A: standard/Start[1], End/Disabled/Undefined[0]
+
+
+    ---------
+    -standard/Start- [1/10/100]
+    -0Val/Disabled- [0/00/000]
+    */
+
+    struct SingleSaleSupply {
+        MusicToken musicToken;
+        uint256 saleMap;
     }
 
     /**
@@ -59,11 +117,6 @@ contract WavToken is WavRoot {
         uint256 variantSupply;
     }
 
-    struct IndividualSaleVariant {
-        Variants variant;
-        IndividualSale individualSale;
-    }
-
     /**
      * @title UsdSaleVariant
      * @notice Stores information about USD sale variants of a music token.
@@ -78,78 +131,60 @@ contract WavToken is WavRoot {
 
     /**
      * @title RSaleVariant
-     * @notice Stores information about rarity sale variants of a music token.
-     * @dev Defines variant details for singular RSale-type.
+     * @notice Stores information about multiple variant content-tokens associated RSale values.
+     * @dev Defines details for RSale type variant(s).
      */
     struct RSaleVariant {
-        /// @notice Details of the variant.
-        Variants variant;
-        /// @notice Percentage chance to obtain variant upon purchase of base content.
-        uint256 rarityPercentage;
-    }
-
-    /**
-     * @title RSaleVariant23
-     * @notice Stores information about multiple variant content-tokens associated RSale values.
-     * @dev Defines variant details for RSale23-type.
-     */
-    struct RSaleVariant23 {
         Variants variant;
         uint256 rVal; // xx_xxxx_
     }
 
+    // only 3 split tiers, infinite possible collaborators
+    // string compacted collaborator earning split ID
     /**
      * @title Collaborator
      * @notice Stores collaborator values of music tokens
      */
     struct Collaborator {
-        address collaborator; // address of collaboratorAddress
-        uint256 earningsContentSplit; // numerical split of total earnings they should recieve for each sale
+        string collaboratorVal;
+        uint256 revenueShareVal; // numerical split of total earnings they should recieve for each sale
+        // collaboratorhexidval
+        // contentdualcollaboratorhexvalsplitvalbitmap
     }
 
-    struct DynamicSupply {
-        uint256 initialSupply; // specific variant supply can be increased independently of one another
-    } // is fixed release by default, can enable TIMED automatic release
+    // Was Dynamic* specific variant supply can be increased independently of one another
+    // is fixed release by default, can enable TIMED automatic release
 
     struct AutoRelease {
-        uint256 numAudioBatchRelease; // += increases circulating supply, limit is totalSupply
-        uint256 timeReleaseInterval; // specific date and time interval for each batch release
+        uint128 numAudioBatchRelease; // += increases circulating supply, limit is totalSupply
+        uint128 timeReleaseInterval; // specific date and time interval for each batch release
     }
 
     struct PreRelease {
-        uint256 preReleaseReserve; // up to 10% of totalSupply || <= initialSupply
-        uint256 preReleaseStart;
         uint256 pausedAt; // 0 by default, if < 0, correlates to timestamp when pause should occur
     }
 
-    struct ArtistReserve {
-        uint256 wavReserve; // Up to 30% totalSupply reservable for allocation through alternative means
-        // IE: Live Event QR Code Reward, Future Airdrop Integration, etc.
-    }
+    // Was WavReserve Up to 30% totalSupply reservable for allocation through alternative means
+    // IE: Live Event QR Code Reward, Future Airdrop Integration, etc.
 
     /**
-     * @notice Defined bit positions for MusicToken and sub-structs.
-     * @dev These constants represent various properties and functionalities
-     *      that can be enabled or disabled for a music token.
+     * @notice Defined 3-bit functional flag system for ContentToken functionality.
+     * @dev These constants represent various functional flag-states
+     *      and dynamic bit-system data implementations for various enabled/disabled ContentToken functionality.
      */
-    uint8 internal constant MUSIC_TOKEN__IS_COLLECTION = 0;
-    uint8 internal constant IS_COLLECTION__SEPARATE_SALE_ALL = 1;
-    uint8 internal constant IS_COLLECTION__SEPERATE_SALE_SPECIFIC = 2;
-    uint8 internal constant SEPARATE_SALE__ENABLE_PRICE_TIERS = 3;
-    uint8 internal constant MUSIC_TOKEN__IS_BONUS = 4;
-    uint8 internal constant MUSIC_TOKEN__IS_EXCLUSIVE = 5;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_VARIANTS = 6;
-    uint8 internal constant ENABLE_VARIANTS__RARITY_SALE = 7;
-    uint8 internal constant RARITY_SALE__RSALE_2 = 16;
-    uint8 internal constant RARITY_SALE__RSALE_3 = 17;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_VERSIONS = 8;
-    uint8 internal constant MUSIC_TOKEN__OF_FUTURE_COLLECTION = 9;
-    uint8 internal constant MUSIC_TOKEN__ENABLE_STEMS = 10;
-    uint8 internal constant MUSIC_TOKEN__DYNAMIC_SUPPLY = 11;
-    uint8 internal constant DYNAMIC_SUPPLY__AUTO_RELEASE = 12;
-    uint8 internal constant MUSIC_TOKEN__ARTIST_RESERVE = 13;
-    uint8 internal constant MUSIC_TOKEN__PRE_RELEASE = 14;
-    uint8 internal constant MUSIC_TOKEN__HAS_COLLABORATORS = 15;
+    uint8 internal constant MUSIC_TOKEN__TOKEN_TYPE__TYP = 0; // Collection, Single
+    uint8 internal constant MUSIC_TOKEN__SPECIAL__TYP = 1; // Bonus, Limited, OFC, OFCereal
+    uint8 internal constant MUSIC_TOKEN__COLLABORATORS__TYP = 2; // Disabled, Enabled...<More interesting collab encouragement in future!>
+
+    uint8 internal constant COLLECTION__SEPERATE_SALE__SAL = 3; // Disabled, All, Specific, All/PriceTiers, Specific/PriceTiers
+    uint8 internal constant MUSIC_TOKEN__SPECIAL_SALE__SAL = 4; // Disabled/0-1B/2B/3B
+
+    uint8 internal constant MUSIC_TOKEN__RESERVES__SPY = 5; // Disabled, Wav, Pre, Wav/Pre, WavTiers, PreTiers, WavPreTiers
+    uint8 internal constant MUSIC_TOKEN__DYNAMIC_SUPPLY_SPY = 6; // Disabled, INIT, INIT/AUTOR, | SINGLETIERS/SPECIFIC/ALL, AUTORTIERS/SPECIFIC/ALL, SUPTIERS/AUTORTIERS/SPECIFIC/ALL
+
+    uint8 internal constant MUSIC_TOKEN__VARIANT__XTR = 7;
+    uint8 internal constant MUSIC_TOKEN__VERSION__XTR = 8;
+    uint8 internal constant MUSIC_TOKEN__IE_STEMS__XTR = 9;
 
     /**
      * @notice Stores detailed information about each music token, including supply, price, and features.
@@ -160,16 +195,13 @@ contract WavToken is WavRoot {
     /**
      *@notice Stores information regarding allocation of artist and fan music token reserves
      *@dev Maps an artist's address and content ID to the ArtistReserve struct
-     */
-    mapping(address => mapping(uint256 => ArtistReserve))
-        public s_artistReserves;
+     Was WavReserve Replace with helpful getter functions*/
 
     /**
      * @notice Stores information about collaborators for each piece of music.
      * @dev Maps an artist's address, content ID, and collaborator index to the Collaborator struct.
      */
-    mapping(address => mapping(uint256 => mapping(uint16 => Collaborator)))
-        public s_collaborators;
+    mapping(address => mapping(uint256 => Collaborator)) public s_collaborators;
 
     /**
      * @notice Stores information about the supply of each song within a collection.
@@ -187,10 +219,9 @@ contract WavToken is WavRoot {
 
     /**
      * @notice Stores information about the prices of individual songs within a collection.
-     * @dev Maps an artist's address and content ID to the IndividualSale struct.
+     * @dev Maps a single or collection's hashId to a sale state bitmap.
      */
-    mapping(address => mapping(uint256 => IndividualSale))
-        public s_individualSales;
+    mapping(bytes32 hashId => uint256 priceMap) public s_contentPrice;
 
     /**
      * @notice Stores information about variants of the music tokens.
@@ -200,7 +231,7 @@ contract WavToken is WavRoot {
     mapping(address artist => mapping(uint256 contentId => RSaleVariant))
         public s_rVariantIndex;
 
-    mapping(uint256 rMap => RSaleVariant23) public s_rVariantIndex23;
+    mapping(uint256 rMap => RSaleVariant) public s_rVariantIndex23;
 
     // rMap defines content (multi) rarity defs, rVal defines "what those defs are"
     /* ~First Val of rMap == collection (if collection) itself~ (notes to self)
@@ -402,46 +433,6 @@ contract WavToken is WavRoot {
         }
 
         return collaborators;
-    }
-
-    function setFlags(
-        uint256 _bitmap,
-        uint8[] memory positions
-    ) internal pure returns (uint256) {
-        for (uint8 i = 0; i < positions.length; i++) {
-            if (positions[i] > 256) {
-                revert WavToken__BitmapOverflow();
-            }
-            _bitmap |= (1 << positions[i]);
-        }
-        return _bitmap;
-    }
-
-    function clearFlags(
-        uint256 _bitmap,
-        uint8[] memory positions
-    ) internal pure returns (uint256) {
-        for (uint8 i = 0; i < positions.length; i++) {
-            if (positions[i] > 256) {
-                revert WavToken__BitmapOverflow();
-            }
-            _bitmap &= ~(1 << positions[i]);
-        }
-        return _bitmap;
-    }
-
-    function areFlagsSet(
-        uint256 _bitmap,
-        uint8[] memory positions
-    ) internal pure returns (bool[] memory) {
-        bool[] memory results = new bool[](positions.length);
-        for (uint8 i = 0; i < positions.length; i++) {
-            if (positions[i] > 256) {
-                revert WavToken__BitmapOverflow();
-            }
-            results[i] = (_bitmap & (1 << positions[i])) != 0;
-        }
-        return results;
     }
 
     /**

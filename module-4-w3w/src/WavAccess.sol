@@ -42,19 +42,16 @@ contract WavAccess is WavRoot {
      * @param user The address of the user receiving access.
      * @param _artistId The address of the artist.
      * @param _contentId The unique ID of the content.
-     * @param _numCollaborators The number of collaborators involved in the content creation.
      */
     function wavAccess(
         address user,
         address _artistId,
-        uint256 _contentId,
-        uint16 _numCollaborators
+        uint256 _contentId
     ) external {
         uint256 userContentIndex = s_userContentIndex[user];
-        s_ownershipAudio[user][userContentIndex] = Music({
-            artistId: _artistId,
+        s_ownershipAudio[user][userContentIndex] = CreatorToken({
+            creatorId: _artistId,
             contentId: _contentId,
-            numCollaborators: _numCollaborators,
             isOwner: true
         });
         s_userContentIndex[user]++;
@@ -63,18 +60,18 @@ contract WavAccess is WavRoot {
     /**
      * @notice Sets or updates the artist profile username.
      * @dev Function called by an approved artist to set or update their profile username.
-     * @param _artistTag The new username for the artist profile.
-     * @param _artistId The address of the artist.
+     * @param _creatorTag The new username for the artist profile.
+     * @param _creatorId The address of the artist.
      */
-    function updateArtistTag(
-        string memory _artistTag,
-        address _artistId
+    function updateCreatorTag(
+        string memory _creatorTag,
+        address _creatorId
     ) public {
         if (s_approvedArtist[msg.sender] != true) {
             revert WavAccess__IsNotApprovedArtist();
         }
-        checkNameTaken(_artistTag);
-        s_artistAddr[_artistTag] = _artistId;
+        checkNameTaken(_creatorTag);
+        s_artistAddr[_creatorTag] = _creatorId;
     }
 
     /**
@@ -85,23 +82,25 @@ contract WavAccess is WavRoot {
      */
     function returnOwnership(
         address user
-    ) public view returns (Music[] memory) {
+    ) public view returns (CreatorToken[] memory) {
         uint256 contentCount = s_userContentIndex[user];
-        Music[] memory ownedMusic = new Music[](contentCount);
+        CreatorToken[] memory ownedContentToken = new CreatorToken[](
+            contentCount
+        );
 
         for (uint256 i = 0; i < contentCount; i++) {
-            ownedMusic[i] = s_ownershipAudio[user][i];
+            ownedContentToken[i] = s_ownershipAudio[user][i];
         }
 
-        return ownedMusic;
+        return ownedContentToken;
     }
     /**
      * @notice Checks if an artist profile username is already taken.
      * @dev Ensures that the desired username is not already associated with another artist.
-     * @param _artistTag The username to be checked.
+     * @param _creatorTag The username to be checked.
      */
-    function checkNameTaken(string memory _artistTag) public view {
-        if (s_artistAddr[_artistTag] != address(0)) {
+    function checkNameTaken(string memory _creatorTag) public view {
+        if (s_artistAddr[_creatorTag] != address(0)) {
             revert WavAccess__NameIsTaken();
         }
     }
