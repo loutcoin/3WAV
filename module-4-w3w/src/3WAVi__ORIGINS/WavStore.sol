@@ -31,6 +31,18 @@ import {WavAccess} from "../src/WavAccess.sol";
 import {WavFeed} from "../src/WavFeed.sol";
 import {WavToken} from "../src/WavToken.sol";
 
+import {AuthorizedAddrs} from "../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrs.sol";
+// CreatorToken
+import {CreatorTokenStorage} from "../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+import {CreatorTokenMapStorage} from "../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
+import {TokenBalanceStorage} from "../src/Diamond__Storage/CreatorToken/TokenBalanceStorage.sol";
+import {CreatorProfitStorage} from "../src/Diamond__Storage/CreatorToken/CreatorProfitStorage.sol";
+// ContentToken
+import {SpecialLimitedSalesMap} from "../src/Diamond__Storage/ContentToken/Optionals/SpecialLimitedSalesMap.sol";
+import {ContentTokenSearchStorage} from "../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
+//Helpers
+import {ReturnMapping} from "../src/3WAVi__Helpers/ReturnMapping.sol";
+
 contract WavStore is WavRoot {
     WavToken WAVT;
 
@@ -39,9 +51,9 @@ contract WavStore is WavRoot {
     event PreSaleResume(bytes32 indexed _hashId);
 
     event MusicPurchased(
-        address indexed artistId,
-        uint256 indexed contentId,
-        address indexed buyer
+        address indexed _buyer,
+        bytes32 indexed _hashId,
+        uint64 indexed _purchaseQuantity
     );
 
     event MusicResale(
@@ -58,59 +70,24 @@ contract WavStore is WavRoot {
         uint16 _numCollaborator
     );
 
+    error WavStore__HashResultInvalid();
     error WavStore__InsufficientEarnings();
     error WavStore__InsufficientPayment();
     error WavStore__IsNotLout();
+    error WavStore__InsufficientTokenSupply();
     error WavStore__ArtistOrContentIdInvalid();
     error WavStore__IsNotCollection();
+    error WavStore__IndexIssue();
     error WavStore__PreSaleNotFound();
     error WavStore__PreSaleIsPaused();
     error WavStore__PreSaleNotPaused();
-
-    address s_lout;
-    address s_WavAccess;
 
     constructor(address _wavAccess) {
         s_WavAccess = _wavAccess;
         s_lout = msg.sender;
     }
 
-    mapping(address => uint256) public s_earnings;
-    mapping(bytes32 => PreRelease) public s_preSales;
-
     uint32 internal constant PRE_SALE_PAUSE_COUNT_DOWN = 1800; // 1800 seconds == 30 minutes
-
-    /**
-     * @notice Updates the Lout address to a new address.
-     * @dev Exclusive to current address(s_lout). Updates state to reflect new official address(s_lout).
-     * @param _newLoutAddr The new Lout address.
-     */
-    function updateLoutAddr(address _newLoutAddr) external {
-        onlyLout();
-        s_lout = _newLoutAddr;
-    }
-
-    /**
-     * @notice Adds a new address to the list of currently authorized addresses.
-     * @dev Callable exclusively by authorized addresses. Grants authorized access to specified address.
-     * @param _addr The address to authorize.
-     */
-    function addApprovedAddr(address _addr) external {
-        if (!s_authorizedAddrs[msg.sender]) {
-            revert WavStore__IsNotLout();
-        }
-        s_authorizedAddr[_addr] = true;
-    }
-
-    /**
-     * @notice Removes an address from the list of authorized addresses.
-     * @dev Callable exclusively by current address(s_lout). Removes an address authorized access.
-     * @param _addr The address to removed from the authorized list.
-     */
-    function removeApprovedAddr(address _addr) external {
-        onlyLout();
-        s_authorizedAddr[_addr] = false;
-    }
 
     /**
      * @notice Initiates 'pauseAt' countdown for specific content in active pre-sale. Emits `PreReleasePausing` event when set.
@@ -118,9 +95,8 @@ contract WavStore is WavRoot {
      * @param _hashId The unique identifier for the pre-sale.
      */
     function preSalePause(bytes32 _hashId) external {
-        if (s_authorizedAddr[msg.sender] != true) {
-            revert WavStore__IsNotLout();
-        }
+        returnIsAuthorizedAddr(msg.sender);
+
         if (s_preSales[_hashId].preReleaseStart == 0) {
             revert WavStore__PreSaleNotFound();
         }
@@ -136,9 +112,7 @@ contract WavStore is WavRoot {
      * @param _hashId The unique identifier for the pre-sale.
      */
     function preSaleResume(bytes32 _hashId) external {
-        if (s_authorizedAddr[msg.sender] != true) {
-            revert WavStore__IsNotLout();
-        }
+        returnIsAuthorizedAddr(msg.sender);
         if (s_preSales[_hashId].preReleaseStart == 0) {
             revert WavStore__PreSaleNotFound();
         }
@@ -151,40 +125,67 @@ contract WavStore is WavRoot {
 
     /**
      * @notice Allows a user to purchase music using ETH.
-     * @param _artistId The address of the artist.
-     * @param _contentId The unique ID of the content.
+     * @param _creatorId The address of the artist.
+     * @param _ownershipIndex The historical ownership index of the user.
+     * @param _hashId The unique hashId of the content token.
      * @param _contentPriceInEth The price of the content in ETH, calculated on the front-end.
      */
     function ethForWav(
-        address _artistId,
-        uint256 _contentId,
-        uint256 _contentPriceInEth,
-        uint16 _numCollaborators
-    ) public payable {
-        // Ensure the music exists
-        if (s_musicFiles[_artistId][_contentId].artistId == address(0)) {
+        address _beneficiaryId,
+        address _creatorId,
+        bytes32 _hashId,
+        uint256 _purchaseQuantity,
+        uint64 _priceInEth // really should be like a uint64
+    ) external payable {
+        returnIsAuthorizedAddr(msg.sender);
+
+        address _publisherId = returnTokenPublisher(_hashId);
+        // Ensure Content Token is valid
+        if (_publisherId != _creatorId && _creatorId == address(0)) {
             revert WavStore__ArtistOrContentIdInvalid();
         }
-        // Ensure the payment is sufficient
+
+        uint256 _ownershipIndex = returnOwnershipIndex(_buyer);
+
         if (msg.value < _contentPriceInEth) {
             revert WavStore__InsufficientPayment();
         }
 
-        // Update the earnings of the artist and the service
-        s_earnings[_artistId] += (msg.value * 80) / 100;
-        s_earnings[address(this)] += (msg.value * 20) / 100; // swap for dynamic values
+        uint256 _remainder = validatePurchaseQuantity(
+            _hashId,
+            _purchaseQuantity
+        );
 
-        // Grant access to the purchased music
+        TokenBalanceStorage.TokenBalance
+            storage tokenBalanceStruct = TokenBalanceStorage
+                .tokenBalanceStorage();
+
+        tokenBalanceStruct.s_remainingSupply[_hashId] = _remainder;
+
+        CreatorProfitStorage.CreatorProfitMap
+            storage creatorProfitMapStruct = CreatorProfitStorage
+                .creatorProfitMapStructStorage();
+
+        // Update the earnings of the artist and the service
+        creatorProfitMapStruct.s_ethEarnings[_creatorId] +=
+            (msg.value * 80) /
+            100;
+        creatorProfitMapStruct.s_ethEarnings[address(this)] +=
+            (msg.value * 20) /
+            100; // swap for dynamic values
+
+        // Grant access to the purchased music *update; already updates balance += purchaseQuantity
         WavAccess(s_WavAccess).wavAccess(
-            msg.sender,
-            _artistId,
-            _contentId,
-            _numCollaborators
+            _beneficiaryId,
+            _ownershipIndex,
+            _purchaseQuantity,
+            _hashId
         );
 
         // Emit an event for the purchase
-        emit MusicPurchased(_artistId, _contentId, msg.sender);
+        emit MusicPurchased(_beneficiaryId, _hashId, _purchaseQuantity);
     }
+
     /**
      * @notice Facilitates purchase, in ETH, of content in active pre-sale. Emits `PreReleaseSale` upon successful execution.
      * @dev Exclusive to authorized addresses. Verifies pre-sale state, and transfers ownership and payment sufficiency.
@@ -200,9 +201,10 @@ contract WavStore is WavRoot {
         uint16 _numCollaborators
     ) public payable {
         // Ensure caller is authorized
-        if (s_authorizedAddr[msg.sender] != true) {
+        /*  if (s_authorizedAddr[msg.sender] != true) {
             revert WavStore__IsNotLout();
-        }
+        } */
+        returnIsAuthorizedAddr(msg.sender);
 
         // Check if pre-release is paused
         if (s_preSales[_contentId].pausedAt > block.timestamp) {
@@ -219,12 +221,7 @@ contract WavStore is WavRoot {
         s_earnings[address(this)] += (msg.value * 20) / 100;
 
         // Grant access to the purchased music
-        WavAccess(s_WavAccess).wavAccess(
-            msg.sender,
-            _artistId,
-            _contentId,
-            _numCollaborators
-        );
+        WavAccess(s_WavAccess).wavAccess(msg.sender, _ownershipIndex, _hashId);
 
         // Emit an event for the purchase
         emit PreReleaseSale(_artistId, _contentId, msg.sender);
@@ -265,19 +262,25 @@ contract WavStore is WavRoot {
     /**
      * @notice Withdraws earnings from the caller's balance.
      * @dev Ensures sufficient balance, updates and transfers value. Gasless checks and automated inputs preformed by front-end.
+     * @param _creatorId The address of the creator.
      * @param _to The address to send the funds to.
      * @param _amount The amount to withdraw.
      */
-    function withdrawEarnings(
+    function withdrawEthEarnings(
+        address _creatorId,
         address _to, // Address to send the funds to
         uint256 _amount // Amount to withdraw
     ) public {
+        uint256 _earnings = returnEthEarnings(_creatorId, _hashId);
         // Ensure caller has enough balance
-        if (s_earnings[msg.sender] < _amount) {
+        if (_earnings < _amount) {
             revert WavStore__InsufficientEarnings();
         }
+        CreatorProfitStorage.CreatorProfitMap
+            storage creatorProfitMapStruct = CreatorProfitStorage
+                .creatorProfitMapStructStorage();
         // Update caller's balance
-        s_earnings[msg.sender] -= _amount;
+        creatorProfitMapStruct.s_ethEarnings[msg.sender] -= _amount;
         // Transfer specified amount to _to
         payable(_to).transfer(_amount);
     }
@@ -293,47 +296,64 @@ contract WavStore is WavRoot {
      * @param signature The signature to verify the transaction.
      */
     function _purchaseResale(
-        address seller,
-        uint256 contentId,
-        uint256 priceInEth,
-        uint256 ownershipIndex,
-        uint256 nonce,
-        bytes memory signature
+        address _seller,
+        uint256 _contentId,
+        bytes32 _hashId,
+        uint256 _priceInEth,
+        uint256 _PurchaseQuantity,
+        uint256 _ownershipIndex,
+        uint256 _nonce,
+        bytes memory _signature
     ) internal {
-        if (msg.value < priceInEth) {
+        returnIsAuthorizedAddr(msg.sender);
+
+        if (msg.value < (priceInEth * _purchaseQuantity)) {
             revert WavStore__InsufficientPayment();
         }
 
         // Verify the signature
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(nonce, msg.sender, priceInEth)
+        bytes32 _messageHash = keccak256(
+            abi.encodePacked(_nonce, msg.sender, _priceInEth)
         );
-        address signer = verifySignature(messageHash, signature);
-        if (signer != msg.sender) {
+        address _signer = verifySignature(_messageHash, _signature);
+        if (_signer != msg.sender) {
             revert WavFortress__InvalidSignature();
         }
 
+        CreatorTokenMapStorage.CreatorTokenMap
+            storage CreatorTokenMapStruct = CreatorTokenMapStorage
+                .creatorTokenMapStructStorage();
+
+        TokenBalanceStorage.TokenBalance
+            storage TokenBalanceStruct = TokenBalanceStorage
+                .tokenBalanceStorage();
+
         // Verify ownership using the provided ownership index
-        Music storage music = s_ownershipAudio[seller][ownershipIndex];
-        if (
-            music.artistId == address(0) ||
-            !music.isOwner ||
-            music.contentId != contentId
-        ) {
-            revert WavStore__NotOwner();
+        bytes32 _hashResult = CreatorTokenMapStruct.s_ownershipMap[_seller][
+            _ownershipIndex
+        ];
+        if (_hashResult != _hashId && _hashResult == bytes32(0)) {
+            revert WavStore__HashResultInvalid();
         }
+
+        uint256 _balanceResult = TokenBalanceStruct.s_tokenBalance[_seller][
+            _hashId
+        ];
+        uint256 _updatedBalance = _balanceResult - _purchaseQuantity;
+        TokenBalanceStruct.s_tokenBalance[_seller][_hashId] = _updatedBalance;
 
         // Check use update nonce
         checkUseUpdateNonce(nonce);
 
-        // Calculate fees
+        /* Calculate fees
         uint256 sellingUserShare = (msg.value * 90) / 100;
         uint256 artistShare = (msg.value * 5) / 100;
         uint256 serviceShare = (msg.value * 2.5) / 100;
         uint256 collaboratorShare = (msg.value * 2.5) / 100;
+        */
 
         // Revoke seller's ownership
-        music.isOwner = false;
+        // music.isOwner = false;
 
         // Transfer ownership to buyer
         WavAccess(s_WavAccess).wavAccess(
@@ -372,9 +392,73 @@ contract WavStore is WavRoot {
         return s_musicFiles[_artistId][_contentId];
     }
 
-    function onlyLout() internal view {
-        if (msg.sender != s_lout) {
-            revert WavStore__IsNotLout();
+    function generateResaleSplitBatch(
+        bytes32 _hashId,
+        uint256 _purchaseQuantity,
+        uint256 _ethPrice
+    )
+        public
+        pure
+        returns (
+            uint256 _sellerSplit,
+            uint256 _creatorSplit,
+            uint256 _collaboratorSplit,
+            uint256 _serviceSplit
+        )
+    {
+        CollaboratorMapStorage.CollaboratorMap
+            storage CollaboratorMapStruct = CollaboratorMapStorage
+                .collaboratorMapStorage();
+
+        uint256 collaboratorTotal = CollaboratorMapStruct
+            .s_collaborators[_hashId]
+            .collaboratorVal
+            .length;
+
+        uint256 _total = _purchaseQuantity * _ethPrice;
+
+        _sellerSplit = (_total * 900) / 1000;
+        _creatorSplit = (_total * 50) / 1000;
+        _collaboratorSplit = (_total * 25) / 1000;
+        _serviceShare = (_total * 25) / 1000;
+    }
+
+    function generateResaleSplitSingle(
+        uint256 _purchaseQuantity,
+        uint256 _ethPrice
+    )
+        public
+        pure
+        returns (
+            uint256 _sellerSplit,
+            uint256 _creatorSplit,
+            uint256 _collaboratorSplit,
+            uint256 _serviceSplit
+        )
+    {
+        uint256 _total = _purchaseQuantity * _ethPrice;
+
+        _sellerSplit = (_total * 900) / 1000;
+        _creatorSplit = (_total * 75) / 1000;
+        _serviceShare = (_total * 25) / 1000;
+    }
+
+    /**
+     * @notice Validates sufficient remaining supply relative to a purchase quantity.
+     * @dev Should always be called before final execution of an asset purchase.
+     * @param _hashId of the asset being validated.
+     * @param _purchaseQuantity of instances to be purchased.
+     * @return _tokenSupplyRemainder
+     */
+    function validatePurchaseQuantity(
+        bytes32 _hashId,
+        uint256 _purchaseQuantity
+    ) external view returns (uint256 _tokenSupplyRemainder) {
+        uint256 _remainder = returnRemainingSupply(_hashId);
+        if (_remainder < _purchaseQuantity) {
+            revert WavStore__InsufficientTokenSupply();
         }
+        _tokenSupplyRemainder = (_remainder - _purchaseQuantity);
+        return _tokenSupplyRemainder;
     }
 }

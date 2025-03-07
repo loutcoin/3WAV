@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import {LibDiamond} from "../Libraries/LibDiamond.sol";
+
+interface IDiamondCut {
+    function diamondCut(
+        LibDiamond.FacetCut[] calldata _diamondCut,
+        address _init,
+        bytes calldata _calldata
+    ) external;
+
+    event DiamondCut(
+        LibDiamond.FacetCut[] _diamondCut,
+        address _init,
+        bytes _calldata
+    );
+}

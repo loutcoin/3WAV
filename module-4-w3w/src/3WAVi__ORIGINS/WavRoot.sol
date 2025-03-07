@@ -12,21 +12,31 @@ contract WavRoot {
     struct CreatorToken {
         address creatorId;
         uint256 contentId;
-        bool isOwner; // track ownership
+        bytes32 hashId;
     }
+
+    /*
+    related to ownership states of user
+    */
+    // Tracks current 'content index' of user
+    mapping(address userId => uint256 contentIndexId) internal s_ownershipIndex;
 
     // Maps user wallet address to ordered count for each peice of music they own;
     // represented by music struct.
-    mapping(address user => mapping(uint256 => CreatorToken))
-        internal s_ownershipAudio; // possibly used for OwnerReward tracking?????
-    // Tracks next ordered 'content index' of user
-    mapping(address => uint256) internal s_userContentIndex;
+    mapping(address userId => mapping(uint256 contentIndex => bytes32 hashId))
+        internal s_ownershipMap; // possibly used for OwnerReward tracking?????
 
-    // Efficiently allows for access and storage of contentId associated with addressId in the Music struct
-    mapping(address artist => mapping(uint256 content => CreatorToken))
-        public s_musicFiles;
+    mapping(address userId => mapping(bytes32 hashId => uint64 tokenBalance))
+        internal s_tokenBalance;
+
+    // Efficiently allows for access and storage with the creator token struct
+    // bytes 1st key pair related to content
+    mapping(bytes32 hashId => CreatorToken) public s_publishedToken;
+
+    mapping(bytes32 hashId => uint64 remainderSupply) public s_remainingSupply;
 
     mapping(address => bool) public s_authorizedAddr;
+
     mapping(uint256 => bool) public s_nonceCheck;
     mapping(address => uint256) internal s_userNonce;
 }

@@ -8,6 +8,9 @@ When handling real money, and ownership of digital goods, security is paramount.
 import {WavRoot} from "../src/WavRoot.sol";
 import {ECDSA} from "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol";
+//
+import {AuthorizedAddrs} from "../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrs.sol";
+import {ECDSAStorage} from "../src/ECDSA/ECDSAStorage.sol";
 
 contract WavFortress is WavRoot {
     using ECDSA for bytes32;

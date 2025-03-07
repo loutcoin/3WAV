@@ -11,6 +11,7 @@ import {WavToken} from "src/WavToken.sol";
 
 contract WavDBC {
     error WavDBC__LengthValIssue();
+    error WavDBC__BitValIssue();
 
     WavToken WAVT;
 
@@ -214,87 +215,117 @@ contract WavDBC {
     /**
      * @notice Assigns a value to enabled flag positions based on 3-bit encoding.
      * @dev Returns bitmap of defined flag states as a chronologically ordered array.
-     * @param _flagVal numerical array of defined bit position states.
+     * @param _typVal Active 3-bit TYP states (string-type).
+     * @param _salVal Active 3-bit SAL states (string-type).
+     * @param _spyVal Active 3-bit SPY states (string-type).
+     * @param _xtrVal Active 3-bit XTR states (string-type).
+     * @return _bitVal Complete 3-bit active functional state-map (string-type).
      */
-    function flagValCalculator(
-        uint8[] memory _flagVal
-    ) internal pure returns (uint256) {
-        uint256 bitmap = 0;
+    function flagStateCat(
+        string memory _typVal,
+        string memory _salVal,
+        string memory _spyVal,
+        string memory _xtrVal
+    ) internal pure returns (string memory _bitVal) {
+        // Concatenate the string bitstates from all categories
+        string memory _bitVal = string(
+            abi.encodePacked(_typVal, _salVal, _spyVal, _xtrVal)
+        );
 
-        // Loops through _flagVal assigns 3-bit values accordingly
-        for (uint8 i = 0; i < _flagVal.length; i++) {
-            // Ensure valid flag position for 3-bit system
-            if (_flagVal[i] > 85) {
-                // Because 3-bit allows only up to 85 unique flags
-                revert WavDBC__LengthValIssue();
-            }
-            // Update bitmap based on _flagVal (3-bit encoding)
-            bitmap |= (uint256(_flagVal[i] & 0x7) << ((85 - i) * 3)); // 3 bits per flag
-        }
-        return bitmap;
+        return _bitVal;
     }
 
-    /* -- Functions are to be adjusted in next push   function processTypeFlags(
-        uint8[] memory rawFlags
-    ) internal pure returns (uint8[] memory) {
-        uint8[] memory processedFlags = new uint8[](rawFlags.length);
-
-        for (uint8 i = 0; i < rawFlags.length; i++) {
-            // Convert to 3-bit format: token type '1' -> '100', '2' -> '101', etc.
-            processedFlags[i] = (rawFlags[i] == 1)
-                ? 4
-                : (rawFlags[i] == 2)
-                    ? 5
-                    : rawFlags[i] & 0x7;
+    /**
+     * @notice Ensures basic TYP flag format.
+     * @dev Returns bitmap of defined flag states as singular compact value.
+     * @param _bitStrings numerical array of defined bit position states.
+     */
+    function processTYPState(
+        string[] memory _bitStrings
+    ) internal pure returns (string memory) {
+        if (bitStrings.length != 3) {
+            revert WavDBC__LengthValIssue();
         }
-        return processedFlags;
+
+        // Concatenate the string bitstates without packing
+        string memory combinedString = string(
+            abi.encodePacked(bitStrings[0], bitStrings[1], bitStrings[2])
+        );
+
+        return combinedString;
     }
 
-    function processSaleFlags(
-        uint8[] memory rawFlags
-    ) internal pure returns (uint8[] memory) {
-        uint8[] memory processedFlags = new uint8[](rawFlags.length);
-
-        for (uint8 i = 0; i < rawFlags.length; i++) {
-            // Convert to 3-bit format: sale property '1' -> '100', etc.
-            processedFlags[i] = (rawFlags[i] == 0)
-                ? 0
-                : (rawFlags[i] == 1)
-                    ? 4
-                    : rawFlags[i] & 0x7;
+    function processSALState(
+        string[] memory bitStrings
+    ) internal pure returns (string memory) {
+        if (bitStrings.length != 2) {
+            revert WavDBC__LengthValIssue();
         }
-        return processedFlags;
+
+        // Concatenate the string bitstates without packing
+        string memory combinedString = string(
+            abi.encodePacked(bitStrings[0], bitStrings[1])
+        );
+
+        return combinedString;
     }
 
-    function processSupplyFlags(
-        uint8[] memory rawFlags
-    ) internal pure returns (uint8[] memory) {
-        uint8[] memory processedFlags = new uint8[](rawFlags.length);
-
-        for (uint8 i = 0; i < rawFlags.length; i++) {
-            // Convert to 3-bit format: supply property '1' -> '100', etc.
-            processedFlags[i] = (rawFlags[i] == 0)
-                ? 0
-                : (rawFlags[i] == 1)
-                    ? 4
-                    : rawFlags[i] & 0x7;
+    function processSPYStates(
+        string[] memory bitStrings
+    ) internal pure returns (string memory) {
+        if (bitStrings.length != 2) {
+            revert WavDBC__LengthValIssue();
         }
-        return processedFlags;
+
+        // Concatenate the string bitstates without packing
+        string memory combinedString = string(
+            abi.encodePacked(bitStrings[0], bitStrings[1])
+        );
+
+        return combinedString;
     }
 
-    function processExtraFlags(
-        uint8[] memory rawFlags
-    ) internal pure returns (uint8[] memory) {
-        uint8[] memory processedFlags = new uint8[](rawFlags.length);
-
-        for (uint8 i = 0; i < rawFlags.length; i++) {
-            // Convert to 3-bit format: extra property '1' -> '100', etc.
-            processedFlags[i] = (rawFlags[i] == 0)
-                ? 0
-                : (rawFlags[i] == 1)
-                    ? 4
-                    : rawFlags[i] & 0x7;
+    function processXTRStates(
+        string[] memory bitStrings
+    ) internal pure returns (string memory) {
+        if (bitStrings.length != 2) {
+            revert WavDBC__LengthValIssue();
         }
-        return processedFlags;
-    } */
+
+        // Concatenate the string bitstates without packing
+        string memory combinedString = string(
+            abi.encodePacked(bitStrings[0], bitStrings[1])
+        );
+
+        return combinedString;
+    }
+
+    function creatorTokenFormation(
+        address _contentId,
+        uint256 _creatorId
+    ) public pure returns(CreatorToken memory) {
+        CreatorToken memory CRET = new CreatorToken({
+            creatorId: _creatorId,
+            contentId: _contentId,
+            isOwner: true
+        });
+        return CRET;
+    }
+
+    function contentTokenFormation(
+        uint16 _numAudio
+        uint256 _supplyVal,
+        uint256 _priceVal,
+        uint256 _releaseVal,
+        uint256 _bitVal
+    ) public pure returns(ContentToken memory) {
+        ContentToken CTKN = new ContentToken({
+            numAudio: _numAudio,
+            supplyVal: _supplyVal,
+            priceVal: _priceVal,
+            releaseVal: _releaseVal,
+            bitVal: _bitVal
+        });
+        return CONT;
+    }
 }

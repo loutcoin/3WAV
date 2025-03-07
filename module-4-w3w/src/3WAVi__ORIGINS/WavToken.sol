@@ -2,6 +2,22 @@
 pragma solidity ^0.8.24;
 
 import {WavRoot} from "../src/WavRoot.sol";
+import {SContentTokenStorage} from "../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
+import {CContentTokenStorage} from "../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
+import {ContentTokenPriceMapStorage} from "../src/Diamond__Storage/ContentToken/ContentTokenPriceMapStorage.sol";
+import {ContentTokenSearchStorage} from "../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
+import {ContentTokenFlagStorage} from "../src/Diamond__Storage/ContentToken/ContentTokenFlagStorage.sol";
+// Optionals:
+import {CollaboratorStructStorage} from "../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
+import {InAssociationStorage} from "../src/Diamond__Storage/ContentToken/Optionals/InAssociationStorage.sol";
+import {VariantMapStorage} from "../src/Diamond__Storage/ContentToken/Optionals/VariantMapStorage.sol";
+import {VariantStructStorage} from "../src/Diamond__Storage/ContentToken/Optionals/VariantStructStorage.sol";
+import {VariantStemStorage} from "../src/Diamond__Storage/ContentToken/Optionals/VersionStemStorage.sol";
+// CreatorToken:
+import {CreatorTokenStorage} from "../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+import {CreatorTokenMapStorage} from "../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
+// AuthorizedAddr:
+import {AuthorizedAddrs} from "../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrs.sol";
 
 /*
 WIP: OBVIOUSLY WIP! WORKING DAILY, BUT CONTRACT HAS OBVIOUS ISSUES IN CURRENT STATE AND IS INCOMPELTE.
@@ -16,6 +32,7 @@ AND PUBLISH THEIR AUDIO-BASED CONTENT TO THEIR PERSONALIZED NEEDS. -LOUT
 //If struct or error is used across many files, define in own file. Multiple structs and errors defined together single file.
 
 contract WavToken is WavRoot {
+    error WavToken__IsNotLout();
     error WavToken__CollaboratorSplitLengthMismatch();
     error WavToken__IsNotCollection();
     error WavToken__BitmapOverflow();
@@ -26,15 +43,15 @@ contract WavToken is WavRoot {
     //IE: price tiers, total supply and possible total supply tiers / initial supply tiers for indv content tokens == okay
     // WavReserve/PreRelease should only be present in SupplyVal as %
     // :) Everything except for totalSupply and initalSupply should be % to save space lol (math checks out, 72 digits)
-    MusicToken internal MTKN;
 
-    // compaction refactors // ContentToken
-    struct MusicToken {
-        uint256 supplyVal; // 0B *initial*totalSupply[0], | 2B wav*Pre*Reserve[2], | 3B singleSupply*total*Standard, singleSupply2Tier, totalSingleSupply2Tier, AutoRe1or2Tier
-        // 1000 <x_xxx_xxx.xx$>
-        uint256 priceUsdVal; // 0B primary_priceInUsd[0], | 1B standard_indv[1], | 2B accessible_indv[2], exclusive_indv[3]
-        uint256 releaseVal; // 0B standard/Start( val(<x>[1])), | 2B end[2] | 3B preStart*pauseAt*[3] AutoRelease
-        uint16 numAudio;
+    // compaction refactors // ContentToken AutoRelease
+    struct SContentToken {
+        // *SLOT 1*
+        uint24 numToken;
+        uint32 priceUsdVal; // 0B primary_priceInUsd
+        uint104 supplyVal; // 0B *initial*totalSupply[0], | 2B wav*Pre*Reserve[2]
+        uint96 releaseVal; // 0B standard/Start, | 2B end[2] | 3B preStart*pauseAt*[3]
+        // *SLOT 2*
         uint256 bitVal;
     } // max uint256 ~75 digits
 
@@ -92,17 +109,35 @@ contract WavToken is WavRoot {
 
     - 1B-A: standard/Start[1], End/Disabled/Undefined[0]
 
-
     ---------
     -standard/Start- [1/10/100]
     -0Val/Disabled- [0/00/000]
     */
 
-    struct SingleSaleSupply {
-        MusicToken musicToken;
-        uint256 saleMap;
+    struct CContentToken {
+        // *SLOT 1*
+        uint24 numToken;
+        uint104 cSupplyVal; // cTotalSupply, cInitialSupply, cWavR, cPreSaleR
+        uint112 sPriceUsdVal; // standard_indv[10], | 2B accessible_indv[01], exclusive_indv[11]
+        // *SLOT 2*
+        uint32 cPriceUsdVal;
+        uint112 sTotalSupply;
+        uint112 sInitialSupply;
+        // *SLOT 3*
+        uint80 sWavR;
+        uint80 sPreSaleR;
+        uint96 cReleaseVal;
+        // *SLOT 4*
+        uint256 bitVal;
     }
 
+    /*
+     uint112 sTotalSupply
+     uint112 sInitialSupply
+     uint32 cPriceUsdVal 
+    // SLOT (256 bits / 32 bytes)
+
+    */
     /**
      * @title Variants
      * @notice Stores information about different variants of a music token.
@@ -160,9 +195,7 @@ contract WavToken is WavRoot {
         uint128 timeReleaseInterval; // specific date and time interval for each batch release
     }
 
-    struct PreRelease {
-        uint256 pausedAt; // 0 by default, if < 0, correlates to timestamp when pause should occur
-    }
+    //preSale pause 0 by default, if < 0, correlates to timestamp when pause should occur
 
     // Was WavReserve Up to 30% totalSupply reservable for allocation through alternative means
     // IE: Live Event QR Code Reward, Future Airdrop Integration, etc.
@@ -173,24 +206,29 @@ contract WavToken is WavRoot {
      *      and dynamic bit-system data implementations for various enabled/disabled ContentToken functionality.
      */
     uint8 internal constant MUSIC_TOKEN__TOKEN_TYPE__TYP = 0; // Collection, Single
-    uint8 internal constant MUSIC_TOKEN__SPECIAL__TYP = 1; // Bonus, Limited, OFC, OFCereal
+    uint8 internal constant MUSIC_TOKEN__SPECIAL__TYP = 1; // Bonus, OFC, OFCereal
     uint8 internal constant MUSIC_TOKEN__COLLABORATORS__TYP = 2; // Disabled, Enabled...<More interesting collab encouragement in future!>
 
     uint8 internal constant COLLECTION__SEPERATE_SALE__SAL = 3; // Disabled, All, Specific, All/PriceTiers, Specific/PriceTiers
-    uint8 internal constant MUSIC_TOKEN__SPECIAL_SALE__SAL = 4; // Disabled/0-1B/2B/3B
+    uint8 internal constant MUSIC_TOKEN__SPECIAL_SALE__SAL = 4; // Disabled, Limited, Rarity
 
     uint8 internal constant MUSIC_TOKEN__RESERVES__SPY = 5; // Disabled, Wav, Pre, Wav/Pre, WavTiers, PreTiers, WavPreTiers
     uint8 internal constant MUSIC_TOKEN__DYNAMIC_SUPPLY_SPY = 6; // Disabled, INIT, INIT/AUTOR, | SINGLETIERS/SPECIFIC/ALL, AUTORTIERS/SPECIFIC/ALL, SUPTIERS/AUTORTIERS/SPECIFIC/ALL
 
-    uint8 internal constant MUSIC_TOKEN__VARIANT__XTR = 7;
-    uint8 internal constant MUSIC_TOKEN__VERSION__XTR = 8;
-    uint8 internal constant MUSIC_TOKEN__IE_STEMS__XTR = 9;
+    uint8 internal constant MUSIC_TOKEN__VARIANTS_VERSIONS__XTR = 7;
+    uint8 internal constant MUSIC_TOKEN__IE_STEMS__XTR = 8;
 
     /**
-     * @notice Stores detailed information about each music token, including supply, price, and features.
+     * @notice Stores details about 'collection' tokens, including supply, price, and features.
      * @dev Maps an artist's address and content ID to the MusicToken struct.
      */
-    mapping(address => mapping(uint256 => MusicToken)) public s_musicTokens;
+    mapping(bytes32 hashId => CContentToken) public s_contentTokens;
+
+    /**
+     * @notice Stores details about each 'single' tokens, including supply, price, and features.
+     * @dev Maps an artist's address and content ID to the MusicToken struct.
+     */
+    mapping(bytes32 hashId => SContentToken) public s_sContentTokens;
 
     /**
      *@notice Stores information regarding allocation of artist and fan music token reserves
@@ -206,9 +244,7 @@ contract WavToken is WavRoot {
     /**
      * @notice Stores information about the supply of each song within a collection.
      * @dev Maps an artist's address and content ID to the DynamicSupply struct.
-     */
-    mapping(address => mapping(uint256 => DynamicSupply))
-        public s_DynamicSupplies;
+     was DynamicSupply */
 
     /**
      * @notice Associates content hash to next chronologically available contentId position.
@@ -250,10 +286,22 @@ contract WavToken is WavRoot {
 
     /**
      * @notice Stores version information for each piece of content.
-     * @dev Maps an artist's address and content ID to the version index and track identifier hash.
-     */
-    mapping(address => mapping(uint256 => mapping(uint8 => bytes32)))
-        public s_songVersions;
+     * @dev Maps an artist's address and content ID to the version index.
+     */ // modified to bytes32 in Diamond
+    mapping(address => mapping(uint256 => uint8)) public s_songVersions;
+
+    function publishWavSingle(
+        bytes32 _hashId,
+        CreatorToken memory _creatorToken,
+        MusicToken memory _contentToken
+    ) public {
+        if (s_authorizedAddr[msg.sender] != true) {
+            revert WavToken__IsNotLout();
+        }
+        s_publishedToken[_hashId] = _creatorToken;
+        s_contentTokens[_hashId] = _contentToken;
+    }
+    // if true needs to access single instance of Variant-type struct and or Collaborator struct as well still
 
     /**
      * @notice Adds collaborators to a specific piece of music.
@@ -451,10 +499,10 @@ contract WavToken is WavRoot {
         uint16 _numVariant,
         uint16 _numAudio,
         uint8 _trackVersion
-    ) public pure returns (bytes32) {
+    ) external pure returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(
+                abi.encode(
                     _artistId,
                     _contentId,
                     _numVariant,
@@ -463,4 +511,18 @@ contract WavToken is WavRoot {
                 )
             );
     }
-}
+} /*  CreatorToken memory CRTK = new CreatorToken({
+            creatorId: _creatorId,
+            contentId: _contentId,
+            isOwner: true
+        });
+        s_musicFiles[_hashId] = WTKN;
+
+        MusicToken MTKN = new MusicToken({
+            supplyVal: _supplyVal,
+            priceVal: _priceVal,
+            releaseVal: _releaseVal,
+            numAudio: _numAudio,
+            bitVal: _bitVal
+        });
+        s_musicTokens[_hashId] = MTKN; */
