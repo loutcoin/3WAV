@@ -6,22 +6,24 @@ library CContentTokenStorage {
 
     struct CContentToken {
         // *SLOT 1*
-        uint24 numToken;
-        uint104 cSupplyVal; // cTotalSupply, cInitialSupply, cWavR, cPreSaleR
+        uint16 numToken;
+        uint112 cSupplyVal; // cTotalSupply, cInitialSupply, cWavR, cPreSaleR
         uint112 sPriceUsdVal; // standard_indv[10], | 2B accessible_indv[01], exclusive_indv[11]
         // *SLOT 2*
         uint32 cPriceUsdVal;
-        uint112 sTotalSupply;
-        uint112 sInitialSupply;
-        // *SLOT 3*
-        uint80 sWavR;
-        uint80 sPreSaleR;
+        uint224 sSupplyVal;
+        //uint112 sTotalSupply;
+        //uint112 sInitialSupply;
+        // *SLOT 3*\
+        uint160 sReserveVal;
+        //uint80 sWavR;
+        //uint80 sPreSaleR;
         uint96 cReleaseVal;
         // *SLOT 4*
         uint256 bitVal;
     }
 
-    function sContentTokenStructStorage()
+    function cContentTokenStructStorage()
         internal
         pure
         returns (CContentToken storage CContentTokenStruct)

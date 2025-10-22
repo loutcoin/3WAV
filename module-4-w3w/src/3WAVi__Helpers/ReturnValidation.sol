@@ -1,17 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {AuthorizedAddrStorage} from "../src/Diamond__Storage/ActiveAddressses/AuthorizedAddrStprage.sol";
+
 library ReturnValidation {
     // <~ Wav Access ~> \\
+    error ReturnValidation__AccessProhibited
 
     /**
      * @notice Ensures that the function is called only by authorized personnel.
      * @dev Internal function that reverts if the caller is not an authorized address.
      *      Function Selector: 0x8b4db110
      */
-    function onlyAuthorized() internal view {
-        if (msg.sender != s_lout && !s_authorizedAddr[msg.sender]) {
-            revert WavStore__IsNotLout();
+    function returnIsAuthorized() internal view {
+        AuthorizedAddrStorage.AuthorizedAddrStruct
+            storage AuthorizedAddrStructStorage = AuthorizedAddrStorage
+                .authorizedAddrStorage();
+        if (
+            msg.sender != AuthorizedAddrStructStorage.s_3Wav ||
+            msg.sender != AuthorizedAddrStructStorage.s_lout
+        ) {
+            revert ReturnValidation__AccessProhibited();
         }
     }
 

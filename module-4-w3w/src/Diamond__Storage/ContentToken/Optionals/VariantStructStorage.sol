@@ -1,24 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-// 4
+
+// * POSSIBLY DEPRECATED (Functionality consolidated into existing infastructure without need of dedicated 'Variants' struct) *
 
 library VariantStructStorage {
-    bytes32 constant STORAGE_SLOT = keccak256("Variant.Token.Struct.Storage");
+    /*  bytes32 constant STORAGE_SLOT = keccak256("Variant.Token.Struct.Storage");
 
     /**
      * @title Variants
      * @notice Stores information about different variants of a music token.
      * @dev Defines numerical index, total audio content, and variant-specific supply.
      */
-    struct Variants {
+    /*   struct Variants {
         /// @notice Numerical index batch of Variant in relation to publish context.
-        uint24 numVariant;
+        uint8 numVariant; // was uint24
         /// @notice Number of variant-specific audio tracks. If token is not collection, numVariantAudio always == 1.
-        uint24 numVariantToken;
-        /// @notice Total supply of specific variant derivative.
-        uint104 variantSupply; // *initial*totalSupply[0], | 2B wav*Pre*Reserve[2]
+        uint16 numVariantToken; // was uint24
         /// @notice Raw numerical value (USD, Rarity, etc;) associated with obtaining the Variant.
-        uint256 rVal;
+        uint32 rVal;
+        /// @notice Total supply of specific variant derivative.
+        uint112 variantSupply; // *initial*totalSupply[0], | 2B wav*Pre*Reserve[2] // was uint104
+        uint96 releaseVal;
     }
 
     function variantStructStorage()
@@ -30,5 +32,5 @@ library VariantStructStorage {
         assembly {
             VariantStruct.slot := _storageSlot
         }
-    }
+    } */
 }

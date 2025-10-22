@@ -9,6 +9,9 @@ import {WavFeedStorage} "../src/Diamond__Storage/ActiveAddresses/WavFeedStorage.
 
 
 contract WavFeed {
+
+    error WavFeed__InvalidPrice();
+
     /**
      * @notice Returns the current active price feed address.
      * @dev Function Selector: 0x724e78da
@@ -53,6 +56,43 @@ contract WavFeed {
         // ETH amount is in wei (1 ETH = 10^18 wei)
         // Price is in 8 decimal places, so we need to adjust the conversion
         return (ethAmount * uint256(price)) / 10 ** 8;
+    }
+
+    function usdToWei(uint256 _usdVal) external view returns(uint256) {
+        (, int256 _priceInt, , ,) = s_priceFeed.latestRoundData();
+        
+        if(_priceInt == 0) {
+            revert WavFeed__InvalidPrice();
+        }
+
+        uint256 _price8 = uint256(_priceInt);
+
+        uint256 _usd8 = _usdVal * 1e6; // 10^(8 - 2) = 1e6
+
+        uint256 _ethWei = (_usd8 * 1e18) / _price8;
+
+        return _ethWei;
+    }
+
+    function usdToEthBatch(uint256[] calldata _usdValBatch) external view returns(uint256[] memory _ethWeiBatch) {
+        // priceFeed call for all items:
+        if(, int256 _priceInt, , ,) = s_priceFeed.latestRoundData();
+        if(_priceInt == 0) {
+            revert WavFeed__InvalidPrice();
+        }
+        uint256 _price8 = uint256(_priceInt);
+
+        uint256 _amountLength = _usdValBatch.length;
+        _ethWeiBatch = new uint256[](_amountLength);
+
+        // Compute _usdValBatch to _ethWeiBatch
+        for(uint256 i = 0; i < _amountLength;) {
+            uint256 _usd6 = _usdValBatch[i] * 1e6;
+            _ethWeiBatch[i] = (_usd6 * 1e18) / _price8;
+            unchecked { ++i; }
+        }
+
+        return _ethWeiBatch;
     }
 
     /**

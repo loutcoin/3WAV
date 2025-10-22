@@ -8,6 +8,10 @@ and a method to further distinguish (optionally enabled) STEM track functionalit
 However, 'Versions' are more closely associated to their base material (do not posses distinct seperate associated numerical ID)
 */
 
+/*
+ ** WILL BE DEPRECATED AS STATE IS STORED IN LIBRARIES AND SUCH A CONTRACT IS AT DIRECT ODDS WITH DIAMOND PROXY SYSTEM DESIGN
+ */
+
 contract WavRoot {
     struct CreatorToken {
         address creatorId;

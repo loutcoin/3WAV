@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-library AuthorizedAddrs {
-    bytes32 constant STORAGE_SLOT = keccak256("Authorized.Addrs.Storage");
+library AuthorizedAddrStorage {
+    bytes32 constant STORAGE_SLOT = keccak256("Authorized.Addr.Storage");
 
-    struct AuthorizedAddrMap {
+    struct AuthorizedAddrStruct {
+        address s_3Wav;
         address s_lout;
-        mapping(address => bool) public s_isAuthorizedAddr;
     }
 
     function authorizedAddrStorage()
         internal
         pure
-        returns (AuthorizedAddrMap storage AuthorizedAddrStruct)
+        returns (AuthorizedAddrStruct storage AuthorizedAddrStructStorage)
     {
         bytes32 _storageSlot = STORAGE_SLOT;
         assembly {

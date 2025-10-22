@@ -8,11 +8,9 @@ library TokenBalanceStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Creator.Token.Balance.Storage");
 
     struct TokenBalance {
-     mapping(address userId => mapping(bytes32 hashId => uint256 tokenBalance))
-        internal s_tokenBalance;
-    
-   // mapping(bytes32 hashId => uint256 remainderSupply) internal s_remainingSupply;
-    
+        mapping(address userId => mapping(bytes32 hashId => mapping(uint16 numToken => uint256 tokenBalance))) s_tokenBalance;
+
+        // mapping(bytes32 hashId => uint256 remainderSupply) internal s_remainingSupply;
     }
 
     function tokenBalanceStorage()

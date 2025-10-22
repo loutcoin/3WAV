@@ -7,9 +7,9 @@ library CreatorProfitStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Creator.Token.Profit.Storage");
 
     struct CreatorProfitMap {
-        mapping(address creatorId => mapping(bytes32 hashId => uint256 ethEarnings)) internal s_ethEarnings;
-        mapping(address creatorId => mapping(bytes32 hashId => uint256 loutEarnings)) internal s_loutEarnings;
-    
+        mapping(address creatorId => mapping(bytes32 hashId => uint256 ethEarnings)) s_ethEarnings;
+        mapping(address wavId => uint256 ethEarnings) s_serviceBalance;
+        address wavId;
     }
 
     function creatorProfitMapStructStorage()

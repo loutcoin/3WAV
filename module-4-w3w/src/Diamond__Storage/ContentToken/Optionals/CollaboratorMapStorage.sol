@@ -9,7 +9,11 @@ library CollaboratorStructStorage {
      * @notice Stores collaborator values of music tokens
      */
     struct CollaboratorMap {
-        mapping(bytes32 _hashId => Collaborator) s_collaborators;
+        mapping(bytes32 hashId => Collaborator) s_collaborators;
+        mapping(bytes32 hashId => uint256 royaltyMap) s_royalties;
+        mapping(bytes32 hashId => mapping(uint16 numToken => uint256 reserve)) s_collaboratorReserve;
+        // add royaltyMap for numToken of hashId
+        // add address to allow address(collaborator) to join for <x> splitVal
     }
 
     function collaboratorMapStorage()

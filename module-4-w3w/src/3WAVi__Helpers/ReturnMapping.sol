@@ -47,16 +47,18 @@ library ReturnMapping {
     /**
      * @notice Retrieves an asset-type token balance of an address.
      * @dev Returns data in 's_tokenBalance' from 'TokenBalanceStorage.sol'.
-     *      Function Selector: 0x2f3c8bd1
+     *      Function Selector: 0x86fae71e
      * @param _userId The address of the balance being inquired.
      * @param _hashId The hashId of the token.
+     * @param _numToken Content Token identifier used to specify the token index being queried.
      * @return uint256 _tokenBalance.
      */
     function returnTokenBalance(
-        address _userId
-        bytes32 _hashId
+        address _userId,
+        bytes32 _hashId,
+        uint16 _numToken
     ) internal view returns (uint256 _tokenBalance) {
-        _tokenBalance = s_tokenBalance[_userId][_hashId];
+        _tokenBalance = s_tokenBalance[_userId][_hashId][_numToken];
         return _tokenBalance;
     }
 
@@ -89,15 +91,18 @@ library ReturnMapping {
     /**
     * @notice Retrieves the publisher address, and contentId from a provided hashId.
     * @dev Returns data in 's_publishedTokenData' from 'CreatorTokenMapStorage.sol'.
-    *      Function Selector: 0x86ff8ed0
+    *      Function Selector: 0xe3a3d48a
     * @param _hashId The hashId of the token.
+    * @param _numToken Content Token identifier used to specify the token index being queried.
     * @return address of the publisher.
-    * @return uint256 Content Token index.
+    * @return uint256 Numerical ownership and publication index.
     */
     function returnCreatorTokenData(
-        bytes32 _hashId
+        bytes32 _hashId,
+        uint16 _numToken
     ) internal view returns(address, uint256) {
-        return (s_publishedTokenData[_hashId].creatorId, s_publishedTokenData[_hashId].contentId);
+        return (s_publishedTokenData[_hashId][_numToken].creatorId, 
+        s_publishedTokenData[_hashId][_numToken].contentId);
     }
 
     /**
@@ -116,7 +121,7 @@ library ReturnMapping {
     /**
     * @notice Retrieves an incremental index count related to user asset ownership.
     * @dev Returns data in 's_ownershipMap' from 'CreatorTokenMapStorage.sol'.
-    *      Function Selector: 0x5e1577d0
+    *      Function Selector: 0xe759bb43
     * @param _userId The address associated to the index count.
     * @param _indexCount Chronological index of asset-type ownership associated to an address.
     * @return bytes32 _hashId of a token-asset found at the _indexCount of a provided address.
@@ -124,9 +129,10 @@ library ReturnMapping {
     function returnOwnershipMap(
         address _userId,
         uint256 _indexCount,
-    ) internal view returns(bytes32 _hashId) {
-        _hashId = s_ownershipMap[_userId][_indexCount];
-        return _hashId;
+        bytes32 _hashId
+    ) internal view returns(uint16 _numToken) {
+        _numToken = s_ownershipMap[_userId][_indexCount][_hashId];
+        return _numToken;
     }
 
     /**
@@ -218,7 +224,7 @@ library ReturnMapping {
     */
      function returnCContentTokenSPriceUsdVal(
         bytes32 _hashId
-    ) internal view returns(uint104) {
+    ) internal view returns(uint112) {
         return s_cContentTokenSearch[_hashId].sPriceUsdVal;
     }
 
