@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {CContentToken} from "../ContentToken/CContentTokenStorage.sol";
+import {CContentTokenStorage} from "../ContentToken/CContentTokenStorage.sol";
 //3
 library ContentTokenSupplyMapStorage {
     bytes32 constant STORAGE_SLOT =
@@ -17,7 +17,7 @@ library ContentTokenSupplyMapStorage {
     function contentTokenSupplyMapStorage()
         internal
         pure
-        returns (ContentTokenPriceMap storage ContentTokenSupplyMapStruct)
+        returns (ContentTokenSupplyMap storage ContentTokenSupplyMapStruct)
     {
         bytes32 _storageSlot = STORAGE_SLOT;
         assembly {

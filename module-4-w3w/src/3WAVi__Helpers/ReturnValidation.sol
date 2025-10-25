@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {AuthorizedAddrStorage} from "../src/Diamond__Storage/ActiveAddressses/AuthorizedAddrStprage.sol";
+import {AuthorizedAddrStorage} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
 
 library ReturnValidation {
     // <~ Wav Access ~> \\
-    error ReturnValidation__AccessProhibited
+    error ReturnValidation__AccessProhibited();
 
     /**
      * @notice Ensures that the function is called only by authorized personnel.
@@ -17,8 +17,7 @@ library ReturnValidation {
             storage AuthorizedAddrStructStorage = AuthorizedAddrStorage
                 .authorizedAddrStorage();
         if (
-            msg.sender != AuthorizedAddrStructStorage.s_3Wav ||
-            msg.sender != AuthorizedAddrStructStorage.s_lout
+            AuthorizedAddrStructStorage.s_authorizedAddrMap[msg.sender] != true
         ) {
             revert ReturnValidation__AccessProhibited();
         }
@@ -30,9 +29,9 @@ library ReturnValidation {
      *      Function Selector: 0xd97eaaa9
      * @param _creatorAlias The username to be checked.
      */
-    function checkAlias(string memory _creatorAlias) internal view {
+    /*function checkAlias(string memory _creatorAlias) internal view {
         if (s_aliasToAddr[_creatorAlias] != address(0)) {
             revert WavAccess__NameIsTaken();
         }
-    }
+    }*/
 }

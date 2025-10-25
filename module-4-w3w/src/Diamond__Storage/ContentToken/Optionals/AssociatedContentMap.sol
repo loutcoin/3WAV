@@ -17,11 +17,11 @@ library AssociatedContentMap {
      */
     struct AssociatedContent {
         mapping(bytes32 hashId => mapping(uint32 associationIndex => bytes32 associatedHash)) s_inAssociation;
-        mapping(bytes32 parentHashId => mapping(uint16 variantIndex => bytes32 variantHashId)) s_variantMap;
-        mapping(bytes32 variantHashId => bytes32 parentHashId) s_variantSearch;
+        mapping(bytes32 baseHashId => mapping(uint16 variantIndex => bytes32 variantHashId)) s_variantMap;
+        mapping(bytes32 variantHashId => bytes32 baseHashId) s_variantSearch;
     }
 
-    function associatedContentStorage()
+    function associatedContentMap()
         internal
         pure
         returns (AssociatedContent storage AssociatedContentStruct)

@@ -6,9 +6,9 @@ library CreatorAliasMapStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Creator.Alias.Map.Storage");
 
     struct CreatorAlias {
-    ///@notice Stores information regarding availability of an alias.
-    mapping(string => address) internal s_aliasToAddr;
-    mapping(address => string) internal s_addrToAlias;
+        ///@notice Stores information regarding availability of an alias.
+        mapping(string => address) s_aliasToAddr;
+        mapping(address => string) s_addrToAlias;
     }
 
     function creatorAliasStructStorage()

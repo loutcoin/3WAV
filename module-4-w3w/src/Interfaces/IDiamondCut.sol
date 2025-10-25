@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {LibDiamond} from "../Libraries/LibDiamond.sol";
+import {LibDiamond} from "../Diamond__Libraries/LibDiamond.sol";
 
 interface IDiamondCut {
     function diamondCut(

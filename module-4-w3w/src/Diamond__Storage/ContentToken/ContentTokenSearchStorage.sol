@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {CContentToken} from "../ContentToken/CContentTokenStorage.sol";
-import {SContentToken} from "../ContentToken/SContentTokenStorage.sol";
+import {CContentTokenStorage} from "../ContentToken/CContentTokenStorage.sol";
+import {SContentTokenStorage} from "../ContentToken/SContentTokenStorage.sol";
 //3
 library ContentTokenSearchStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Content.Token.Search.Storage");
 
     struct ContentTokenSearch {
-        mapping(bytes32 hashId => CContentToken) internal s_cContentTokenSearch;
-        mapping(bytes32 hashId => SContentToken) internal s_sContentTokenSearch;
+        mapping(bytes32 hashId => CContentTokenStorage.CContentToken) s_cContentTokenSearch;
+        mapping(bytes32 hashId => SContentTokenStorage.SContentToken) s_sContentTokenSearch;
     }
 
     function contentTokenSearchStorage()

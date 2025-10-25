@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-// * POSSIBLY DEPRECATED (Functionality consolidated into existing infastructure without need of dedicated 'Variants' struct) *
+// DEPRECATED (Functionality consolidated into existing infastructure without need of dedicated 'Variants' struct) *
 
 library VariantStructStorage {
     /*  bytes32 constant STORAGE_SLOT = keccak256("Variant.Token.Struct.Storage");

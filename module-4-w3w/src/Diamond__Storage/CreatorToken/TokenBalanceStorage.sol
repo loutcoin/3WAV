@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {CreatorToken} from "../CreatorTokenStorage.sol";
+import {CreatorTokenStorage} from "../CreatorToken/CreatorTokenStorage.sol";
 // 7
 // @dev: the struct can likely be optimized
 

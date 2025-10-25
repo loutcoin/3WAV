@@ -5,22 +5,25 @@ pragma solidity ^0.8.24;
 Preforms gasless live price calculations, uses data to pass along function calls
 */
 
-import {WavFeedStorage} "../src/Diamond__Storage/ActiveAddresses/WavFeedStorage.sol";
-
+import {FacetAddrStorage} from "../../src/Diamond__Storage/ActiveAddresses/FacetAddrStorage.sol";
+import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 contract WavFeed {
-
     error WavFeed__InvalidPrice();
+    error WavFeed__InvalidInput();
 
     /**
-     * @notice Returns the current active price feed address.
+     * @notice Assigns a price feed address.
      * @dev Function Selector: 0x724e78da
      * @param _priceFeed value being defined as the new active address.
      */
     function setPriceFeed(address _priceFeed) external {
-        if(_priceFeed = address(0)) revert;
-        WavFeedStorage.WavFeedStruct storage WavFeedStructStorage = WavFeedStorage.returnWavFeedStorage();
-        WavFeedStructStorage.s_priceFeed = AggregatorV3Interface(_priceFeed);
+        FacetAddrStorage.FacetAddrStruct
+            storage FacetAddrStructStorage = FacetAddrStorage
+                .facetAddrStorage();
+        if (_priceFeed == address(0)) revert WavFeed__InvalidInput();
+        // Or 'FacetAddrStructStorage.s_priceFeed(_priceFeed);
+        FacetAddrStructStorage.s_priceFeed = AggregatorV3Interface(_priceFeed);
     }
 
     /**
@@ -28,20 +31,25 @@ contract WavFeed {
      * @dev Function Selector: 0xa4dfcacd
      * @return address The address value of the active price feed.
      */
-    function returnPriceFeedAddress() external view returns(address) {
-        WavFeedStorage.WavFeedStruct storage WavFeedStructStorage = WavFeedStorage.returnWavFeedStorage();
-        return address(WavFeedStructStorage.s_priceFeed);
+    function returnPriceFeedAddress() external view returns (address) {
+        FacetAddrStorage.FacetAddrStruct
+            storage FacetAddrStructStorage = FacetAddrStorage
+                .facetAddrStorage();
+        return address(FacetAddrStructStorage.s_priceFeed);
     }
-
 
     /**
      * @notice Returns the latest price
      * @dev Function Selector: 0x8e15f473
      * @return int256 The latest price
      */
-    function getLatestPrice() external view returns (int256) {
-        WavFeedStorage.WavFeedStruct storage WavFeedStructStorage = WavFeedStorage.returnWavFeedStorage();
-        (, int256 price, , , ) = WavFeedStructStorage.s_priceFeed.latestRoundData();
+    function getLatestPrice() internal view returns (int256) {
+        FacetAddrStorage.FacetAddrStruct
+            storage FacetAddrStructStorage = FacetAddrStorage
+                .facetAddrStorage();
+        (, int256 price, , , ) = FacetAddrStructStorage
+            .s_priceFeed
+            .latestRoundData();
         return price;
     }
 
@@ -51,17 +59,24 @@ contract WavFeed {
      * @param ethAmount The amount of ETH in wei
      * @return uint256 The equivalent amount in USD
      */
-    function convertEthToUsd(uint256 ethAmount) external view returns (uint256) {
+    function convertEthToUsd(
+        uint256 ethAmount
+    ) external view returns (uint256) {
         int256 price = getLatestPrice();
         // ETH amount is in wei (1 ETH = 10^18 wei)
         // Price is in 8 decimal places, so we need to adjust the conversion
         return (ethAmount * uint256(price)) / 10 ** 8;
     }
 
-    function usdToWei(uint256 _usdVal) external view returns(uint256) {
-        (, int256 _priceInt, , ,) = s_priceFeed.latestRoundData();
-        
-        if(_priceInt == 0) {
+    function usdToWei(uint256 _usdVal) external view returns (uint256) {
+        FacetAddrStorage.FacetAddrStruct
+            storage FacetAddrStructStorage = FacetAddrStorage
+                .facetAddrStorage();
+        (, int256 _priceInt, , , ) = FacetAddrStructStorage
+            .s_priceFeed
+            .latestRoundData();
+
+        if (_priceInt == 0) {
             revert WavFeed__InvalidPrice();
         }
 
@@ -74,10 +89,17 @@ contract WavFeed {
         return _ethWei;
     }
 
-    function usdToEthBatch(uint256[] calldata _usdValBatch) external view returns(uint256[] memory _ethWeiBatch) {
+    function usdToEthBatch(
+        uint256[] calldata _usdValBatch
+    ) external view returns (uint256[] memory _ethWeiBatch) {
         // priceFeed call for all items:
-        if(, int256 _priceInt, , ,) = s_priceFeed.latestRoundData();
-        if(_priceInt == 0) {
+        FacetAddrStorage.FacetAddrStruct
+            storage FacetAddrStructStorage = FacetAddrStorage
+                .facetAddrStorage();
+        (, int256 _priceInt, , , ) = FacetAddrStructStorage
+            .s_priceFeed
+            .latestRoundData();
+        if (_priceInt == 0) {
             revert WavFeed__InvalidPrice();
         }
         uint256 _price8 = uint256(_priceInt);
@@ -86,10 +108,12 @@ contract WavFeed {
         _ethWeiBatch = new uint256[](_amountLength);
 
         // Compute _usdValBatch to _ethWeiBatch
-        for(uint256 i = 0; i < _amountLength;) {
+        for (uint256 i = 0; i < _amountLength; ) {
             uint256 _usd6 = _usdValBatch[i] * 1e6;
             _ethWeiBatch[i] = (_usd6 * 1e18) / _price8;
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
 
         return _ethWeiBatch;
@@ -112,10 +136,10 @@ contract WavFeed {
         return block.timestamp;
     }
 
-    function timestampMinuteFormat(
+    /*function timestampMinuteFormat(
         uint256 _timestamp
     ) public pure returns (uint96 _minuteStamp) {
-        _minuteStamp = _timestamp / 60;
-        return _minuteStamp;
-    }
+        uint256(_minuteStamp) = _timestamp / 60;
+        return uint96(_minuteStamp);
+    }*/
 }

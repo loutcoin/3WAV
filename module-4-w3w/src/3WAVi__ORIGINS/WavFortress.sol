@@ -5,14 +5,14 @@ pragma solidity ^0.8.24;
 When handling real money, and ownership of digital goods, security is paramount.
 */
 
-import {WavRoot} from "../src/WavRoot.sol";
+//import {WavRoot} from "../src/WavRoot.sol";
 import {ECDSA} from "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol";
 //
-import {AuthorizedAddrs} from "../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrs.sol";
-import {ECDSAStorage} from "../src/ECDSA/ECDSAStorage.sol";
+import {AuthorizedAddrStorage} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
+import {ECDSAStorage} from "../../src/Diamond__Storage/ECDSA/ECDSAStorage.sol";
 
-contract WavFortress is WavRoot {
+contract WavFortress {
     using ECDSA for bytes32;
 
     error WavFortress__InvalidNonce();
@@ -49,7 +49,7 @@ contract WavFortress is WavRoot {
      * @param _addr The address to be checked.
      * @return bool Returns true if the address is authorized, false otherwise.
      */
-    function isAuthorized(address _addr) public view returns (bool) {
+    function isAuthorized(address _addr) external view returns (bool) {
         return s_authorizedAddr[_addr];
     }
     /**
@@ -58,7 +58,7 @@ contract WavFortress is WavRoot {
      * @param _user The address of the user.
      * @return uint256 Returns the current nonce value for the user.
      */
-    function getCurrentNonce(address _user) public view returns (uint256) {
+    function getCurrentNonce(address _user) external view returns (uint256) {
         return s_userNonce[_user];
     }
 }

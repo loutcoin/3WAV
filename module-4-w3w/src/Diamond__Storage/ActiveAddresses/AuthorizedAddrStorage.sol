@@ -5,8 +5,8 @@ library AuthorizedAddrStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Authorized.Addr.Storage");
 
     struct AuthorizedAddrStruct {
-        address s_3Wav;
-        address s_lout;
+        mapping(address => bool) s_authorizedAddrMap;
+        mapping(uint256 => address) s_authorizedAddrSearch;
     }
 
     function authorizedAddrStorage()
@@ -16,7 +16,7 @@ library AuthorizedAddrStorage {
     {
         bytes32 _storageSlot = STORAGE_SLOT;
         assembly {
-            AuthorizedAddrStruct.slot := _storageSlot
+            AuthorizedAddrStructStorage.slot := _storageSlot
         }
     }
 }

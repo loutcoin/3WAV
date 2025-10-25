@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {LibBytes} from "./Libraries/LibBytes.sol";
+import {LibBytes} from "../Diamond__Libraries/LibBytes.sol";
 
 library LibUtil {
     using LibBytes for bytes;

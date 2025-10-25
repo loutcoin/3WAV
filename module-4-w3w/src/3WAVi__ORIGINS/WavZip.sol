@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {FacetAddrStorage} from "../src/Diamond__Storage/ActiveAddressses/FacetAddrStorage.sol";
+import {FacetAddrStorage} from "../../src/Diamond__Storage/ActiveAddresses/FacetAddrStorage.sol";
+import {ReturnValidation} from "../../src/3WAVi__Helpers/ReturnValidation.sol";
 
 contract WavZip {
     /**
@@ -11,7 +12,7 @@ contract WavZip {
      * @param _updatedAddr Input of updated facet address.
      */
     function assignWavAcccess(address _updatedAddr) external {
-        onlyAuthorized();
+        ReturnValidation.returnIsAuthorized();
         FacetAddrStorage.FacetAddrStruct
             storage FacetAddrStructStorage = FacetAddrStorage
                 .facetAddrStorage();
@@ -25,7 +26,7 @@ contract WavZip {
      * @param _updatedAddr Input of updated facet address.
      */
     function assignWavDBC(address _updatedAddr) external {
-        onlyAuthorized();
+        ReturnValidation.returnIsAuthorized();
         FacetAddrStorage.FacetAddrStruct
             storage FacetAddrStructStorage = FacetAddrStorage
                 .facetAddrStorage();
@@ -39,7 +40,7 @@ contract WavZip {
      * @param _updatedAddr Input of updated facet address.
      */
     function assignWavFeed(address _updatedAddr) external {
-        onlyAuthorized();
+        ReturnValidation.returnIsAuthorized();
         FacetAddrStorage.FacetAddrStruct
             storage FacetAddrStructStorage = FacetAddrStorage
                 .facetAddrStorage();
@@ -53,7 +54,7 @@ contract WavZip {
      * @param _updatedAddr Input of updated facet address.
      */
     function assignWavStore(address _updatedAddr) external {
-        onlyAuthorized();
+        ReturnValidation.returnIsAuthorized();
         FacetAddrStorage.FacetAddrStruct
             storage FacetAddrStructStorage = FacetAddrStorage
                 .facetAddrStorage();
@@ -67,7 +68,7 @@ contract WavZip {
      * @param _updatedAddr Input of updated facet address.
      */
     function assignWavToken(address _updatedAddr) external {
-        onlyAuthorized();
+        ReturnValidation.returnIsAuthorized();
         FacetAddrStorage.FacetAddrStruct
             storage FacetAddrStructStorage = FacetAddrStorage
                 .facetAddrStorage();
@@ -81,7 +82,7 @@ contract WavZip {
      * @param _updatedAddr Input of updated facet address.
      */
     function assignWavZip(address _updatedAddr) external {
-        onlyAuthorized();
+        ReturnValidation.returnIsAuthorized();
         FacetAddrStorage.FacetAddrStruct
             storage FacetAddrStructStorage = FacetAddrStorage
                 .facetAddrStorage();
