@@ -11,11 +11,14 @@ library CollaboratorStructStorage {
     struct Collaborator {
         uint8 numCollaborator; // number of collaborators across an entire work / hashId non-specific to numToken
         uint128 royaltyVal;
-        /* dynamic percentages of 90% creator profit available to collaborators
-      Content with more and in-depth collaboration may need larger royalty of 90% available to Collaborators */
-        /* uint160 splitVal  pre-defined values Collaborators can claim from their share of the value pool
-      Collaborators may collectively challenge splits in a collective effort if deemed unfair by 2/3 majority of collaborators */
+        uint256[] royaltyMap;
     }
+    // should honestly be 'cRoyalty' and 'sRoyaltyMap' to operate using same bit decode/encode as elsewhere in system...
+
+    /* dynamic percentages of 90% creator profit available to collaborators
+      Content with more and in-depth collaboration may need larger royalty of 90% available to Collaborators */
+    /* uint160 splitVal  pre-defined values Collaborators can claim from their share of the value pool
+      Collaborators may collectively challenge splits in a collective effort if deemed unfair by 2/3 majority of collaborators */
 
     function collaboratorStructStorage()
         internal
@@ -27,8 +30,4 @@ library CollaboratorStructStorage {
             CollaboratorStruct.slot := _storageSlot
         }
     }
-
-    /*  OLD: uint176 splitShareMap; // up to 26 2-bit collaborators can be compensated
-        uint80; splitVal; // <xx.xx%_xx> (max 4x) 4-digit percentage splits appended with 2 digit bit_id
-        address[] collaboratorVal; */
 }

@@ -10,13 +10,15 @@ library CreatorTokenMapStorage {
     struct CreatorTokenMap {
         // Efficiently allows for access and storage with the creator token struct
         // bytes 1st key pair related to content
-        mapping(bytes32 hashId => mapping(uint16 numToken => CreatorTokenStorage.CreatorToken)) s_publishedTokenData;
+        mapping(bytes32 hashId => CreatorTokenStorage.CreatorToken) s_publishedTokenData;
         //related to ownership states of user
         // Tracks current 'content index' of user
         mapping(address userId => uint256 indexCount) s_ownershipIndex;
         // Maps user wallet address to ordered count for each peice of music they own;
         // represented by music struct.
-        mapping(address userId => mapping(uint256 contentIndex => mapping(bytes32 hashId => uint16 _numToken))) s_ownershipMap; // possibly used for OwnerReward tracking?????
+        // was s_ownershipMap
+        mapping(address userId => mapping(uint256 contentIndex => bytes32 hashId)) s_ownershipMap; // possibly used for OwnerReward tracking?????
+        mapping(address userId => mapping(uint256 contentIndex => uint16 numToken)) s_ownershipToken;
     }
 
     function creatorTokenMapStorage()

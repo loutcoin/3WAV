@@ -1,26 +1,56 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {WavDBC} from "../3WAVi__ORIGINS/WavDBC.sol";
 // import {WavRoot} from "../src/WavRoot.sol";
-import {SContentTokenStorage} from "../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
-import {CContentTokenStorage} from "../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
-import {ContentTokenSupplyMapStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+import {
+    SContentTokenStorage
+} from "../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
+import {
+    CContentTokenStorage
+} from "../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
+import {
+    ContentTokenSupplyMapStorage
+} from "../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
 // import {ContentTokenPriceMapStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenPriceMapStorage.sol";
-import {ContentTokenSearchStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
-import {ContentTokenFlagStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenFlagStorage.sol";
+import {
+    ContentTokenSearchStorage
+} from "../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
+import {
+    ContentTokenFlagStorage
+} from "../../src/Diamond__Storage/ContentToken/ContentTokenFlagStorage.sol";
 // Optionals:
-import {CollaboratorStructStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
-import {CollaboratorMapStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
-import {AssociatedContentMap} from "../../src/Diamond__Storage/ContentToken/Optionals/AssociatedContentMap.sol";
-import {VariantMapStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/VariantMapStorage.sol";
-import {VariantStructStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/VariantStructStorage.sol";
-import {VersionStemStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/VersionStemStorage.sol";
+import {
+    CollaboratorStructStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
+import {
+    CollaboratorMapStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
+import {
+    AssociatedContentMap
+} from "../../src/Diamond__Storage/ContentToken/Optionals/AssociatedContentMap.sol";
+import {
+    VariantMapStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/VariantMapStorage.sol";
+import {
+    VariantStructStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/VariantStructStorage.sol";
+import {
+    VersionStemStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/VersionStemStorage.sol";
 // CreatorToken:
-import {CreatorTokenStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
-import {CreatorTokenMapStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
+import {
+    CreatorTokenStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+import {
+    CreatorTokenMapStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
 // AuthorizedAddr:
-import {AuthorizedAddrStorage} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
+import {
+    AuthorizedAddrStorage
+} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
+import {
+    FacetAddrStorage
+} from "../../src/Diamond__Storage/ActiveAddresses/FacetAddrStorage.sol";
 // 3WAVi__Helpers
 import {ReturnValidation} from "../../src/3WAVi__Helpers/ReturnValidation.sol";
 
@@ -51,8 +81,7 @@ contract WavToken {
         uint16 indexed numToken,
         uint32 priceUsdVal,
         uint112 supplyVal,
-        uint96 releaseVal,
-        uint8 numCollaborator
+        uint96 releaseVal
     );
 
     event SContentTokenBatchPublishedCount(
@@ -96,7 +125,7 @@ contract WavToken {
         uint16 variantIndex
     );
 
-    /**
+    /** **** 3WAVi__OIRIGINS/Publish/PublishSContentToken.sol ****
      * @notice Publishes a single user-defined SContentToken.
      * @dev Writes and stores the data of a SContentToken on the blockchain.
      * @param _creatorId The address of the creator.
@@ -109,7 +138,7 @@ contract WavToken {
      * @param _royaltyVal Unsigned interger containing collaborator royalty data.
      * @param _royaltyMap Royalty state map of the Content Token numToken index values.
      */
-    function publishSContentToken(
+    /*function publishSContentToken(
         address _creatorId,
         bytes32 _hashId,
         uint16 _numToken,
@@ -143,21 +172,14 @@ contract WavToken {
             releaseVal: _releaseVal
         });
 
-        /*uint256 _contentId = ++ContentTokenMap.s_ownershipIndex[_creatorId];
-        CreatorTokenStorage.CreatorToken storage CreatorTokenStruct = CreatorTokenMapStruct.s_publishedTokenData[_hashId][_numToken];
-        CreatorTokenStruct.creatorId = _creatorId;
-        CreatorTokenStruct.contentId = _contentId;
-        CreatorTokenStruct.hashId = _hashId;
-        CreatorTokenMap.s_ownershipMap[_creatorId][_contentId][_hashId] = _numToken;
-        
-        CreatorTokenMapStruct.s_publishedTokenData[_hashId][_numToken] = CreatorTokenStruct;
-        CreatorTokenMapStruct.s_ownershipMap[_creatorId][_contentId][_hashId] = _numToken;*/
         _publishCreatorToken(_creatorId, _hashId, _numToken);
 
         _publishSContentTokenWavSupplies(_hashId, _supplyVal);
 
         if (_numCollaborator > 0) {
-            CollaboratorMapStruct.s_collaborators[_hashId]({
+            CollaboratorMapStruct.s_collaborators[
+                _hashId
+            ] = CollaboratorStructStorage.Collaborator({
                 numCollaborator: _numCollaborator,
                 royaltyVal: _royaltyVal
             });
@@ -173,10 +195,9 @@ contract WavToken {
             _numToken,
             _priceUsdVal,
             _supplyVal,
-            _releaseVal,
-            _numCollaborator
+            _releaseVal
         );
-    }
+    }*/
 
     // If For CContentToken publication implementation the Stack limit becomes too problematic,
     // I think we could make the wavReserve stuff occur in the function body through external function calls
@@ -380,7 +401,7 @@ contract WavToken {
 
     */
 
-    /**
+    /** 3WAVi__OIRIGINS/Publish/PublishSContentTokenBatch.sol ****
      * @notice Publishes a batch of two or more user-defined SContentTokens.
      * @dev Writes and stores the data of multiple SContentTokens on the blockchain.
      * @param _creatorId The address of the creator.
@@ -389,7 +410,7 @@ contract WavToken {
      * @param _collaborator Batch of user-defined Collaborator structs.
      * @param _royaltyMapBatch Royalty state map batch of Content Token numToken index values.
      */
-    function publishSContentTokenBatch(
+    /*function publishSContentTokenBatch(
         address _creatorId,
         bytes32[] calldata _hashIdBatch,
         SContentTokenStorage.SContentToken[] calldata _sContentToken,
@@ -417,7 +438,7 @@ contract WavToken {
                 .collaboratorMapStorage();
 
         uint112[] memory _supplyValBatch = new uint112[](_hashLength);
-
+        // (reminder) input loaded in memory instead of calldata
         _publishSContentTokenWavSuppliesBatch(_hashIdBatch, _supplyValBatch);
 
         for (uint256 i = 0; i < _hashLength; ) {
@@ -431,7 +452,7 @@ contract WavToken {
             if (_numToken == 0 || _sCTKN.supplyVal == 0)
                 revert WavToken__NumInputInvalid();
 
-            SContentTokenStorage.s_sContentTokenSearch[
+            ContentTokenSearchStruct.s_sContentTokenSearch[
                 _hashId
             ] = SContentTokenStorage.SContentToken({
                 numToken: _numToken,
@@ -442,26 +463,21 @@ contract WavToken {
 
             _publishCreatorToken(_creatorId, _hashId, _numToken);
 
-            /*if(_numCollaborator > 0) {
-                CollaboratorMapStruct.s_collaborators[_hashId] = Collaborator({
-                    numCollaborator: _numCollaborators,
-                    royaltyVal: _royaltyVal
-                });
-                CollaboratorMapStruct.s_royalties[_hashId] = _royaltyMap;
-                CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
-            }*/
-
+        
             if (_collaborator.length > 0) {
                 CollaboratorStructStorage.Collaborator
                     calldata _collab = _collaborator[i];
                 if (_collab.numCollaborator > 0) {
-                    _collab.s_collaborators[_hashId] = CollaboratorStructStorage
-                        .Collaborator({
-                            numCollaborator: _collab.numCollaborator,
-                            royaltyVal: _collab.royaltyVal
-                        });
-                    _collab.s_royalties[_hashId] = _royaltyMapBatch[i];
-                    _collab.s_collaboratorReserve[_hashId][0] = 0;
+                    CollaboratorMapStruct.s_collaborators[
+                        _hashId
+                    ] = CollaboratorStructStorage.Collaborator({
+                        numCollaborator: _collab.numCollaborator,
+                        royaltyVal: _collab.royaltyVal
+                    });
+                    CollaboratorMapStruct.s_royalties[
+                        _hashId
+                    ] = _royaltyMapBatch[i];
+                    CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
                 }
             } else {
                 if (_royaltyMapBatch[i] != 0) revert WavToken__LengthMismatch();
@@ -471,10 +487,9 @@ contract WavToken {
                 _creatorId,
                 _hashId,
                 _numToken,
-                _sCTKN.priceUsd,
+                _sCTKN.priceUsdVal,
                 _sCTKN.supplyVal,
-                _sCTKN.releaseVal,
-                _sCTKN.numCollaborators
+                _sCTKN.releaseVal
             );
 
             unchecked {
@@ -483,7 +498,7 @@ contract WavToken {
         }
 
         emit SContentTokenBatchPublishedCount(_creatorId, uint16(_hashLength));
-    }
+    }*/
 
     // Complete function:
     // See, the thing is I genuinely think all distinctions between locally defined variables
@@ -609,7 +624,7 @@ contract WavToken {
         emit SContentTokenVariantBatch(_creatorId, _hashIdBatch[0], uint16(_hashLength));
     }*/
 
-    /**
+    /** **** 3WAVi__ORIGINS/Publish/PublishSVariantBatch.sol ****
      * @notice Publishes a single SContentToken alongside two or more SContentToken Variants.
      * @dev Writes and stores the data of multiple SContentTokens, including one or more SContentToken Variants, on the blockchain.
      * @param _creatorId The address of the creator.
@@ -619,7 +634,7 @@ contract WavToken {
      * @param _royaltyMapBatch Royalty state map batch of Content Token numToken index values.
      * @param _variantIndexBatch Batch of numerical indexes correlating to the total Variants of a base Content Token.
      */
-    function publishSContentTokenVariantBatch(
+    /*function publishSContentTokenVariantBatch(
         address _creatorId,
         bytes32[] calldata _hashIdBatch,
         SContentTokenStorage.SContentToken[] calldata _sContentToken,
@@ -661,7 +676,7 @@ contract WavToken {
             ];
             uint16 _numToken = _sCTKN.numToken;
 
-            if (_numToken == 0 || _sCTKN.cSupplyVal == 0)
+            if (_numToken == 0 || _sCTKN.supplyVal == 0)
                 revert WavToken__NumInputInvalid();
 
             ContentTokenSearchStruct.s_sContentTokenSearch[
@@ -674,43 +689,35 @@ contract WavToken {
             });
 
             _publishCreatorToken(_creatorId, _hashId, _numToken);
-            /*if(_numCollaborator > 0) {
-                CollaboratorMapStruct.s_collaborators[_hashId] = Collaborator({
-                    numCollaborator: _numCollaborators,
-                    royaltyVal: _royaltyVal
-                });
-                CollaboratorMapStruct.s_royalties[_hashId] = _royaltyMap;
-                CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
-                }
-
-            if(i == 0) {
-                    // "Parent" handled above. Everything below only relevant for Variant
-            } else {
-                // Variant association, parent is index[0] of input array
-                AssociatedContentStruct.s_variantMap[_hashIdBatch[0]][_variantIndex] = _hashId;
-                AssociatedContentStruct.s_variantSearch[_hashId] = _hashIdBatch[0];
-                // Emit per-variant event
-                emit SVariantPublished(_creatorId, _hashIdBatch[0], _hashId, _variantIndex);
-                //unchecked { ++_publishedVariantCount; }
-            }*/
+            // Used to be something else here check Github if current implementation isn't working for ref
             if (_collaborator.length > 0) {
                 CollaboratorStructStorage.Collaborator
                     calldata _collab = _collaborator[i];
                 if (_collab.numCollaborator > 0) {
-                    _collab.s_collaborators[_hashId] = CollaboratorStructStorage
-                        .Collaborator({
-                            numCollaborator: _collab.numCollaborator,
-                            royaltyVal: _collab.royaltyVal
-                        });
-                    _collab.s_royalties[_hashId] = _royaltyMapBatch[i];
-                    _collab.s_collaboratorReserve[_hashId][0] = 0;
+                    CollaboratorMapStruct.s_collaborators[
+                        _hashId
+                    ] = CollaboratorStructStorage.Collaborator({
+                        numCollaborator: _collab.numCollaborator,
+                        royaltyVal: _collab.royaltyVal
+                    });
+                    CollaboratorMapStruct.s_royalties[
+                        _hashId
+                    ] = _royaltyMapBatch[i];
+                    CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
                 }
             } else {
                 if (_royaltyMapBatch[i] != 0) revert WavToken__LengthMismatch();
             }
 
             if (i == 0) {
-                emit SContentTokenPublished(_creatorId, _hashId, _numToken);
+                emit SContentTokenPublished(
+                    _creatorId,
+                    _hashId,
+                    _numToken,
+                    _sCTKN.priceUsdVal,
+                    _sCTKN.supplyVal,
+                    _sCTKN.releaseVal
+                );
             } else {
                 uint16 _variantIndex = _variantIndexBatch[i];
                 if (_variantIndex == 0) revert WavToken__IndexIssue();
@@ -734,14 +741,10 @@ contract WavToken {
             }
         }
 
-        emit SContentTokenBatchPublishedCount(
-            _creatorId,
-            _hashIdBatch[0],
-            uint16(_hashLength)
-        );
-    }
+        emit SContentTokenBatchPublishedCount(_creatorId, uint16(_hashLength));
+    }*/
 
-    /**
+    /** 3WAVi__ORIGINS/Publish/PublishSVariant.sol ****
      * @notice Publishes a single user-defined SContentToken.
      * @dev Writes and stores the data of a SContentToken on the blockchain.
      * @param _creatorId The address of the creator.
@@ -755,7 +758,7 @@ contract WavToken {
      * @param _royaltyVal Unsigned interger containing collaborator royalty data.
      * @param _royaltyMap Royalty state map of the Content Token numToken index values.
      */
-    function publishSVariant(
+    /*function publishSVariant(
         address _creatorId,
         bytes32 _baseHashId,
         bytes32 _hashId,
@@ -799,8 +802,7 @@ contract WavToken {
 
         _publishSContentTokenWavSupplies(_hashId, _supplyVal);
 
-        /*(, uint112 _initialSupply, uint112 _wavReserve, uint112 _preRelease) = cSupplyValDecoder(_supplyVal);
-        ContentTokenSupplyMapStruct.s_cWavSupplies[_hashId] = remainingSupplyEncoder(_initialSupply, _wavReserve, _preRelease);*/
+        
 
         if (_numCollaborator > 0) {
             CollaboratorMapStruct.s_collaborators[
@@ -819,7 +821,7 @@ contract WavToken {
         AssociatedContentStruct.s_variantSearch[_hashId] = _baseHashId;
 
         emit SVariantPublished(_creatorId, _baseHashId, _hashId, _variantIndex);
-    }
+    }*/
 
     // We either have to rely on the front-end to validate current variantIndex before calling,
     // Or determine it in this function, however considering how large these functions are,
@@ -955,7 +957,7 @@ contract WavToken {
             releaseVal: _releaseVal,
         }); */
 
-    /**
+    /** **** 3WAVi__ORIGINS/Publish/PublishSVariantBatch.sol ****
      * @notice Publishes two or more SContentToken Variants.
      * @dev Writes and stores the data of two or more SContentToken Variants on the blockchain.
      * @param _creatorId The address of the creator.
@@ -966,7 +968,7 @@ contract WavToken {
      * @param _royaltyMapBatch Royalty state map batch of Content Token numToken index values.
      * @param _variantIndexBatch Batch of numerical indexes correlating to the total Variants of a base Content Token.
      */
-    function publishSVariantBatch(
+    /*function publishSVariantBatch(
         address _creatorId,
         bytes32[] calldata _baseHashIdBatch,
         bytes32[] calldata _hashIdBatch,
@@ -1004,12 +1006,13 @@ contract WavToken {
 
         for (uint256 i = 0; i < _hashLength; ) {
             bytes32 _hashId = _hashIdBatch[i];
+            bytes32 _baseHashId = _baseHashIdBatch[i];
             SContentTokenStorage.SContentToken calldata _sCTKN = _sContentToken[
                 i
             ];
             uint16 _numToken = _sCTKN.numToken;
 
-            if (_numToken == 0 || _sCTKN.cSupplyVal == 0)
+            if (_numToken == 0 || _sCTKN.supplyVal == 0)
                 revert WavToken__NumInputInvalid();
 
             ContentTokenSearchStruct.s_sContentTokenSearch[
@@ -1023,28 +1026,36 @@ contract WavToken {
 
             _publishCreatorToken(_creatorId, _hashId, _numToken);
 
-            if (CollaboratorStructStorage.numCollaborator > 0) {
-                CollaboratorMapStruct.s_collaborators[
-                    _hashId
-                ] = CollaboratorStructStorage.Collaborator({
-                    numCollaborator: CollaboratorStructStorage.numCollaborators,
-                    royaltyVal: CollaboratorStructStorage.royaltyVal
-                });
-                CollaboratorMapStruct.s_royalties[_hashId] = _royaltyMapBatch;
-                CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
+            // Used to be something else here check Github if current implementation isn't working for ref
+            if (_collaborator.length > 0) {
+                CollaboratorStructStorage.Collaborator
+                    calldata _collab = _collaborator[i];
+                if (_collab.numCollaborator > 0) {
+                    CollaboratorMapStruct.s_collaborators[
+                        _hashId
+                    ] = CollaboratorStructStorage.Collaborator({
+                        numCollaborator: _collab.numCollaborator,
+                        royaltyVal: _collab.royaltyVal
+                    });
+                    CollaboratorMapStruct.s_royalties[
+                        _hashId
+                    ] = _royaltyMapBatch[i];
+                    CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
+                }
             }
-            // Variant association, parent is index[0] of input array
-            AssociatedContentStruct.s_variantMap[_baseHashIdBatch][
-                _variantIndexBatch
+            // Used to be something else here check Github if current implementation isn't working for ref
+            uint16 _variantIndex = _variantIndexBatch[i];
+            if (_variantIndex == 0) revert WavToken__IndexIssue();
+            AssociatedContentStruct.s_variantMap[_baseHashId][
+                _variantIndex
             ] = _hashId;
-            AssociatedContentStruct.s_variantSearch[_hashId] = _baseHashIdBatch;
+            AssociatedContentStruct.s_variantSearch[_hashId] = _baseHashId;
 
-            // Emit per-variant event
             emit SVariantPublished(
                 _creatorId,
-                _baseHashIdBatch,
+                _hashIdBatch[0],
                 _hashId,
-                _variantIndexBatch
+                _variantIndex
             );
             // unchecked { ++_publishedVariantCount; } **DETERMINE IF WE CAN ENTIRELY REPLACE THIS WITH .LENGTH OR 'i'
             unchecked {
@@ -1053,7 +1064,7 @@ contract WavToken {
         }
         // possibly emit SVariantPublishCount mapping
         emit SVariantBatchPublishedCount(_creatorId, uint16(_hashLength));
-    }
+    }*/
 
     /*function publishCContentToken(
         address _creatorId,
@@ -1144,7 +1155,7 @@ contract WavToken {
     // uint32 cPriceUsdVal could be deprecated for CContentTokens and (perfectly) replaced with 'uint128 priceUsdVal',
     // but the wide-reaching effects of such a decision could likley take over a full week of work to correct
 
-    /**
+    /** **** 3WAVi__ORIGINS/Publish/PublishCContentToken.sol ****
      * @notice Publishes a single user-defined CContentToken.
      * @dev Writes and stores the data of a CContentToken on the blockchain.
      * @param _creatorId The address of the creator.
@@ -1161,7 +1172,7 @@ contract WavToken {
      * @param _royaltyMap Royalty state map of the Content Token numToken index values.
      * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
      */
-    function publishCContentToken(
+    /*function publishCContentToken(
         address _creatorId,
         bytes32 _hashId,
         uint16 _numToken,
@@ -1228,7 +1239,7 @@ contract WavToken {
         emit CContentTokenPublished(_creatorId, _hashId, _numToken);
     }
 
-    /**
+    /** **** 3WAVi__ORIGINS/Publish/PublishCContentTokenBatch.sol ****
      * @notice Publishes a batch of two or more user-defined CContentTokens.
      * @dev Writes and stores the data of multiple CContentTokens on the blockchain.
      * @param _creatorId The address of the creator.
@@ -1238,7 +1249,7 @@ contract WavToken {
      * @param _royaltyMapBatch Royalty state map batch of Content Token numToken index values.
      * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
      */
-    function publishCContentTokenBatch(
+    /*function publishCContentTokenBatch(
         address _creatorId,
         bytes32[] calldata _hashIdBatch,
         CContentTokenStorage.CContentToken[] calldata _cContentToken,
@@ -1265,7 +1276,11 @@ contract WavToken {
             storage CollaboratorMapStruct = CollaboratorMapStorage
                 .collaboratorMapStorage();
 
-        _prepareWavSuppliesBatch(_hashIdBatch, _cContentToken, _tierMapPages);
+        publishCContentTokenWavSuppliesBatch(
+            _hashIdBatch,
+            _cContentToken,
+            _tierMapPages
+        );
 
         for (uint256 i = 0; i < _hashLength; ) {
             bytes32 _hashId = _hashIdBatch[i];
@@ -1275,7 +1290,7 @@ contract WavToken {
             uint16 _numToken = _cCKTN.numToken;
 
             if (_numToken == 0 || _cCKTN.cSupplyVal == 0)
-                WavToken__NumInputInvalid();
+                revert WavToken__NumInputInvalid();
 
             ContentTokenSearchStruct.s_cContentTokenSearch[
                 _hashId
@@ -1295,19 +1310,22 @@ contract WavToken {
                 CollaboratorStructStorage.Collaborator
                     calldata _collab = _collaborator[i];
                 if (_collab.numCollaborator > 0) {
-                    _collab.s_collaborators[_hashId] = CollaboratorStructStorage
-                        .Collaborator({
-                            numCollaborator: _collab.numCollaborator,
-                            royaltyVal: _collab.royaltyVal
-                        });
-                    _collab.s_royalties[_hashId] = _royaltyMapBatch[i];
-                    _collab.s_collaboratorReserve[_hashId][0] = 0;
+                    CollaboratorMapStruct.s_collaborators[
+                        _hashId
+                    ] = CollaboratorStructStorage.Collaborator({
+                        numCollaborator: _collab.numCollaborator,
+                        royaltyVal: _collab.royaltyVal
+                    });
+                    CollaboratorMapStruct.s_royalties[
+                        _hashId
+                    ] = _royaltyMapBatch[i];
+                    CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
                 }
             } else {
                 if (_royaltyMapBatch[i] != 0) revert WavToken__LengthMismatch();
             }
 
-            CContentTokenPublished(_creatorId, _hashId, _numToken);
+            emit CContentTokenPublished(_creatorId, _hashId, _numToken);
 
             unchecked {
                 ++i;
@@ -1315,9 +1333,9 @@ contract WavToken {
         }
 
         emit CContentTokenBatchPublished(_creatorId, uint16(_hashLength));
-    }
+    }*/
 
-    /**
+    /** **** 3WAVi__ORIGINS/Publish/PublishCVariantBatch.sol ****
      * @notice Publishes a single SContentToken alongside two or more CContentToken Variants.
      * @dev Writes and stores the data of multiple CContentTokens, including one or more CContentToken Variants, on the blockchain.
      * @param _creatorId The address of the creator.
@@ -1328,7 +1346,7 @@ contract WavToken {
      * @param _variantIndexBatch Batch of numerical indexes correlating to the total Variants of a base Content Token.
      * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
      */
-    function publishCContentTokenVariantBatch(
+    /*function publishCContentTokenVariantBatch(
         address _creatorId,
         bytes32[] calldata _hashIdBatch,
         CContentTokenStorage.CContentToken[] calldata _cContentToken,
@@ -1360,28 +1378,32 @@ contract WavToken {
             storage AssociatedContentStruct = AssociatedContentMap
                 .associatedContentMap();
 
-        _prepareWavSuppliesBatch(_hashIdBatch, _cContentToken, _tierMapPages);
+        publishCContentTokenWavSuppliesBatch(
+            _hashIdBatch,
+            _cContentToken,
+            _tierMapPages
+        );
 
         for (uint256 i = 0; i < _hashLength; ) {
             bytes32 _hashId = _hashIdBatch[i];
-            CContentTokenStorage.CContentToken calldata _cCKTN = _cContentToken[
+            CContentTokenStorage.CContentToken calldata _cCTKN = _cContentToken[
                 i
             ];
-            uint16 _numToken = _cCKTN.numToken;
+            uint16 _numToken = _cCTKN.numToken;
 
-            if (_numToken == 0 || _cCKTN.cSupplyVal == 0)
+            if (_numToken == 0 || _cCTKN.cSupplyVal == 0)
                 revert WavToken__NumInputInvalid();
 
             ContentTokenSearchStruct.s_cContentTokenSearch[
                 _hashId
             ] = CContentTokenStorage.CContentToken({
                 numToken: _numToken,
-                cSupplyVal: _cCKTN.cSupplyVal,
-                sPriceUsdVal: _cCKTN.sPriceUsdVal,
-                cPriceUsdVal: _cCKTN.cPriceUsdVal,
-                sSupplyVal: _cCKTN.sSupplyVal,
-                sReserveVal: _cCKTN.sReserveVal,
-                cReleaseVal: _cCKTN.cReleaseVal
+                cSupplyVal: _cCTKN.cSupplyVal,
+                sPriceUsdVal: _cCTKN.sPriceUsdVal,
+                cPriceUsdVal: _cCTKN.cPriceUsdVal,
+                sSupplyVal: _cCTKN.sSupplyVal,
+                sReserveVal: _cCTKN.sReserveVal,
+                cReleaseVal: _cCTKN.cReleaseVal
             });
 
             _publishCreatorToken(_creatorId, _hashId, _numToken);
@@ -1390,13 +1412,16 @@ contract WavToken {
                 CollaboratorStructStorage.Collaborator
                     calldata _collab = _collaborator[i];
                 if (_collab.numCollaborator > 0) {
-                    _collab.s_collaborators[_hashId] = CollaboratorStructStorage
-                        .Collaborator({
-                            numCollaborator: _collab.numCollaborator,
-                            royaltyVal: _collab.royaltyVal
-                        });
-                    _collab.s_royalties[_hashId] = _royaltyMapBatch[i];
-                    _collab.s_collaboratorReserve[_hashId][0] = 0;
+                    CollaboratorMapStruct.s_collaborators[
+                        _hashId
+                    ] = CollaboratorStructStorage.Collaborator({
+                        numCollaborator: _collab.numCollaborator,
+                        royaltyVal: _collab.royaltyVal
+                    });
+                    CollaboratorMapStruct.s_royalties[
+                        _hashId
+                    ] = _royaltyMapBatch[i];
+                    CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
                 }
             } else {
                 if (_royaltyMapBatch[i] != 0) revert WavToken__LengthMismatch();
@@ -1427,9 +1452,9 @@ contract WavToken {
             }
         }
         emit CContentTokenBatchPublished(_creatorId, uint16(_hashLength));
-    }
+    }*/
 
-    /**
+    /** **** 3WAVi__ORIGINS/Publish/PublishCVariant.sol ****
      * @notice Publishes a single user-defined CContentToken.
      * @dev Writes and stores the data of a CContentToken on the blockchain.
      * @param _creatorId The address of the creator.
@@ -1447,7 +1472,7 @@ contract WavToken {
      * @param _royaltyMap Royalty state map of the Content Token numToken index values.
      * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
      */
-    function publishCVariant(
+    /*function publishCVariant(
         address _creatorId,
         bytes32 _baseHashId,
         bytes32 _hashId,
@@ -1521,7 +1546,7 @@ contract WavToken {
         AssociatedContentStruct.s_variantSearch[_hashId] = _baseHashId;
 
         emit SVariantPublished(_creatorId, _baseHashId, _hashId, _variantIndex);
-    }
+    }*/
 
     // I MIGHT NEED TO CHANGE ALL OF THE 'calldata' arrays in the batch to 'CContentToken memory cContentToken'
 
@@ -1643,7 +1668,7 @@ contract WavToken {
 
     // check on function continue on to 'publishCContentTokenBatch'
 
-    /**
+    /** **** 3WAVi__ORIGINS/Publish/PublishCVariantBatch.sol ****
      * @notice Publishes two or more CContentToken Variants.
      * @dev Writes and stores the data of two or more CContentToken Variants on the blockchain.
      * @param _creatorId The address of the creator.
@@ -1655,7 +1680,7 @@ contract WavToken {
      * @param _variantIndexBatch Batch of numerical indexes correlating to the total Variants of a base Content Token.
      * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
      */
-    function publishCVariantBatch(
+    /*function publishCVariantBatch(
         address _creatorId,
         bytes32[] calldata _baseHashIdBatch,
         bytes32[] calldata _hashIdBatch,
@@ -1693,12 +1718,19 @@ contract WavToken {
         // publishCContentTokenWavSuppliesBatch
         uint256 _pageCursor = 0;
 
-        _prepareWavSuppliesBatch(_hashIdBatch, _cContentToken, _tierMapPages);
+        publishCContentTokenWavSuppliesBatch(
+            _hashIdBatch,
+            _cContentToken,
+            _tierMapPages
+        );
 
         for (uint256 i = 0; i < _hashLength; ) {
             bytes32 _baseHashId = _baseHashIdBatch[i];
             bytes32 _hashId = _hashIdBatch[i];
-            CContentTokenStorage.CContentToken calldata _cCTKN;
+            //CContentTokenStorage.CContentToken calldata _cCTKN;
+            CContentTokenStorage.CContentToken calldata _cCTKN = _cContentToken[
+                i
+            ];
             uint16 _numToken = _cCTKN.numToken;
             uint16 _variantIndex = _variantIndexBatch[i];
 
@@ -1723,13 +1755,16 @@ contract WavToken {
                 CollaboratorStructStorage.Collaborator
                     calldata _collab = _collaborator[i];
                 if (_collab.numCollaborator > 0) {
-                    _collab.s_collaborators[_hashId] = CollaboratorStructStorage
-                        .Collaborator({
-                            numCollaborator: _collab.numCollaborator,
-                            royaltyVal: _collab.royaltyVal
-                        });
-                    _collab.s_royalties[_hashId] = _royaltyMapBatch[i];
-                    _collab.s_collaboratorReserve[_hashId][0] = 0;
+                    CollaboratorMapStruct.s_collaborators[
+                        _hashId
+                    ] = CollaboratorStructStorage.Collaborator({
+                        numCollaborator: _collab.numCollaborator,
+                        royaltyVal: _collab.royaltyVal
+                    });
+                    CollaboratorMapStruct.s_royalties[
+                        _hashId
+                    ] = _royaltyMapBatch[i];
+                    CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
                 }
             } else {
                 if (_royaltyMapBatch[i] != 0) revert WavToken__LengthMismatch();
@@ -1754,16 +1789,16 @@ contract WavToken {
         }
         // possibly emit SVariantPublishCount mapping
         emit CContentTokenBatchPublished(_creatorId, uint16(_hashLength));
-    }
+    }*/
 
     // storage access
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibPublishSContentTokenWavSupplies ****
      * @notice Publishes the remaining supply data of a SContentToken.
      * @dev Writes and stores the remaining supply data of two or more CContentToken Variants on the blockchain.
      * @param _hashId Identifier of Content Token being queried.
      * @param _cSupplyVal Collection supply property.
      */
-    function _publishSContentTokenWavSupplies(
+    /*function _publishSContentTokenWavSupplies(
         bytes32 _hashId,
         uint112 _cSupplyVal
     ) internal {
@@ -1775,9 +1810,10 @@ contract WavToken {
         ] = publishCWavSuppliesHelper(_cSupplyVal);
     }
 
+    // **** FacetHelpers/SupplyHelpers/LibPublishSContentTokenWavSuppliesBatch ****
     function _publishSContentTokenWavSuppliesBatch(
         bytes32[] calldata _hashIdBatch,
-        uint112[] calldata _cSupplyValBatch
+        uint112[] memory _cSupplyValBatch
     ) internal {
         uint256 _hashLength = _hashIdBatch.length;
         if (_hashLength < 2 || _cSupplyValBatch.length != _hashLength)
@@ -1798,11 +1834,11 @@ contract WavToken {
                 ++i;
             }
         }
-    }
+    }*/
 
     // storage access, will make _publishCContentTokenWavSupplies
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibPublishCContentTokenWavSupplies ****
      * @notice Publishes the remaining supply data of or more CContentTokens.
      * @dev Writes and stores the remaining supply data of two or more CContentToken on the blockchain.
      * @param _hashId Identifier of Content Token being queried.
@@ -1811,7 +1847,7 @@ contract WavToken {
      * @param _sReserveVal Seperate sale reserve property.
      * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
      */
-    function _publishCContentTokenWavSupplies(
+    /*function _publishCContentTokenWavSupplies(
         bytes32 _hashId,
         uint112 _cSupplyVal,
         uint224 _sSupplyVal,
@@ -1829,8 +1865,9 @@ contract WavToken {
         ) = publishSWavSuppliesHelper(_sSupplyVal, _sReserveVal);
 
         // Encode and store each tier
-        ContentTokenSupplyMapStruct.s_cWavSupplies[_hashId] = WavDBC
-            .publishCWavSuppliesHelper(_cSupplyVal);
+        ContentTokenSupplyMapStruct.s_cWavSupplies[
+            _hashId
+        ] = publishCWavSuppliesHelper(_cSupplyVal);
         ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
             1
         ] = _sWavSuppliesTier1;
@@ -1857,19 +1894,9 @@ contract WavToken {
                 ++i;
             }
         }
-    }
+    }*/
 
-    /**
-     * @notice Publishes remaining supply data of two or more CContentToken.
-     * @dev Writes and stores remaining supply data of two or more CContentTokens on the blockchain.
-     * @param _hashIdBatch Batch of Content Token identifier values being queried.
-     * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
-     * @param _cSupplyValBatch Batch of collection supply properties.
-     * @param _sSupplyValBatch Batch of seperate sale supply properties.
-     * @param _sReserveValBatch Batch of seperate sale reserve properties.
-     * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
-     */
-    function publishCContentTokenWavSuppliesBatch(
+    /*function publishCContentTokenWavSuppliesBatch(
         bytes32[] calldata _hashIdBatch,
         uint16[] calldata _numTokenBatch,
         uint112[] calldata _cSupplyValBatch,
@@ -1912,8 +1939,9 @@ contract WavToken {
                 uint112 _sWavSuppliesTier3
             ) = publishSWavSuppliesHelper(_sSupplyVal, _sReserveVal);
 
-            ContentTokenSupplyMapStruct.s_cWavSupplies[_hashId] = WavDBC
-                .publishCWavSuppliesHelper(_cSupplyVal);
+            ContentTokenSupplyMapStruct.s_cWavSupplies[
+                _hashId
+            ] = publishCWavSuppliesHelper(_cSupplyVal);
             ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
                 1
             ] = _sWavSuppliesTier1;
@@ -1947,17 +1975,100 @@ contract WavToken {
                 ++i;
             }
         }
-    }
+    }/*
 
-    /*if(i < _stateMapPages.length) {
-                uint256 _statePage = _stateMapPages[i];
-                if(_statePage != 0) {
-                    ContentTokenSupplyMapStruct.s_enableBitmap[_hashId][uint16(i)] = _statePage;
+
+
+
+    /** **** FacetHelpers/SupplyHelpers/LibPublishCContentTokenWavSuppliesBatch ****
+     * @notice Publishes remaining supply data of two or more CContentToken.
+     * @dev Writes and stores remaining supply data of two or more CContentTokens on the blockchain.
+     * @param _hashIdBatch Batch of Content Token identifier values being queried.
+     * @param _cContentToken Batch of CContentToken structs
+     * @param _tierMapPages 4-bit state map representing the tier states of numToken index positions.
+     */
+    /*function publishCContentTokenWavSuppliesBatch(
+        bytes32[] calldata _hashIdBatch,
+        CContentTokenStorage.CContentToken[] calldata _cContentToken,
+        uint256[] calldata _tierMapPages,
+        uint256[] calldata _priceMapPages
+    ) internal {
+        ContentTokenSupplyMapStorage.ContentTokenSupplyMap
+            storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
+                .contentTokenSupplyMapStorage();
+
+        uint256 _hashLength = _hashIdBatch.length;
+
+        uint256 _pageCursor = 0;
+        uint256 _pricePageCursor = 0;
+
+        for (uint256 i = 0; i < _hashLength; ) {
+            bytes32 _hashId = _hashIdBatch[i];
+            CContentTokenStorage.CContentToken calldata _cCTKN = _cContentToken[
+                i
+            ];
+            uint16 _numToken = _cCTKN.numToken;
+            uint112 _cSupplyVal = _cCTKN.cSupplyVal;
+            uint224 _sSupplyVal = _cCTKN.sSupplyVal;
+            uint160 _sReserveVal = _cCTKN.sReserveVal;
+
+            (
+                uint112 _sWavSuppliesTier1,
+                uint112 _sWavSuppliesTier2,
+                uint112 _sWavSuppliesTier3
+            ) = publishSWavSuppliesHelper(_sSupplyVal, _sReserveVal);
+
+            ContentTokenSupplyMapStruct.s_cWavSupplies[
+                _hashId
+            ] = publishCWavSuppliesHelper(_cSupplyVal);
+            ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
+                1
+            ] = _sWavSuppliesTier1;
+            ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
+                2
+            ] = _sWavSuppliesTier2;
+            ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
+                3
+            ] = _sWavSuppliesTier3;
+
+            uint16 _pages = uint16((uint256(_numToken) + 63) >> 6);
+
+            for (uint16 p = 0; p < _pages; ) {
+                if (_pageCursor >= _tierMapPages.length) break;
+                uint256 _tierPage = _tierMapPages[_pageCursor];
+                if (_tierPage != 0) {
+                    ContentTokenSupplyMapStruct.s_tierMap[_hashId][
+                        p
+                    ] = _tierPage;
                 }
-            }*/
+                unchecked {
+                    ++_pageCursor;
+                    ++p;
+                }
+            }
+
+            uint16 _pricePages = uint16((uint256(_numToken) + 127) >> 7);
+            for (uint16 pp = 0; pp < _pricePages; ) {
+                if (_pricePageCursor >= _priceMapPages.length) break;
+                uint256 _pricePage = _priceMapPages[_pricePageCursor];
+                if (_pricePage != 0) {
+                    ContentTokenSupplyMapStruct.s_sPriceMap[_hashId][
+                        pp
+                    ] = _pricePage;
+                }
+                unchecked {
+                    ++_pricePageCursor;
+                    ++pp;
+                }
+            }
+            unchecked {
+                ++i;
+            }
+        }
+    }*/
 
     // ****************Look back over this function*******************
-    function _prepareWavSuppliesBatch(
+    /* function _prepareWavSuppliesBatch(
         bytes32[] calldata _hashIdBatch,
         CContentTokenStorage.CContentToken[] calldata _cContentToken,
         uint256[] calldata _tierMapPages
@@ -1971,11 +2082,14 @@ contract WavToken {
         // Fill arrays from calldata structs
         for (uint256 i = 0; i < _hashLength; ) {
             //_cContentToken[i] calldata _cCKTN.numToken;
-            _cContentToken[i] calldata _cCKTN;
-            _numTokenBatch[i] = _cCKTN.numToken; // ***I addded this line it was not previously written like this. Check on this***
-            _cSupplyValBatch[i] = _cCKTN.cSupplyVal;
-            _sSupplyValBatch[i] = _cCKTN.sSupplyVal;
-            _sReserveValBatch[i] = _cCKTN.sReserveVal;
+            //_cContentToken[i] calldata _cCKTN;
+            CContentTokenStorage.CContentToken calldata _cCTKN = _cContentToken[
+                i
+            ];
+            _numTokenBatch[i] = _cCTKN.numToken; // ***I addded this line it was not previously written like this. Check on this***
+            _cSupplyValBatch[i] = _cCTKN.cSupplyVal;
+            _sSupplyValBatch[i] = _cCTKN.sSupplyVal;
+            _sReserveValBatch[i] = _cCTKN.sReserveVal;
             unchecked {
                 ++i;
             }
@@ -1989,25 +2103,32 @@ contract WavToken {
             _sReserveValBatch,
             _tierMapPages
         );
-    }
+    } */
 
-    function publishCWavSuppliesHelper(
+    //
+    ///
+    //
+    //
+    //
+    // **** FacetHelpers/SupplyHelpers/LibPublishCWavSuppliesHelper.sol ****
+    /*function publishCWavSuppliesHelper(
         uint112 _cSupplyVal
     ) internal pure returns (uint112 _cWavSupplies) {
         (
             ,
             uint112 _initialSupply,
-            uint80 _wavReserve,
-            uint80 _preRelease
-        ) = WavDBC.cSupplyValDecoder(_cSupplyVal);
-        _cWavSupplies = WavDBC.remainingSupplyEncoder(
+            uint112 _wavReserve,
+            uint112 _preRelease
+        ) = EncoderDecoder._cSupplyValDecoder(_cSupplyVal);
+        _cWavSupplies = EncoderDecoder._remainingSupplyEncoder(
             _initialSupply,
-            uint112(_wavReserve),
-            uint112(_preRelease)
+            _wavReserve,
+            _preRelease
         );
-    }
+    }*/
 
-    function publishSWavSuppliesHelper(
+    // **** FacetHelpers/SupplyHelpers/LibPublishSWavSuppliesHelper.sol ****
+    /*function publishSWavSuppliesHelper(
         uint224 _sSupplyVal,
         uint160 _sReserveVal
     )
@@ -2027,7 +2148,7 @@ contract WavToken {
             uint112 _initialSupply1,
             uint112 _initialSupply2,
             uint112 _initialSupply3
-        ) = WavDBC.sSupplyValDecoder(_sSupplyVal);
+        ) = EncoderDecoder._sSupplyValDecoder(_sSupplyVal);
 
         (
             ,
@@ -2037,42 +2158,42 @@ contract WavToken {
             uint80 _preRelease1,
             uint80 _preRelease2,
             uint80 _preRelease3
-        ) = WavDBC.sReserveValDecoder(_sReserveVal);
+        ) = EncoderDecoder._sReserveValDecoder(_sReserveVal);
 
-        _sWavSuppliesTier1 = WavDBC.remainingSupplyEncoder(
+        _sWavSuppliesTier1 = EncoderDecoder._remainingSupplyEncoder(
             _initialSupply1,
             uint112(_wavReserve1),
             uint112(_preRelease1)
         );
-        _sWavSuppliesTier2 = WavDBC.remainingSupplyEncoder(
+        _sWavSuppliesTier2 = EncoderDecoder._remainingSupplyEncoder(
             _initialSupply2,
             uint112(_wavReserve2),
             uint112(_preRelease2)
         );
-        _sWavSuppliesTier3 = WavDBC.remainingSupplyEncoder(
+        _sWavSuppliesTier3 = EncoderDecoder._remainingSupplyEncoder(
             _initialSupply3,
             uint112(_wavReserve3),
             uint112(_preRelease3)
         );
 
         return (_sWavSuppliesTier1, _sWavSuppliesTier2, _sWavSuppliesTier3);
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/LibPublishCreatorToken.sol
      * @notice Publishes data within the CreatorTokenMap struct during publication of a Content Token.
      * @dev Writes and stores CreatorToken data on the blockchain.
      * @param _creatorId The address of the creator.
      * @param _hashId Identifier of Content Token being published.
      * @param _numToken Token index quantity of the Content Token.
      */
-    function _publishCreatorToken(
+    /*function _publishCreatorToken(
         address _creatorId,
         bytes32 _hashId,
         uint16 _numToken
     ) internal {
         CreatorTokenMapStorage.CreatorTokenMap
             storage CreatorTokenMapStruct = CreatorTokenMapStorage
-                .creatorTokenMapStructStorage();
+                .creatorTokenMapStorage();
 
         CreatorTokenStorage.CreatorToken
             storage CreatorTokenStruct = CreatorTokenStorage
@@ -2088,7 +2209,7 @@ contract WavToken {
         CreatorTokenMapStruct.s_ownershipMap[_creatorId][_contentId][
             _hashId
         ] = _numToken;
-    }
+    }*/
 
     /**
      * @notice Generates a unique hash identifier for a specific track or version.

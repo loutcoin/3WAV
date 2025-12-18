@@ -71,7 +71,7 @@ library LibDiamond {
     event DiamondCut(FacetCut[] _diamondCut, address _init, bytes _calldata);
 
     function setContractOwner(address _newOwner) internal {
-        DiamondStorage storage ds = diamondStorage(); // check out why we writing to struct like this
+        DiamondStorage storage ds = diamondStorage();
         address _previousOwner = ds.contractOwner;
         ds.contractOwner = _newOwner;
         emit OwnershipTransferred(_previousOwner, _newOwner);
@@ -304,7 +304,7 @@ library LibDiamond {
                 address lastFacetAddress = ds.facetAddresses[
                     lastFacetAddressPosition
                 ];
-                ds.facetAddresses[FacetAddressAndPosition] = lastFacetAddress;
+                ds.facetAddresses[facetAddressPosition] = lastFacetAddress;
                 ds
                     .facetFunctionSelectors[lastFacetAddress]
                     .facetAddressPosition = facetAddressPosition;

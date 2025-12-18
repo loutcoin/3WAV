@@ -4,14 +4,24 @@ pragma solidity ^0.8.24;
 // import {WavRoot} from "../src/WavRoot.sol";
 
 import {ReturnValidation} from "../../src/3WAVi__Helpers/ReturnValidation.sol";
-import {ReturnMapping} from "../../src/3WAVi__Helpers/ReturnMapping.sol";
+//import {ReturnMapping} from "../../src/3WAVi__Helpers/ReturnMapping.sol";
 
-import {AuthorizedAddrStorage} from "../Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
+import {
+    AuthorizedAddrStorage
+} from "../Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
 
-import {CreatorAliasMapStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorAliasMapStorage.sol";
-import {CreatorTokenStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
-import {CreatorTokenMapStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
-import {TokenBalanceStorage} from "../../src/Diamond__Storage/CreatorToken/TokenBalanceStorage.sol";
+import {
+    CreatorAliasMapStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorAliasMapStorage.sol";
+import {
+    CreatorTokenStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+import {
+    CreatorTokenMapStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
+import {
+    TokenBalanceStorage
+} from "../../src/Diamond__Storage/CreatorToken/TokenBalanceStorage.sol";
 
 /* Allows for myself/team to grant access to individuals to become official artists (capable of publishing content)
 Preforms automated cryptographic key checks to return verified 'owned content' accessible in library.
@@ -19,335 +29,20 @@ Preforms automated cryptographic key checks to return verified 'owned content' a
 */
 
 contract WavAccess {
-    error WavAccess__AlreadyCertified();
-    error WavAccess__LengthMismatch();
-    error WavAccess__InsufficientReserves();
+    event Test1a(bool _success);
+    event DebugReturnReady(address _owner, uint256 _count);
+    event ApprovedAddress(address indexed _approvedAddr);
+
+    event RemovedAddress(address indexed _removedAddr);
+
+    error WavAccess__TokenBalanceZero();
+    error WavAccess__AlreadyInitialized();
     /**
-     * @notice Approves a user account to become an artist account.
-     * @dev Function only callable by authorized personnel to update user account to an artist account.
-     * @param _userAddress The address of the user to be approved as an artist.
-     */
-    /*   function approveArtist(address _userAddress) external {
-        ReturnValidation.onlyAuthorized();
-        s_approvedArtist[_userAddress] = true; // SHOULD INSTEAD CHECK s_addrToAlias != 0
-    } */
-
-    /**
-     * @notice Grants Content Token access during sale conducted through official service channels
-     * @dev This function is used to grant access to content purchased via non-human service channels.
-     * @param _buyer The address of the buyer.
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     * @param _purchaseQuantity Total instances of numToken to debit.
-     */
-    function wavAccess(
-        address _buyer,
-        bytes32 _hashId,
-        uint16 _numToken,
-        uint256 _purchaseQuantity
-    ) internal {
-        ReturnMapping.returnIsAuthorized();
-        CreatorTokenMapStorage.CreatorTokenMap
-            storage CreatorTokenMapStruct = CreatorTokenMapStorage
-                .creatorTokenMapStructStorage();
-        TokenBalanceStorage.TokenBalance
-            storage TokenBalanceStruct = TokenBalanceStorage
-                .tokenBalanceStorage();
-
-        // Increase _buyer s_tokenBalance by _purchaseQuantity
-        TokenBalanceStruct.s_tokenBalance[_buyer][_hashId][
-            _numToken
-        ] += _purchaseQuantity;
-
-        // Record ownership entry for _buyer
-        uint256 _ownershipIndex = CreatorTokenMapStruct.s_ownershipIndex[
-            _buyer
-        ];
-        CreatorTokenMapStruct.s_ownershipMap[_buyer][_ownershipIndex][
-            _hashId
-        ] = _numToken;
-        CreatorTokenMapStruct.s_ownershipIndex[_buyer] = _ownershipIndex + 1;
-    }
-
-    /**
-     * @notice Grants batch Content Token access during sale conducted through official service channels
-     * @dev This function is used to grant access to content purchased via non-human service channels.
-     * @param _buyer The address of the buyer.
-     * @param _hashIdBatch Batch of Content Token identifier values being queried.
-     * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
-     * @param _purchaseQuantityBatch Total instances of each numToken being debited.
-     */
-    function wavAccessBatch(
-        address _buyer,
-        bytes32[] calldata _hashIdBatch,
-        uint16[] calldata _numTokenBatch,
-        uint256[] calldata _purchaseQuantityBatch
-    ) internal {
-        ReturnMapping.returnIsAuthorized();
-
-        uint256 _hashLength = _hashIdBatch.length;
-        if (
-            _numTokenBatch.length != _hashLength ||
-            _purchaseQuantityBatch.length != _hashLength
-        ) {
-            revert WavAccess__LengthMismatch();
-        }
-
-        CreatorTokenMapStorage.CreatorTokenMap
-            storage CreatorTokenMapStruct = CreatorTokenMapStorage
-                .creatorTokenMapStructStorage();
-        TokenBalanceStorage.TokenBalance
-            storage TokenBalanceStruct = TokenBalanceStorage
-                .tokenBalanceStorage();
-
-        for (uint256 i = 0; i < _hashLength; ) {
-            bytes32 _hashId = _hashIdBatch[i];
-            uint16 _numToken = _numTokenBatch[i];
-            uint256 _purchaseQuantity = _purchaseQuantityBatch[i];
-
-            // Increase buyer token balance
-            TokenBalanceStruct.s_tokenBalance[_buyer][_hashId][
-                _numToken
-            ] += _purchaseQuantity;
-
-            // Record ownership entry for buyer
-            uint256 _ownershipIndex = CreatorTokenMapStruct.s_ownershipIndex[
-                _buyer
-            ];
-            CreatorTokenMapStruct.s_ownershipMap[_buyer][_ownershipIndex][
-                _hashId
-            ] = _numToken;
-            CreatorTokenMapStruct.s_ownershipIndex[_buyer] =
-                _ownershipIndex +
-                1;
-
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    /**
-     * @notice Exchanges access of Content Tokens during user resale execution.
-     * @dev This function is used to exchange access of content from peer to peer.
-     * @param _buyer The address of the buyer.
-     * @param _seller The address of the seller.
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     * @param _purchaseQuantity Total instances of numToken to debit.
-     */
-    function wavExchange(
-        address _buyer,
-        address _seller,
-        bytes32 _hashId,
-        uint16 _numToken,
-        uint256 _purchaseQuantity
-    ) external {
-        ReturnMapping.returnIsAuthorized();
-        CreatorTokenMapStorage.CreatorTokenMap
-            storage CreatorTokenMapStruct = CreatorTokenMapStorage
-                .creatorTokenMapStructStorage();
-        TokenBalanceStorage.TokenBalance
-            storage TokenBalanceStruct = TokenBalanceStorage
-                .tokenBalanceStorage();
-
-        uint256 _sellerBalance = TokenBalanceStruct.s_tokenBalance[_seller][
-            _hashId
-        ][_numToken];
-        if (_sellerBalance < _purchaseQuantity)
-            revert WavAccess__InsufficientReserves();
-
-        TokenBalanceStruct.s_tokenBalance[_seller][_hashId][_numToken] =
-            _sellerBalance -
-            _purchaseQuantity;
-
-        TokenBalanceStruct.s_tokenBalance[_buyer][_hashId][
-            _numToken
-        ] += _purchaseQuantity;
-
-        uint256 _ownershipIndex = CreatorTokenMapStruct.s_ownershipIndex[
-            _buyer
-        ];
-
-        /* Due to updated mapping structure removed conditional that preforms extra verification
-        to ensure ownershipIndex is not occupied before writing data to the position.
-        It should be impossible for this to happen anyways, unless there is a defect elsewhere. */
-
-        CreatorTokenMapStruct.s_ownershipMap[_buyer][_ownershipIndex][
-            _hashId
-        ] = _numToken;
-
-        CreatorTokenMapStruct.s_ownershipIndex[_buyer] = _ownershipIndex + 1;
-    }
-
-    /**
-     * @notice Exchanges access of a Content Token batch during user resale execution.
-     * @dev This function is used to exchange access of content from peer to peer.
-     * @param _buyer The address of the buyer.
-     * @param _sellerBatch Batch of seller addresses.
-     * @param _hashIdBatch Batch of Content Token identifier values being queried.
-     * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
-     * @param _purchaseQuantityBatch Total instances of each numToken being debited.
-     */
-    function wavExchangeBatch(
-        address _buyer,
-        address[] calldata _sellerBatch,
-        bytes32[] calldata _hashIdBatch,
-        uint16[] calldata _numTokenBatch,
-        uint256[] calldata _purchaseQuantityBatch
-    ) external {
-        ReturnMapping.returnIsAuthorized();
-        uint256 _hashLength = _hashIdBatch.length;
-        // Length property of all arrays should match
-        if (
-            _sellerBatch.length != _hashLength ||
-            _purchaseQuantityBatch.length != _hashLength ||
-            _numTokenBatch.length != _hashLength
-        ) {
-            revert WavAccess__LengthMismatch();
-        }
-        // Load storage pointers
-        CreatorTokenMapStorage.CreatorTokenMap
-            storage CreatorTokenMapStruct = CreatorTokenMapStorage
-                .creatorTokenMapStructStorage();
-        TokenBalanceStorage.TokenBalance
-            storage TokenBalanceStruct = TokenBalanceStorage
-                .tokenBalanceStorage();
-
-        // Iterate and assign each asset
-        for (uint256 i = 0; i < _hashLength; ) {
-            // Grab user current ownershipIndex
-            uint256 _ownershipIndex = CreatorTokenMapStruct.s_ownershipIndex[
-                _buyer
-            ];
-
-            // Update ownership map with _hashId and _numToken values
-            CreatorTokenMapStruct.s_ownershipMap[_buyer][_ownershipIndex][
-                _hashIdBatch[i]
-            ] = _numTokenBatch[i];
-
-            // Increment Index for next asset
-            CreatorTokenMapStruct.s_ownershipIndex[_buyer] =
-                _ownershipIndex +
-                1;
-
-            // Seller balance check and debit
-            address _seller = _sellerBatch[i];
-            uint256 _purchaseQuantity = _purchaseQuantityBatch[i];
-            uint256 _sellerBalance = TokenBalanceStruct.s_tokenBalance[_seller][
-                _hashIdBatch[i]
-            ][_numTokenBatch[i]];
-            if (_sellerBalance < _purchaseQuantity)
-                revert WavAccess__InsufficientReserves();
-            TokenBalanceStruct.s_tokenBalance[_seller][_hashIdBatch[i]][
-                _numTokenBatch[i]
-            ] = _sellerBalance - _purchaseQuantity;
-
-            // Update buyer balances
-            TokenBalanceStruct.s_tokenBalance[_buyer][_hashIdBatch[i]][
-                _numTokenBatch[i]
-            ] += _purchaseQuantity;
-
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    // Update ownership map with _hashId and _numToken values
-    /*      CreatorTokenMapStruct.s_ownershipMap[_buyer][_ownershipIndex][
-                _hashIdBatch[i]
-            ] = _numTokenBatch[i];
-
-            // Increment index for next asset
-            CreatorTokenMapStruct.s_ownershipIndex[_buyer] =
-                _ownershipIndex +
-                1;
-
-            TokenBalanceStruct.s_tokenBalance[_sellerBatch[i]][_hashIdBatch[i]][
-                _numTokenBatch[i]
-            ] -= _purchaseQuantityBatch[i];
-
-            // Update token balances
-            TokenBalanceStruct.s_tokenBalance[_buyer][_hashIdBatch[i]][
-                _numTokenBatch[i]
-            ] += _purchaseQuantityBatch[i];
-
-            unchecked {
-                ++i;
-            } */
-
-    /* function wavRevokeSingle(
-        address _userAddr,
-        bytes32 _hashId,
-        uint16 _numToken,
-        uint256 _quantity
-    ) external {
-
-    } */
-
-    /** Alias likely entirely front-end operated and thus deprecated on back-end
-     * @notice Sets or updates the artist profile username.
-     * @dev Function called by an approved artist to set or update their profile username.
-     *      Function Selector: 0x419b261d
-     * @param _creatorAlias The new username for the artist profile.
-     * @param _creatorId The address of the artist.
-     */
-    /*function certifyAlias(
-        string memory _creatorAlias,
-        address _creatorId
-    ) external {
-        // Ensures account is not already certified.
-        if (returnAddrToAlias(_creatorId) != "0") {
-            revert WavAccess__AlreadyCertified();
-        }
-        // Ensures Alias is available.
-        checkAlias(_creatorAlias);
-
-        // Accesses the CreatorAlias struct storage slot.
-        CreatorAliasMapStorage.CreatorAlias
-            storage CreatorAliasMapStruct = CreatorAliasMapStorage
-                .creatorAliasStructStorage();
-
-        // Writes to instances of the contained mappings, updating a Creator Alias.
-        CreatorAliasMapStruct.s_aliasToAddr[_creatorAlias] = _creatorId;
-        CreatorAliasMapStruct.s_addrToAlias[_creatorId] = _creatorAlias;
-    }*/
-
-    /** Alias likely entirely front-end operated and thus deprecated on back-end
-     * @notice Sets or updates the artist profile username.
-     * @dev Function called by an approved artist to set or update their profile username.
-     *      Function Selector: 0xa7875f43
-     * @param _creatorAlias The new username for the artist profile.
-     * @param _creatorId The address of the artist.
-     */
-    /*function modifyAlias(
-        string memory _creatorAlias,
-        address _creatorId
-    ) external {
-        // Ensures Alias is available.
-        checkAlias(_creatorAlias);
-
-        if (_creatorId == address(0) && _creatorAlias == "0") {
-            revert WavAccess__IsNotApprovedArtist(); // invalid inputs.
-        }
-
-        // Accesses the CreatorAlias struct storage slot.
-        CreatorAliasMapStorage.CreatorAlias
-            storage CreatorAliasMapStruct = CreatorAliasMapStorage
-                .creatorAliasStructStorage();
-
-        // Writes to instances of the contained mappings, updating a Creator Alias.
-        CreatorAliasMapStruct.s_aliasToAddr[_creatorAlias] = _creatorId;
-        CreatorAliasMapStruct.s_addrToAlias[_creatorId] = _creatorAlias;
-    }*/
-
-    /**
-     * @notice Returns an array of all content owned by a particular user.
+     * @notice Returns an array of all content owned by a particular user factoring s_tokenBalance.
      * @dev Function called in a gasless manner to update/refresh user content library.
      *      Function Selector: 0x2a8e407b
      * @param _userAddr Address of the user whose content ownership is being queried.
-     * @return CreatorToken[] An array of all owned CreatorToken assets.
+     * @return CreatorToken An array of all owned CreatorToken assets.
      */
     function returnOwnership(
         address _userAddr
@@ -355,32 +50,312 @@ contract WavAccess {
         CreatorTokenMapStorage.CreatorTokenMap
             storage CreatorTokenMapStruct = CreatorTokenMapStorage
                 .creatorTokenMapStorage();
-        uint256 contentCount = CreatorTokenMapStruct.s_userContentIndex[
+        TokenBalanceStorage.TokenBalance
+            storage TokenBalanceStruct = TokenBalanceStorage
+                .tokenBalanceStorage();
+
+        uint256 _contentCount = CreatorTokenMapStruct.s_ownershipIndex[
             _userAddr
         ];
+
+        uint256 _validCount = 0;
+        for (uint256 i = 0; i < _contentCount; ++i) {
+            bytes32 _hashId = CreatorTokenMapStruct.s_ownershipMap[_userAddr][
+                i
+            ];
+            if (_hashId == bytes32(0)) continue;
+
+            uint16 _numToken = CreatorTokenMapStruct.s_ownershipToken[
+                _userAddr
+            ][i];
+            uint256 _balance = TokenBalanceStruct.s_tokenBalance[_userAddr][
+                _hashId
+            ][_numToken];
+            if (_balance > 0) {
+                ++_validCount;
+            }
+        }
         CreatorTokenStorage.CreatorToken[]
-            memory ownedContentToken = new CreatorTokenStorage.CreatorToken[](
-                contentCount
+            memory _ownedContentToken = new CreatorTokenStorage.CreatorToken[](
+                _contentCount
             );
 
-        for (uint256 i = 0; i < contentCount; i++) {
-            ownedContentToken[i] = CreatorTokenMapStruct.s_ownershipMap[
+        uint256 _idx = 0;
+        for (uint256 i = 0; i < _contentCount; ++i) {
+            bytes32 _hashId = CreatorTokenMapStruct.s_ownershipMap[_userAddr][
+                i
+            ];
+            if (_hashId == bytes32(0)) {
+                continue;
+            }
+            uint16 _numToken = CreatorTokenMapStruct.s_ownershipToken[
                 _userAddr
-            ][i]; // used to be s_ownershipAudio
+            ][i];
+            uint256 _balance = TokenBalanceStruct.s_tokenBalance[_userAddr][
+                _hashId
+            ][_numToken];
+            if (_balance == 0) continue;
+
+            /*CreatorTokenStorage.CreatorToken
+                storage CreatorTokenStruct = CreatorTokenMapStruct
+                    .s_publishedTokenData[_hashId][_numToken];*/
+
+            CreatorTokenStorage.CreatorToken
+                storage CreatorTokenStruct = CreatorTokenMapStruct
+                    .s_publishedTokenData[_hashId];
+
+            _ownedContentToken[i] = CreatorTokenStorage.CreatorToken({
+                creatorId: CreatorTokenStruct.creatorId,
+                contentId: CreatorTokenStruct.contentId,
+                hashId: CreatorTokenStruct.hashId
+            });
+
+            ++_idx;
         }
 
-        return ownedContentToken;
+        return _ownedContentToken;
     }
 
-    /** Alias likely entirely front-end operated and thus deprecated on back-end
-     * @notice Checks if an alias is already taken.
-     * @dev Ensures that the alias value is not associated with another CreatorId.
-     *      Function Selector: 0xd97eaaa9
-     * @param _creatorAlias The username to be checked.
+    /**
+     * @notice Returns an array of all content owned by a particular user factoring s_tokenBalance.
+     * @dev Function called in a gasless manner to update/refresh user content library.
+     *      Function Selector: 0x2a8e407b
+     * @param _userAddr Address of the user whose content ownership is being queried.
+     * @return _hashIds An array of all owned CreatorToken assets.
+     * @return _numTokens Index
      */
-    /*function checkAlias(string memory _creatorAlias) external view {
-        address _creatorId = returnAliasToAddr(_creatorAlias);
-        if (_creatorId != 0) revert WavAccess__AliasUndefined();
+    function returnOwnership2(
+        address _userAddr
+    ) external returns (bytes32[] memory _hashIds, uint16[] memory _numTokens) {
+        CreatorTokenMapStorage.CreatorTokenMap
+            storage CreatorTokenMapStruct = CreatorTokenMapStorage
+                .creatorTokenMapStorage();
+
+        uint256 _contentCount = CreatorTokenMapStruct.s_ownershipIndex[
+            _userAddr
+        ];
+        _hashIds = new bytes32[](_contentCount);
+        _numTokens = new uint16[](_contentCount);
+
+        for (uint256 i = 0; i < _contentCount; ++i) {
+            emit Test1a(true);
+            bytes32 _hashId = CreatorTokenMapStruct.s_ownershipMap[_userAddr][
+                i
+            ];
+            uint16 _numToken = CreatorTokenMapStruct.s_ownershipToken[
+                _userAddr
+            ][i];
+
+            _hashIds[i] = _hashId;
+            _numTokens[i] = _numToken;
+        }
+        emit DebugReturnReady(_userAddr, _contentCount);
+        return (_hashIds, _numTokens);
+    }
+
+    /*
+    TokenBalanceStorage.TokenBalance
+            storage TokenBalanceStruct = TokenBalanceStorage
+                .tokenBalanceStorage();
+    */
+
+    /*
+     * @notice Returns an array of all content owned by a particular user factoring s_tokenBalance.
+     * @dev Function called in a gasless manner to update/refresh user content library.
+     *      Function Selector: 0x2a8e407b
+     * @param _userAddr Address of the user whose content ownership is being queried.
+     * @return CreatorToken An array of all owned CreatorToken assets.
+     */
+    /*function returnOwnership(
+        address _userAddr
+    ) external view returns (CreatorTokenStorage.CreatorToken[] memory) {
+        CreatorTokenMapStorage.CreatorTokenMap
+            storage CreatorTokenMapStruct = CreatorTokenMapStorage
+                .creatorTokenMapStorage();
+        TokenBalanceStorage.TokenBalance
+            storage TokenBalanceStruct = TokenBalanceStorage
+                .tokenBalanceStorage();
+
+        uint256 _contentCount = CreatorTokenMapStruct.s_ownershipIndex[
+            _userAddr
+        ];
+
+        uint256 _validCount = 0;
+        for (uint256 i = 0; i < _contentCount; ++i) {
+            bytes32 _hashId = CreatorTokenMapStruct.s_ownershipMap[_userAddr][
+                i
+            ];
+            if (_hashId == bytes32(0)) continue;
+            uint16 _numToken = CreatorTokenMapStruct.s_ownershipToken[
+                _userAddr
+            ][i];
+            uint256 _balance = TokenBalanceStruct.s_tokenBalance[_userAddr][
+                _hashId
+            ][_numToken];
+            if (_balance > 0) {
+                ++_validCount;
+            }
+        }
+        if (_validCount == 0) {
+            return new CreatorTokenStorage.CreatorToken[](0);
+        }
+
+        CreatorTokenStorage.CreatorToken[]
+            memory _ownedContent = new CreatorTokenStorage.CreatorToken[](
+                _validCount
+            );
+        uint256 _idx = 0;
+        for (uint256 i = 0; i < _contentCount; ++i) {
+            bytes32 _hashId = CreatorTokenMapStruct.s_ownershipMap[_userAddr][
+                i
+            ];
+            if (_hashId == bytes32(0)) continue;
+            uint16 _numToken = CreatorTokenMapStruct.s_ownershipToken[
+                _userAddr
+            ][i];
+            uint256 _balance = TokenBalanceStruct.s_tokenBalance[_userAddr][
+                _hashId
+            ][_numToken];
+            if (_balance == 0) continue;
+
+            CreatorTokenStorage.CreatorToken
+                storage CreatorTokenStruct = CreatorTokenMapStruct
+                    .s_publishedTokenData[_hashId];
+
+            _ownedContent[_idx] = CreatorTokenStorage.CreatorToken({
+                creatorId: CreatorTokenStruct.creatorId,
+                contentId: CreatorTokenStruct.contentId,
+                hashId: CreatorTokenStruct.hashId
+            });
+
+            ++_idx;
+        }
+
+        return _ownedContent;
+    }*/
+
+    function returnOwnershipIndex(
+        address _userAddr,
+        uint16 _ownershipIndex
+    )
+        external
+        view
+        returns (
+            bytes32 _hashId,
+            uint256 _contentId,
+            address _creatorId,
+            uint16 _numToken,
+            uint256 _balance
+        )
+    {
+        CreatorTokenMapStorage.CreatorTokenMap
+            storage CreatorTokenMapStruct = CreatorTokenMapStorage
+                .creatorTokenMapStorage();
+
+        TokenBalanceStorage.TokenBalance
+            storage TokenBalanceStruct = TokenBalanceStorage
+                .tokenBalanceStorage();
+
+        _hashId = CreatorTokenMapStruct.s_ownershipMap[_userAddr][
+            _ownershipIndex
+        ];
+        _numToken = CreatorTokenMapStruct.s_ownershipToken[_userAddr][
+            _ownershipIndex
+        ];
+        _balance = TokenBalanceStruct.s_tokenBalance[_userAddr][_hashId][
+            _numToken
+        ];
+
+        if (_balance == 0) {
+            revert WavAccess__TokenBalanceZero();
+        }
+
+        /*CreatorTokenStorage.CreatorToken
+            memory _ownedContent = CreatorTokenStorage.CreatorToken({
+                creatorId: ,
+                contentId: CreatorTokenStruct.contentId,
+                hashId: _hashId
+            });*/
+
+        CreatorTokenStorage.CreatorToken
+            storage CreatorTokenStruct = CreatorTokenMapStruct // so this MUST be _numToken or "dynamic / variable"
+            // but the key being pushed in here should likely always be '0'
+                .s_publishedTokenData[_hashId];
+
+        _creatorId = CreatorTokenStruct.creatorId;
+        _contentId = CreatorTokenStruct.contentId;
+
+        return (_hashId, _contentId, _creatorId, _numToken, _balance);
+    }
+
+    function returnOwnershipIndex2(
+        address _userAddr,
+        uint16 _ownershipIndex
+    )
+        external
+        returns (bytes32 _hashId, address _creatorId, uint256 _contentId)
+    {
+        CreatorTokenMapStorage.CreatorTokenMap
+            storage CreatorTokenMapStruct = CreatorTokenMapStorage
+                .creatorTokenMapStorage();
+
+        TokenBalanceStorage.TokenBalance
+            storage TokenBalanceStruct = TokenBalanceStorage
+                .tokenBalanceStorage();
+
+        _hashId = CreatorTokenMapStruct.s_ownershipMap[_userAddr][
+            _ownershipIndex
+        ];
+        uint16 _numToken = CreatorTokenMapStruct.s_ownershipToken[_userAddr][
+            _ownershipIndex
+        ];
+        uint256 _balance = TokenBalanceStruct.s_tokenBalance[_userAddr][
+            _hashId
+        ][_numToken];
+
+        if (_balance == 0) {
+            revert WavAccess__TokenBalanceZero();
+        }
+
+        CreatorTokenStorage.CreatorToken
+            storage CreatorTokenStruct = CreatorTokenMapStruct // so this MUST be _numToken or "dynamic / variable"
+            // but the key being pushed in here should likely always be '0'
+                .s_publishedTokenData[_hashId];
+
+        _hashId = CreatorTokenStruct.hashId;
+        _creatorId = CreatorTokenStruct.creatorId;
+        _contentId = CreatorTokenStruct.contentId;
+
+        emit Test1a(true);
+        return (_hashId, _creatorId, _contentId);
+        // I should make sure this is not because something is wrong with the index logic of ownershipIndex,
+        // but that would barely make sense because why is it returning the exact values and just randomly reverting?
+    }
+
+    /*_creatorId = CreatorTokenMapStruct
+            .s_publishedTokenData[_hashId][0]*/
+
+    /*CreatorTokenStorage.CreatorToken
+                storage CreatorTokenStruct = CreatorTokenMapStruct
+                    .s_publishedTokenData[_hashId][_numToken];
+
+         CreatorTokenStorage.CreatorToken({
+                creatorId: CreatorTokenStruct.creatorId,
+                contentId: CreatorTokenStruct.contentId,
+                hashId: CreatorTokenStruct.hashId
+            });*/
+
+    //return (_hashId, _creatorId, _numToken, _balance);
+
+    //
+
+    /*function returnCreatorTokenMap(
+        CreatorTokenStorage.CreatorToken memory _creatorToken
+    ) external returns (CreatorTokenStorage.CreatorToken memory _ct) {
+        bytes32 _hashId = _creatorToken.hashId;
+        uint16 _numToken = _creatorToken.numToken;
+        CreatorTokenMapStorage.CreatorTokenMap storage _creatorTokenMap = CreatorTokenMapStorage.creatorTokenMapStorage();
+        return _creatorTokenMap.s_publishedTokenData[_hashId][_numToken];
     }*/
 
     /**
@@ -389,15 +364,14 @@ contract WavAccess {
      * @param _addr The address to removed from the authorized list.
      */
     function removeApprovedAddr(address _addr) external {
-        ReturnMapping.returnIsAuthorized();
+        ReturnValidation.returnIsAuthorized();
         AuthorizedAddrStorage.AuthorizedAddrStruct
             storage AuthorizedAddrStructStorage = AuthorizedAddrStorage
                 .authorizedAddrStorage();
         AuthorizedAddrStructStorage.s_authorizedAddrMap[_addr] = false;
+        emit RemovedAddress(_addr);
         // Other mapping deducted by 1
     }
-
-    /// correct these functions here:
 
     /**
      * @notice Adds a new address to the list of currently authorized addresses.
@@ -405,20 +379,38 @@ contract WavAccess {
      * @param _addr The address to authorize.
      */
     function addApprovedAddr(address _addr) external {
-        ReturnMapping.returnIsAuthorized();
+        ReturnValidation.returnIsAuthorized();
         AuthorizedAddrStorage.AuthorizedAddrStruct
             storage AuthorizedAddrStructStorage = AuthorizedAddrStorage
                 .authorizedAddrStorage();
         AuthorizedAddrStructStorage.s_authorizedAddrMap[_addr] = true;
+        emit ApprovedAddress(_addr);
+    }
+
+    function addOwnerAddr(address _addr) external {
+        AuthorizedAddrStorage.AuthorizedAddrStruct
+            storage AuthorizedAddrStructStorage = AuthorizedAddrStorage
+                .authorizedAddrStorage();
+
+        uint8 _initialization = AuthorizedAddrStructStorage.initialization;
+
+        if (_initialization < 1) {
+            AuthorizedAddrStructStorage.s_authorizedAddrMap[_addr] = true;
+            AuthorizedAddrStructStorage.s_authorizedAddrSearch[0] = _addr;
+            AuthorizedAddrStructStorage.initialization += 1;
+
+            emit ApprovedAddress(_addr);
+        } else {
+            revert WavAccess__AlreadyInitialized();
+        }
     }
 
     /**
-     * @notice Updates the Lout address to a new address.
-     * @dev Exclusive to current address(s_lout). Updates state to reflect new official address(s_lout).
-     * @param _newLoutAddr The new Lout address.
+     * @notice Provides current timestamp in an hour-based format.
+     * @dev Generates timestamp in more compact format
+     *      Function Selector: 0xed91a6c8
      */
-    /*function updateLoutAddr(address _newLoutAddr) external {
-        onlyLout();
-        s_lout = _newLoutAddr;
-    }*/
+    function returnHourStamp() external view returns (uint96 _hourStamp) {
+        return ReturnValidation._returnHourStamp();
+    }
 }

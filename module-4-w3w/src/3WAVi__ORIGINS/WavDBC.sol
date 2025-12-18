@@ -8,16 +8,26 @@ pragma solidity ^0.8.24;
 
 // WIP: INCOMPLETE | NON-FUNCTIONAL (WIP)
 // 3WAVi__ORIGINS
-import {WavToken} from "../../src/3WAVi__ORIGINS/WavToken.sol";
-import {WavFeed} from "../../src/3WAVi__ORIGINS/WavFeed.sol";
+//import {WavToken} from "../../src/3WAVi__ORIGINS/WavToken.sol";
+//import {WavFeed} from "../../src/3WAVi__ORIGINS/WavFeed.sol";
 // 3WAVi__Helpers
-import {ReturnMapping} from "../../src/3WAVi__Helpers/ReturnMapping.sol";
+//import {ReturnMapping} from "../../src/3WAVi__Helpers/ReturnMapping.sol";
+//import {SupplyDBC} from "../../src/3WAVi__Helpers/SupplyDBC.sol";
+//import {BinaryDBC} from "../../src/3WAVi__Helpers/BinaryDBC.sol";
+//import {ReleaseDBC} from "../../src/3WAVi__Helpers/ReleaseDBC.sol";
+//import {PriceDBC} from "../../src/3WAVi__Helpers/PriceDBC.sol";
 // ContentToken
-import {ContentTokenSupplyMapStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+/*import {
+    ContentTokenSupplyMapStorage
+} from "../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
 // Optionals
-import {CollaboratorStructStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
-import {CollaboratorMapStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
-
+import {
+    CollaboratorStructStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
+import {
+    CollaboratorMapStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
+*/
 contract WavDBC {
     error WavDBC__LengthValIssue();
     error WavDBC__BitValIssue();
@@ -136,261 +146,11 @@ contract WavDBC {
 
     uint96 internal constant SHIFT_7__32 = 10 ** 6;
 
-    WavToken WAVT;
-
     // START OF JULY 31 2025 NEW FUNCTIONS / REWRITES
 
     // ADD NATSPEC
     // intended to format numbers like <1-xxxxxxx.xx>
     // need to add conditional to ensure input does not exceed 1999999999
-
-    /**
-     * @notice Standardizes the digit count of cPriceUsdVal.
-     * @dev Function called by script to standardize digit count of cPriceUsdVal.
-     *      Function Selector: 0xb9879684
-     * @param _cPriceUsdInput Raw unsigned interger price definition.
-     */
-    function cPriceUsdValEncoder(
-        uint32 _cPriceUsdInput
-    ) external pure returns (uint32 _cPriceUsdVal) {
-        if (_cPriceUsdInput >= 1000000000) {
-            revert WavDBC__NumInputInvalid();
-        }
-        LEADING_TEN__THIRTY_TWO_BIT +
-            _cPriceUsdInput = _cPriceUsdVal;
-        return _cPriceUsdVal;
-    }
-
-    // need to add conditional to ensure input does not exceed 1999999999
-    /**
-     * @notice Decodes cPriceUsdVal into its underlying value input.
-     * @dev Function called by script to decode underlying data stored within cPriceUsdVal.
-     *      Function Selector: 0xb7dc9ade
-     * @param _cPriceUsdVal Unsigned interger containing Content Token price definition.
-     */
-    function cPriceUsdValDecoder(
-        uint32 _cPriceUsdVal
-    ) external pure returns (uint32 _cPriceUsdRaw) {
-        _cPriceUsdValDecoder();
-    }
-
-    /**
-     * @notice Decodes cPriceUsdVal into its underlying value input.
-     * @dev Function called by script to decode underlying data stored within cPriceUsdVal.
-     *      Function Selector: 0xb7dc9ade
-     * @param _cPriceUsdVal Unsigned interger containing Content Token price definition.
-     */
-    function _cPriceUsdValDecoder(
-        uint32 _cPriceUsdVal
-    ) internal pure returns (uint32 _cPriceUsdRaw) {
-        if (_cPriceUsdVal < MIN_ENCODED_CPRICE_USD_VAL) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-        _cPriceUsdRaw = _cPriceUsdVal - LEADING_TEN__THIRTY_TWO_BIT;
-        return _cPriceUsdRaw;
-    }
-
-    // IS 30 DIGIT ENCODE KEY RN
-    /** Technically doesn't currently check that accessible < standard < exclusive
-
-     * @notice Encodes four raw values related to the sPriceUsdVal CContentToken property.
-     * @dev Function called by script to correctly format stored sPriceUsdVal data.
-     *      Function Selector: 0x6fb1d5e3
-     * @param _zeroVal Indicates presence of zero value.
-     * @param _standardPriceVal Standard numerical USD value assignable to Content Tokens seperately sold.
-     * @param _accessiblePriceVal Optional lesser numerical USD value assignable to Content Tokens seperately sold.
-     * @param _exclusivePriceVal Optional greater numerical USD value assignable to Content Tokens seperately sold.
-     */
-    function sPriceUsdValEncoder(
-        uint8 _zeroVal,
-        uint112 _standardPriceVal,
-        uint112 _accessiblePriceVal,
-        uint112 _exclusivePriceVal
-    ) external pure returns (uint112 _sPriceUsdVal) {
-        // ensures inputs are less than 10 digits and _zeroVal is no greater than '1'
-        if (
-            _standardPriceVal >= SHIFT_10 ||
-            _accessiblePriceVal >= SHIFT_10 ||
-            _exclusivePriceVal >= SHIFT_10 ||
-            _zeroVal > 1 ||
-            _standardPriceVal == 0
-        ) {
-            revert WavDBC__NumInputInvalid();
-        }
-        // (if no _zeroVal '101...') else '100...')
-        if (_zeroVal == 1) {
-            _sPriceUsdVal = SHIFT_30 + SHIFT_28;
-        } else {
-            _sPriceUsdVal = SHIFT_30;
-        }
-        _sPriceUsdVal += _standardPriceVal * SHIFT_19;
-        _sPriceUsdVal += _accessiblePriceVal * SHIFT_10;
-        _sPriceUsdVal += _exclusivePriceVal;
-        return _sPriceUsdVal;
-    }
-
-    /**
-     * @notice Decodes encoded input into its underlying four raw values for the sPriceUsdVal CContentToken property.
-     * @dev Function called by script to decode underlying data stored within sPriceUsdVal.
-     *      Function Selector: 0x814a4248
-     * @param _sPriceUsdVal Unsigned interger containing multiple compacted seperate sale definitions.
-     */
-    function sPriceUsdValDecoder(
-        uint112 _sPriceUsdVal
-    )
-        external
-        pure
-        returns (
-            uint8 _zeroVal,
-            uint112 _standardPriceVal,
-            uint112 _accessiblePriceVal,
-            uint112 _exclusivePriceVal
-        )
-    {
-        _sPriceUsdValDecoder(_sPriceUsdVal);
-    }
-
-    /**
-     * @notice Decodes encoded input into its underlying four raw values for the sPriceUsdVal CContentToken property.
-     * @dev Function called by script to decode underlying data stored within sPriceUsdVal.
-     *      Function Selector: 0x814a4248
-     * @param _sPriceUsdVal Unsigned interger containing multiple compacted seperate sale definitions.
-     */
-    function _sPriceUsdValDecoder(
-        uint112 _sPriceUsdVal
-    )
-        internal
-        pure
-        returns (
-            uint8 _zeroVal,
-            uint112 _standardPriceVal,
-            uint112 _accessiblePriceVal,
-            uint112 _exclusivePriceVal
-        )
-    {
-        if (_sPriceUsdVal < MIN_ENCODED_SPRICE_USD_VAL) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-        // Extract 'X'
-        _zeroVal = uint8((_sPriceUsdVal / SHIFT_28) % 10);
-        if (_zeroVal > 1) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-        // Extract 'Y'
-        _standardPriceVal = (_sPriceUsdVal / SHIFT_19) % SHIFT_10;
-        // Extract 'N'
-        _accessiblePriceVal = (_sPriceUsdVal / SHIFT_10) % SHIFT_10;
-        // Extract 'J'
-        _exclusivePriceVal = _sPriceUsdVal % SHIFT_10;
-        return (
-            _zeroVal,
-            _standardPriceVal,
-            _accessiblePriceVal,
-            _exclusivePriceVal
-        );
-    }
-
-    /**
-     * @notice Determines numerical value correlated to bit state of a hashId.
-     * @dev Function called during Content Token price validation.
-     *      Function Selector: 0x48992985
-     * @param _bitState Attributed symbolic binary state associated with user-defined numerical value.
-     * @param _sPriceUsdVal Unsigned interger containing multiple numerical value states.
-     * @param _hashId Unique identifier of the Content Token.
-     */
-    function sPriceUsdValState(
-        uint8 _bitState,
-        uint112 _sPriceUsdVal,
-        bytes32 _hashId
-    ) internal view returns (uint112) {
-        if (_bitState == 1) {
-            (, , uint112 _accessiblePriceVal, ) = _sPriceUsdValDecoder(
-                _sPriceUsdVal
-            );
-            return _accessiblePriceVal;
-        }
-        if (_bitState == 2) {
-            (, uint112 _standardPriceVal, , ) = _sPriceUsdValDecoder(
-                _sPriceUsdVal
-            );
-            return _standardPriceVal;
-        }
-        if (_bitState == 3) {
-            (, , , uint112 _exclusivePriceVal) = _sPriceUsdValDecoder(
-                _sPriceUsdVal
-            );
-            return _exclusivePriceVal;
-        }
-    } // either return(0) or possibly revert as you cannot buy something that isn't for sale
-
-    // no need for zeroVal
-    // wavR + initialSupply CANNOT be greater than total supply
-    /**
-     * @notice Encodes four raw values related to the cSupplyVal CContentToken property.
-     * @dev Function called by script to correctly format stored cSupplyVal data.
-     *      Function Selector: 0x35a93e5a
-     * @param _totalSupply Maximum supply value defined for a CContentToken.
-     * @param _initialSupply Initial supply value defined for a CContentToken.
-     * @param _wavReserve Optional Content Token allocation reserve value.
-     * @param _preSupply Optional Content Token pre-sale reserve value.
-     */
-    function cSupplyValEncoder(
-        uint112 _totalSupply,
-        uint112 _initialSupply,
-        uint112 _wavReserve,
-        uint112 _preSupply
-    ) external pure returns (uint112 _cSupplyVal) {
-        if (
-            // _totalSupply must be at least 1 and no more than 10 digits
-            _totalSupply < 1 ||
-            _totalSupply >= SHIFT_11 ||
-            // _initialSupply can be no more than 10 digits or exceed _totalSupply
-            _initialSupply >= SHIFT_11 ||
-            _initialSupply > _totalSupply ||
-            // _wavReserve and _preSupply cannot be exceed 6 numerical digits
-            _wavReserve >= SHIFT_7 ||
-            _preSupply >= SHIFT_7 || // possibly redundant
-            // _preSupply capped at 40% of _totalSupply, _wavReserve + _preSupply <= 100%
-            _preSupply > CPRE_SUPPLY_MAXIMUM ||
-            (_wavReserve + _preSupply) > SHIFT_7
-            // _totalSupply allocations should not exceed 100% the value of _totalSupply
-        ) {
-            revert WavDBC__SupplyAllocationError();
-        }
-
-        _cSupplyVal = SHIFT_33;
-
-        _cSupplyVal += _totalSupply * SHIFT_23;
-        _cSupplyVal += _initialSupply * SHIFT_13;
-        _cSupplyVal += _wavReserve * SHIFT_7;
-        _cSupplyVal += _preSupply;
-        return _cSupplyVal;
-    }
-
-    function cSupplyValDecoder(
-        uint112 _cSupplyVal
-    )
-        external
-        pure
-        returns (
-            uint112 _totalSupply,
-            uint112 _initialSupply,
-            uint112 _wavReserve,
-            uint112 _preSupply
-        )
-    {
-        if (_cSupplyVal < SHIFT_33) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-
-        // Extract fields using the same shifts as the encoder
-        _totalSupply = uint112((_cSupplyVal / SHIFT_23) % SHIFT_11);
-        _initialSupply = uint112((_cSupplyVal / SHIFT_13) % SHIFT_11);
-        _wavReserve = uint112((_cSupplyVal / SHIFT_7) % SHIFT_7);
-        _preSupply = uint112(_cSupplyVal % SHIFT_7);
-
-        return (_totalSupply, _initialSupply, _wavReserve, _preSupply);
-    }
 
     // UNFINISHED
     // should be called after conditional in cSupplyValEncoder
@@ -443,7 +203,7 @@ contract WavDBC {
      * @param _seperateTSupply2 Second user-defined total supply input for seperately sold Content Tokens.
      * @param _seperateTSupply3 Third user-defined total supply input for seperately sold Content Tokens.
      */
-    function sTotalSupplyEncoder(
+    /*function sTotalSupplyEncoder(
         uint8 _zeroVal,
         uint112 _seperateTSupply1,
         uint112 _seperateTSupply2,
@@ -467,7 +227,7 @@ contract WavDBC {
         _sTotalSupply += _seperateTSupply2 * SHIFT_11;
         _sTotalSupply += _seperateTSupply3;
         return _sTotalSupply;
-    }
+    }*/
 
     /**
      * @notice Decodes encoded input into its underlying four raw values for the sTotalSupply CContentToken property.
@@ -475,7 +235,7 @@ contract WavDBC {
      *      Function Selector: 0x03c7c796
      * @param _sTotalSupply Unsigned interger containing multiple compacted supply definitions.
      */
-    function sTotalSupplyDecoder(
+    /*function sTotalSupplyDecoder(
         uint112 _sTotalSupply
     )
         external
@@ -507,7 +267,7 @@ contract WavDBC {
             _seperateTSupply2,
             _seperateTSupply3
         );
-    }
+    }*/
 
     // POSSIBLY literally identical to sTotalSupply Encode / Decode
     // Current is LITERAL implementation
@@ -521,7 +281,7 @@ contract WavDBC {
      * @param _seperateISupply2 Second user-defined initial supply input for seperately sold Content Tokens.
      * @param _seperateISupply3 Third user-defined initial supply input for seperately sold Content Tokens.
      */
-    function sInitialSupplyEncoder(
+    /*function sInitialSupplyEncoder(
         uint8 _zeroVal,
         uint112 _seperateISupply1,
         uint112 _seperateISupply2,
@@ -545,7 +305,7 @@ contract WavDBC {
         _sInitialSupply += _seperateISupply2 * SHIFT_11;
         _sInitialSupply += _seperateISupply3;
         return _sInitialSupply;
-    }
+    }*/
 
     /**
      * @notice Decodes encoded input into its underlying four raw values for the sInitialSupply CContentToken property.
@@ -553,7 +313,7 @@ contract WavDBC {
      *      Function Selector: 0x1014bf93
      * @param _sInitialSupply Unsigned interger containing multiple compacted supply definitions.
      */
-    function sInitialSupplyDecoder(
+    /*function sInitialSupplyDecoder(
         uint112 _sInitialSupply
     )
         external
@@ -585,46 +345,9 @@ contract WavDBC {
             _seperateISupply2,
             _seperateISupply3
         );
-    }
+    }*/
 
-    function sSupplyValEncoder(
-        uint8 _zeroVal,
-        uint112 _seperateTSupply1,
-        uint112 _seperateTSupply2,
-        uint112 _seperateTSupply3,
-        uint112 _seperateISupply1,
-        uint112 _seperateISupply2,
-        uint112 _seperateISupply3
-    ) external pure returns (uint224 _sSupplyVal) {
-        if (
-            _zeroVal > 1 ||
-            _seperateTSupply1 >= SHIFT_11 ||
-            _seperateTSupply2 >= SHIFT_11 ||
-            _seperateTSupply3 >= SHIFT_11 ||
-            _seperateTSupply1 >= SHIFT_11 ||
-            _seperateTSupply2 >= SHIFT_11 ||
-            _seperateTSupply3 >= SHIFT_11
-        ) {
-            revert WavDBC__NumInputInvalid();
-        }
-
-        _sSupplyVal = SHIFT_63__224;
-
-        if (_zeroVal == 1) {
-            _sSupplyVal += SHIFT_61__224;
-        }
-
-        _sSupplyVal += uint224(_seperateTSupply1) * SHIFT_51__224;
-        _sSupplyVal += uint224(_seperateTSupply2) * SHIFT_41__224;
-        _sSupplyVal += uint224(_seperateTSupply3) * SHIFT_31__224;
-        _sSupplyVal += uint224(_seperateISupply1) * SHIFT_21__224;
-        _sSupplyVal += uint224(_seperateISupply2) * SHIFT_11__224;
-        _sSupplyVal += uint224(_seperateISupply3);
-
-        return _sSupplyVal;
-    }
-
-    function sSupplyValDecoder(
+    /*function sSupplyValDecoder(
         uint224 _sSupplyVal
     )
         external
@@ -675,7 +398,60 @@ contract WavDBC {
             _seperateISupply2,
             _seperateISupply3
         );
-    }
+    }*/
+
+    /*function _sSupplyValDecoder(
+        uint224 _sSupplyVal
+    )
+        internal
+        pure
+        returns (
+            uint8 _zeroVal,
+            uint112 _seperateTSupply1,
+            uint112 _seperateTSupply2,
+            uint112 _seperateTSupply3,
+            uint112 _seperateISupply1,
+            uint112 _seperateISupply2,
+            uint112 _seperateISupply3
+        )
+    {
+        if (_sSupplyVal < MIN_SSUPPLY) {
+            revert WavDBC__MinEncodedValueInvalid();
+        }
+
+        // Extract _zeroVal
+        _zeroVal = uint8((_sSupplyVal / SHIFT_61__224) % 10);
+        if (_zeroVal > 1) {
+            revert WavDBC__MinEncodedValueInvalid();
+        }
+
+        _seperateTSupply1 = uint112(
+            (_sSupplyVal / SHIFT_51__224) % SHIFT_11__224
+        );
+        _seperateTSupply2 = uint112(
+            (_sSupplyVal / SHIFT_41__224) % SHIFT_11__224
+        );
+        _seperateTSupply3 = uint112(
+            (_sSupplyVal / SHIFT_31__224) % SHIFT_11__224
+        );
+        _seperateISupply1 = uint112(
+            (_sSupplyVal / SHIFT_21__224) % SHIFT_11__224
+        );
+        _seperateISupply2 = uint112(
+            (_sSupplyVal / SHIFT_11__224) % SHIFT_11__224
+        );
+        _seperateISupply3 = uint112(_sSupplyVal % SHIFT_11__224);
+
+        return (
+            _zeroVal,
+            _seperateTSupply1,
+            _seperateTSupply2,
+            _seperateTSupply3,
+            _seperateISupply1,
+            _seperateISupply2,
+            _seperateISupply3
+        );
+    }*/
 
     /**
      * @notice Encodes four raw values related to the sWavR CContentToken property.
@@ -686,7 +462,7 @@ contract WavDBC {
      * @param _seperateWavR2 Second user-defined WavReserve input for seperately sold Content Tokens.
      * @param _seperateWavR3 Third user-defined WavReserve input for seperately sold Content Tokens.
      */
-    function sWavREncoder(
+    /*function sWavREncoder(
         uint8 _zeroVal,
         uint80 _seperateWavR1,
         uint80 _seperateWavR2,
@@ -710,7 +486,7 @@ contract WavDBC {
         _sWavR += _seperateWavR2 * SHIFT_7__80;
         _sWavR += _seperateWavR3;
         return _sWavR;
-    }
+    }*/
 
     /**
      * @notice Decodes encoded input into its underlying four raw values for the sWavR CContentToken property.
@@ -718,7 +494,7 @@ contract WavDBC {
      *      Function Selector: 0xe5b184d2
      * @param _sWavR Unsigned interger containing multiple reserve allocation values.
      */
-    function sWavRDecoder(
+    /*function sWavRDecoder(
         uint80 _sWavR
     )
         external
@@ -745,7 +521,7 @@ contract WavDBC {
         // Extract 'J'
         _seperateWavR3 = _sWavR % SHIFT_7__80;
         return (_zeroVal, _seperateWavR1, _seperateWavR2, _seperateWavR3);
-    }
+    }*/
 
     /**
      * @notice Encodes four raw values related to the sPreSaleR CContentToken property.
@@ -756,7 +532,7 @@ contract WavDBC {
      * @param _sPreSupply2 Second user-defined preSupply input for seperately sold Content Tokens.
      * @param _sPreSupply3 Third user-defined preSupply input for seperately sold Content Tokens.
      */
-    function sPreSaleREncoder(
+    /*function sPreSaleREncoder(
         uint8 _zeroVal,
         uint80 _sPreSupply1,
         uint80 _sPreSupply2,
@@ -780,7 +556,7 @@ contract WavDBC {
         _sPreSaleR += _sPreSupply2 * SHIFT_7__80;
         _sPreSaleR += _sPreSupply3;
         return _sPreSaleR;
-    }
+    }*/
 
     /**
      * @notice Decodes encoded input into its underlying four raw values for the sPreSaleR CContentToken property.
@@ -788,7 +564,7 @@ contract WavDBC {
      *      Function Selector: 0x771469ee
      * @param _sPreSaleR Unsigned interger containing preSale allocation values.
      */
-    function sPreSaleRDecoder(
+    /*function sPreSaleRDecoder(
         uint80 _sPreSaleR
     )
         external
@@ -816,509 +592,22 @@ contract WavDBC {
         _sPreSupply3 = _sPreSaleR % SHIFT_7__80;
         // Return Result
         return (_zeroVal, _sPreSupply1, _sPreSupply2, _sPreSupply3);
-    }
+    }*/
 
-    function sReserveValEncoder(
-        uint8 _zeroVal,
-        uint80 _sWavReserve1,
-        uint80 _sWavReserve2,
-        uint80 _sWavReserve3,
-        uint80 _sPreRelease1,
-        uint80 _sPreRelease2,
-        uint80 _sPreRelease3
-    ) external pure returns (uint160 _sReserveVal) {
-        if (
-            _zeroVal > 1 ||
-            _sWavReserve1 >= SHIFT_7__160 ||
-            _sWavReserve2 >= SHIFT_7__160 ||
-            _sWavReserve3 >= SHIFT_7__160 ||
-            _sPreRelease1 >= SHIFT_7__160 ||
-            _sPreRelease2 >= SHIFT_7__160 ||
-            _sPreRelease3 >= SHIFT_7__160
-        ) {
-            revert WavDBC__NumInputInvalid();
-        }
-
-        _sReserveVal = SHIFT_39__160;
-
-        if (_zeroVal == 1) {
-            _sReserveVal += SHIFT_37__160;
-        }
-
-        _sReserveVal += _sWavReserve1 * SHIFT_31__160;
-        _sReserveVal += _sWavReserve2 * SHIFT_25__160;
-        _sReserveVal += _sWavReserve3 * SHIFT_19__160;
-        _sReserveVal += _sPreRelease1 * SHIFT_13__160;
-        _sReserveVal += _sPreRelease2 * SHIFT_7__160;
-        _sReserveVal += _sPreRelease3;
-
-        return _sReserveVal;
-    }
-
-    function sReserveValDecoder(
-        uint160 _sReserveVal
-    )
-        external
-        pure
-        returns (
-            uint8 _zeroVal,
-            uint80 _sWavReserve1,
-            uint80 _sWavReserve2,
-            uint80 _sWavReserve3,
-            uint80 _sPreRelease1,
-            uint80 _sPreRelease2,
-            uint80 _sPreRelease3
-        )
-    {
-        if (_sReserveVal < SHIFT_39__160) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-
-        _zeroVal = uint8((_sReserveVal / SHIFT_37__160) % 10);
-        if (_zeroVal > 1) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-
-        _sWavReserve1 = uint80((_sReserveVal / SHIFT_31__160) % SHIFT_7__160);
-        _sWavReserve2 = uint80((_sReserveVal / SHIFT_25__160) % SHIFT_7__160);
-        _sWavReserve3 = uint80((_sReserveVal / SHIFT_19__160) % SHIFT_7__160);
-        _sPreRelease1 = uint80((_sReserveVal / SHIFT_13__160) % SHIFT_7__160);
-        _sPreRelease2 = uint80((_sReserveVal / SHIFT_7__160) % SHIFT_7__160);
-        _sPreRelease3 = uint80(_sReserveVal % SHIFT_7__160);
-
-        return (
-            _zeroVal,
-            _sWavReserve1,
-            _sWavReserve2,
-            _sWavReserve3,
-            _sPreRelease1,
-            _sPreRelease2,
-            _sPreRelease3
-        );
-    }
-
-    /**
-     * @notice Encodes three raw values related to active supply locations of the service.
-     * @dev Function called by script to efficiently store remaining supply data.
-     *      Function Selector: 0x209bb4af
-     * @param _wavStoreSupplies First user-defined WavStore supply input.
-     * @param _wavReserveSupplies Second user-defined WavReserve supply input.
-     * @param _preReleaseSupplies Third user-defined PreRelease supply input.
-     */
-    function remainingSupplyEncoder(
-        uint112 _wavStoreSupplies,
-        uint112 _wavReserveSupplies,
-        uint112 _preReleaseSupplies
-    ) external pure returns (uint112 _remainingSupplyVal) {
-        _remainingSupplyEncoder(
-            _wavStoreSupplies,
-            _wavReserveSupplies,
-            _preReleaseSupplies
-        );
-    }
-
-    /**
-     * @notice Encodes three raw values related to active supply locations of the service.
-     * @dev Function called by script to efficiently store remaining supply data.
-     *      Function Selector: 0x209bb4af
-     * @param _wavStoreSupplies First user-defined WavStore supply input.
-     * @param _wavReserveSupplies Second user-defined WavReserve supply input.
-     * @param _preReleaseSupplies Third user-defined PreRelease supply input.
-     */
-    function _remainingSupplyEncoder(
-        uint112 _wavStoreSupplies,
-        uint112 _wavReserveSupplies,
-        uint112 _preReleaseSupplies
-    ) internal pure returns (uint112 _remainingSupplyVal) {
-        if (
-            _wavStoreSupplies >= SHIFT_11 ||
-            _wavReserveSupplies >= SHIFT_11 ||
-            _preReleaseSupplies >= SHIFT_11
-        ) {
-            revert WavDBC__NumInputInvalid();
-        }
-
-        _remainingSupplyVal = SHIFT_31;
-
-        _remainingSupplyVal += _wavStoreSupplies * SHIFT_21;
-        _remainingSupplyVal += _wavReserveSupplies * SHIFT_11;
-        _remainingSupplyVal += _preReleaseSupplies;
-        return _remainingSupplyVal;
-    }
-
-    /**
-     * @notice Decodes encoded input into three underlying supply values.
-     * @dev Function called by script to decode underlying data stored within cWavSupplies.
-     *      Function Selector: 0x1014bf93
-     * @param _remainingSupply Unsigned interger containing multiple compacted supply definitions.
-     */
-    function remainingSupplyDecoder(
-        uint112 _remainingSupply
-    )
-        external
-        pure
-        returns (
-            uint112 _wavStoreSupplies,
-            uint112 _wavReserveSupplies,
-            uint112 _preReleaseSupplies
-        )
-    {
-        _remainingSupplyDecoder(_remainingSupply);
-    }
-
-    /**
-     * @notice Decodes encoded input into three underlying supply values.
-     * @dev Function called by script to decode underlying data stored within cWavSupplies.
-     *      Function Selector: 0x1014bf93
-     * @param _remainingSupply Unsigned interger containing multiple compacted supply definitions.
-     */
-    function _remainingSupplyDecoder(
-        uint112 _remainingSupply
-    )
-        internal
-        pure
-        returns (
-            uint112 _wavStoreSupplies,
-            uint112 _wavReserveSupplies,
-            uint112 _preReleaseSupplies
-        )
-    {
-        if (_remainingSupply < MIN_REMAINING_SUPPLY) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-        // Extract 'Y'
-        _wavStoreSupplies = (_remainingSupply / SHIFT_21) % SHIFT_11;
-        // Extract 'N'
-        _wavReserveSupplies = (_remainingSupply / SHIFT_11) % SHIFT_11;
-        // Extract 'J'
-        _preReleaseSupplies = _remainingSupply % SHIFT_11;
-        return (_wavStoreSupplies, _wavReserveSupplies, _preReleaseSupplies);
-    }
-
-    /**
-     * @notice Encodes four raw values related to the cReleaseVal Content Token property.
-     * @dev Function called by script to correctly format stored cReleaseVal data.
-     *      Function Selector: 0x6e8c4a2d
-     * @param _startRelease The intended official publication date of a Content Token.
-     * @param _endRelease An optional disable date for official sale of a Content Token.
-     * @param _preRelease An optional timestamp for an enabled preSale period to occur.
-     * @param _pausedAt Variable sale-state property.
-     */
-    function cReleaseValEncoder6(
-        uint96 _startRelease,
-        uint96 _endRelease,
-        uint96 _preRelease,
-        uint8 _pausedAt
-    ) external pure returns (uint96 _releaseVal) {
-        uint96 _hourStamp = _returnHourStamp();
-        if (
-            _startRelease < _hourStamp ||
-            _endRelease < _hourStamp ||
-            _preRelease < _hourStamp ||
-            _pausedAt > 1 ||
-            _startRelease >= CRELEASE_6_MAX ||
-            _endRelease >= CRELEASE_6_MAX ||
-            _preRelease >= CRELEASE_6_MAX
-        ) {
-            revert WavDBC__ReleaseInputIssue();
-        }
-        _releaseVal += _startRelease * SHIFT_13__96;
-        _releaseVal += _endRelease * SHIFT_7__96;
-        _releaseVal += _preRelease * SHIFT_1__96;
-        _releaseVal += _pausedAt;
-        return _releaseVal;
-    }
-
-    /**
-     * @notice Encodes a batch of four input values related to multiple cReleaseVal properties.
-     * @param _startReleaseBatch Array of official Content Token publication dates.
-     * @param _endReleaseBatch Array of Content Token optional termination of sale timestamps.
-     * @param _preReleaseBatch Array of Content Token optional preSale period timestamps.
-     * @param _pausedAtBatch Array of variable sale-state properties.
-     *
-     */
-    function cReleaseValEncoderBatch6(
-        uint96[] calldata _startReleaseBatch,
-        uint96[] calldata _endReleaseBatch,
-        uint96[] calldata _preReleaseBatch,
-        uint8[] calldata _pausedAtBatch
-    ) external pure returns (uint96[] memory _releaseValBatch) {
-        uint96 _releaseLength = _startReleaseBatch.length;
-
-        if (
-            _releaseLength != _endReleaseBatch.length ||
-            _releaseLength != _preReleaseBatch.length ||
-            _releaseLength != _pausedAtBatch.length
-        ) {
-            revert WavDBC__LengthValIssue();
-        }
-
-        if (_releaseLength == 0) {
-            return new uint96[](0);
-        }
-
-        uint96 _hourStamp = _returnHourStamp();
-
-        for (uint96 i = 0; i < _releaseLength; ) {
-            uint96 _str = _startReleaseBatch[i];
-            uint96 _end = _endReleaseBatch[i];
-            uint96 _pre = _preReleaseBatch[i];
-            uint8 _paused = _pausedAtBatch[i];
-
-            if (
-                _str >= SHIFT_7__96 ||
-                _end >= SHIFT_7__96 ||
-                _pre >= SHIFT_7__96 ||
-                _paused > 1
-            ) {
-                revert WavDBC__ReleaseInputIssue();
-            }
-            // TEST IF PARENTHESIS ARE NEEDED FOR FUNCTIONAL SYNTAX
-            _releaseValBatch[i] =
-                _str *
-                SHIFT_13__96 +
-                _end *
-                SHIFT_7__96 +
-                _pre *
-                SHIFT_1__96 +
-                uint96(_paused);
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        // this is where a lot of the report corrections take place from here
-
-        /*  if(
-                    _startReleaseBatch[i] < _hourStamp ||
-                    _endReleaseBatch[i] < _hourStamp ||
-                    _preReleaseBatch[i] < _hourStamp ||
-                    _pausedAtBatch[i] > 1 ||
-                    _startReleaseBatch[i] >= CRELEASE_6_MAX ||
-                    _endReleaseBatch[i] >= CRELEASE_6_MAX ||
-                    _preReleaseBatch[i] >= CRELEASE_6_MAX) {
-                    revert WavDBC__ReleaseInputIssue();
-                }
-                _releaseValBatch[i] += _startReleaseBatch[i] * SHIFT_13__96;
-                _releaseValBatch[i] += _endReleaseBatch[i] * SHIFT_7__96;
-                _releaseValBatch[i] += _preReleaseBatch[i] * SHIFT_1__96;
-                _releaseValBatch[i] += _pausedAtBatch[i];
-            
-          */ return
-            _releaseValBatch;
-    }
-
-    /**
-     * @notice Decodes underlying values within the releaseVal CContentToken property.
-     * @dev Function called by script to decode underlying data stored within releaseVal.
-     *      Function Selector: 0x70f143f2
-     * @param _releaseVal Unsigned interger containing timestamp publication data.
-     */
-    function cReleaseValDecoder6(
-        uint96 _releaseVal
-    )
-        external
-        pure
-        returns (
-            uint96 _startRelease,
-            uint96 _endRelease,
-            uint96 _preRelease,
-            uint8 _pausedAt
-        )
-    {
-        _cReleaseValDecoder6();
-    }
-
-    /**
-     * @notice Decodes underlying values within the releaseVal CContentToken property.
-     * @dev Function called by script to decode underlying data stored within releaseVal.
-     *      Function Selector: 0x70f143f2
-     * @param _releaseVal Unsigned interger containing timestamp publication data.
-     */
-    function _cReleaseValDecoder6(
-        uint96 _releaseVal
-    )
-        internal
-        pure
-        returns (
-            uint96 _startRelease,
-            uint96 _endRelease,
-            uint96 _preRelease,
-            uint8 _pausedAt
-        )
-    {
-        if (_releaseVal <= SHIFT_19__96 || _releaseVal >= SHIFT_20__96) {
-            revert WavDBC__NumInputInvalid();
-        }
-        _startRelease = _releaseVal / SHIFT_13__96;
-        _endRelease = (_releaseVal / SHIFT_8__96) % SHIFT_7__96;
-        _preRelease = (_releaseVal / SHIFT_1__96) % SHIFT_7__96;
-        _pausedAt = uint8(_releaseVal % SHIFT_1__96);
-
-        return (_startRelease, _endRelease, _preRelease, _pausedAt);
-    }
-
-    /**
-     * @notice Decodes underlying values within releaseValBatch.
-     * @dev Function called by script to decode underlying data stored within releaseValBatch.
-     *      Function Selector: 0x70f143f2
-     * @param _releaseValBatch Batch of unsigned intergers containing timestamp publication data.
-     */
-    function cReleaseValDecoderBatch6(
-        uint96[] calldata _releaseValBatch
-    )
-        external
-        pure
-        returns (
-            uint96[] memory _startReleaseBatch,
-            uint96[] memory _endReleaseBatch,
-            uint96[] memory _preReleaseBatch,
-            uint8[] memory _pausedAtBatch
-        )
-    {
-        uint96 _releaseLength = _releaseValBatch.length;
-
-        if (_releaseLength < 2) {
-            revert WavDBC__LengthValIssue();
-        }
-
-        _startReleaseBatch = new uint96[](_releaseLength);
-        _endReleaseBatch = new uint96[](_releaseLength);
-        _preReleaseBatch = new uint96[](_releaseLength);
-        _pausedAtBatch = new uint8[](_releaseLength);
-
-        for (uint256 i = 0; i < _releaseLength; ) {
-            uint96 _packed = _releaseValBatch[i];
-
-            // mirror your single-instance validation
-            if (_packed <= SHIFT_19__96 || _packed >= SHIFT_20__96) {
-                revert WavDBC__MinEncodedValueInvalid();
-            }
-            // inline decode exactly as in cReleaseValDecoder6
-            _startReleaseBatch[i] = _packed / SHIFT_13__96;
-            _endReleaseBatch[i] = (_packed / SHIFT_8__96) % SHIFT_7__96;
-        }
-    }
-
-    /**
-     * @notice Decodes underlying data within encoded royaltyVal value.
-     * @dev Function called by script to decode underlying data stored within royaltyVal.
-     *      Function Selector: 0xf514db49
-     * @param _zeroVal Indicates presence of zero value.
-     * @param _royalty1 First user-defined collaborator royalty share value.
-     * @param _royalty2 Second user-defined collaborator royalty share value.
-     * @param _royalty3 Third user-defined collaborator royalty share value.
-     * @param _royalty4 Fourth user-defined collaborator royalty share value.
-     * @param _royalty5 Fifth user-defined collaborator royalty share value.
-     * @param _royalty6 Sixth user-defined collaborator royalty share value.
-     */
-    function royaltyValEncoder(
-        uint8 _zeroVal,
-        uint32 _royalty1,
-        uint32 _royalty2,
-        uint32 _royalty3,
-        uint32 _royalty4,
-        uint32 _royalty5,
-        uint32 _royalty6
-    ) external pure returns (uint128 _royaltyVal) {
-        if (
-            _zeroVal > 1 ||
-            _royalty1 >= SHIFT_7__32 ||
-            _royalty2 >= SHIFT_7__32 ||
-            _royalty3 >= SHIFT_7__32 ||
-            _royalty4 >= SHIFT_7__32 ||
-            _royalty5 >= SHIFT_7__32 ||
-            _royalty6 >= SHIFT_7__32
-        ) {
-            revert WavDBC__NumInputInvalid();
-        }
-        // leading '1' at digit of greatest significance
-        _royaltyVal = uint128(10 ** 38);
-
-        if (_zeroVal == 1) {
-            _royaltyVal += uint128(10 ** 36);
-        }
-        // Position the six 6-digit royalty inputs
-        _royaltyVal += uint128(uint256(_royalty1) * 10 ** 31);
-        _royaltyVal += uint128(uint256(_royalty2) * 10 ** 25);
-        _royaltyVal += uint128(uint256(_royalty3) * 10 ** 19);
-        _royaltyVal += uint128(uint256(_royalty4) * 10 ** 13);
-        _royaltyVal += uint128(uint256(_royalty5) * 10 ** 7);
-        _royaltyVal += uint128(_royalty6);
-
-        return _royaltyVal;
-    }
-
-    /** ***SHOULD BE MODIFIED TO USE CONSTANTS***
-     * @notice Decodes underlying data within encoded royaltyVal value.
-     * @dev Function called by script to decode underlying data stored within royaltyVal.
-     *      Function Selector: 0xf514db49
-     * @param _royaltyVal Unsigned interger containing collaborator royalty data.
-     */
-    function royaltyValDecoder(
-        uint128 _royaltyVal
-    )
-        external
-        pure
-        returns (
-            uint8 _zeroVal,
-            uint32 _royalty1,
-            uint32 _royalty2,
-            uint32 _royalty3,
-            uint32 _royalty4,
-            uint32 _royalty5,
-            uint32 _royalty6
-        )
-    {
-        _royaltyValDecoder(_royaltyVal);
-    }
-
-    /** ***SHOULD BE MODIFIED TO USE CONSTANTS***
-     * @notice Decodes underlying data within encoded royaltyVal value.
-     * @dev Function called by script to decode underlying data stored within royaltyVal.
-     *      Function Selector: 0xf514db49
-     * @param _royaltyVal Unsigned interger containing collaborator royalty data.
-     */
-    function _royaltyValDecoder(
-        uint128 _royaltyVal
-    )
-        internal
-        pure
-        returns (
-            uint8 _zeroVal,
-            uint32 _royalty1,
-            uint32 _royalty2,
-            uint32 _royalty3,
-            uint32 _royalty4,
-            uint32 _royalty5,
-            uint32 _royalty6
-        )
-    {
-        if (_royaltyVal < MIN_ENCODED_ROYALTY) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-        // Extract _zeroVal
-        _zeroVal = uint8((_royaltyVal / 10 ** 36) % 10);
-        if (_zeroVal > 1) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-        // Extract six 6-digit raw inputs
-        _royalty1 = uint32((_royaltyVal / 10 ** 31) % 10 ** 6);
-        _royalty2 = uint32((_royaltyVal / 10 ** 25) % 10 ** 6);
-        _royalty3 = uint32((_royaltyVal / 10 ** 19) % 10 ** 6);
-        _royalty4 = uint32((_royaltyVal / 10 ** 13) % 10 ** 6);
-        _royalty5 = uint32((_royaltyVal / 10 ** 7) % 10 ** 6);
-        _royalty6 = uint32(_royaltyVal % 10 ** 6);
-    }
-
+    //
+    //
+    //
+    //
+    //
+    //
+    //
     /**
      * @notice Validates and returns cReleaseVal data specific to a Content Token.
      * @dev Authenticates cReleaseVal data associated to provided hashId input for further use.
      *      Function Selector: 0xc40e145a
      * @param _hashId Identifier of Content Token being queried.
      */
-    function validateContentTokenReleaseData(
+    /*function validateContentTokenReleaseData(
         bytes32 _hashId
     )
         external
@@ -1336,12 +625,8 @@ contract WavDBC {
 
         if (_releaseVal != 0) {
             // IF logic here
-            (
-                _startRelease,
-                _endRelease,
-                _preRelease,
-                _pausedAt
-            ) = _cReleaseValDecoder6(_releaseVal);
+            (_startRelease, _endRelease, _preRelease, _pausedAt) = ReleaseDBC
+                ._cReleaseValDecoder6(_releaseVal);
             return;
         }
 
@@ -1349,17 +634,13 @@ contract WavDBC {
 
         if (_releaseVal != 0) {
             // IF logic here
-            (
-                _startRelease,
-                _endRelease,
-                _preRelease,
-                _pausedAt
-            ) = _cReleaseValDecoder6(_releaseVal);
+            (_startRelease, _endRelease, _preRelease, _pausedAt) = ReleaseDBC
+                ._cReleaseValDecoder6(_releaseVal);
             return;
         }
 
         revert WavDBC__InputError404();
-    }
+    }*/
 
     /**
      * @notice Validates and returns a dynamic quantity of cReleaseVal data associated with Content Tokens.
@@ -1367,7 +648,7 @@ contract WavDBC {
      *      Function Selector: 0x341f7875
      * @param _hashIdBatch Batch of Content Token identifier values being queried.
      */
-    function validateContentTokenReleaseDataBatch(
+    /*function validateContentTokenReleaseDataBatch(
         bytes32[] calldata _hashIdBatch
     )
         external
@@ -1400,13 +681,13 @@ contract WavDBC {
                 _endRelease[i],
                 _preRelease[i],
                 _pausedAt[i]
-            ) = _cReleaseValDecoder6(_packed);
+            ) = ReleaseDBC._cReleaseValDecoder6(_packed);
 
             unchecked {
                 ++i;
             }
         }
-    }
+    }*/
 
     /**
      * @notice Validates and returns a price property instance associated with a ContentToken.
@@ -1498,7 +779,7 @@ contract WavDBC {
 
          }*/
 
-    /**
+    /** **** SupplyHelpers/ValidatePreReleaseSale.sol ****
      * @notice Validates price property, converts to wei, and debits supply.
      * @dev Authenticates Content Token PreRelease supply and pricing data prior to sale.
      *      Function Selector: 0x8748539f
@@ -1506,7 +787,7 @@ contract WavDBC {
      * @param _numToken Content Token identifier used to specify the token index being queried.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function _validateDebitPreRelease(
+    /*function _validateDebitPreRelease(
         bytes32 _hashId,
         uint16 _numToken,
         uint112 _quantity
@@ -1519,7 +800,7 @@ contract WavDBC {
         // if <x> value is found and exists...
         if (_cPriceUsd != 0 && _numToken == 0) {
             // Decode <x> encoded value
-            uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+            uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(_cPriceUsd);
             cDebitPreReleaseSupply(_hashId, _quantity);
             return WavFeed.usdToWei(uint256(_cPriceUsdVal));
         }
@@ -1527,7 +808,7 @@ contract WavDBC {
         _cPriceUsd = ReturnMapping.returnCContentTokenCPriceUsdVal(_hashId);
 
         if (_cPriceUsd != 0 && _numToken == 0) {
-            uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+            uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(_cPriceUsd);
             cDebitPreReleaseSupply(_hashId, _quantity);
             return WavFeed.usdToWei(uint256(_cPriceUsdVal));
         }
@@ -1538,29 +819,32 @@ contract WavDBC {
         );
 
         if (_sPriceUsdVal != 0 && _numToken != 0) {
-            if (!tokenEnabledState(_hashId, _numToken))
-                revert WavDBC__BitValIssue();
+            //if (!tokenEnabledState(_hashId, _numToken)) ***tokenEnabledState currently deprecated
+            //revert WavDBC__BitValIssue();
             // resolve tier and compute price from state map
             uint256 _priceMap = ReturnMapping.returnCContentTokenPriceMap(
                 _hashId
             );
-            uint8 _priceState = _decode2BitState(_priceMap, _numToken);
-            uint256 _usdPrice = sPriceUsdValState(
+            uint8 _priceState = BinaryDBC._decode2BitState(
+                _priceMap,
+                _numToken
+            );
+            uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                 _priceState,
                 _sPriceUsdVal,
                 _hashId
             );
 
             // debit tier pre-release supply
-            uint8 _tierId = _getTier(_hashId, _numToken);
+            uint8 _tierId = BinaryDBC._getTier(_hashId, _numToken);
             sDebitPreReleaseSupply(_hashId, _tierId, _quantity);
 
             return WavFeed.usdToWei(_usdPrice);
         }
         revert WavDBC__InputError404();
-    }
+    }*/
 
-    /**
+    /** **** SupplyHelpers/ValidatePreReleaseBatch.sol ****
      * @notice Validates dynamic quantity of price properties, converts to wei, and debits supply.
      * @dev Authenticates Content Token PreRelease supply and pricing data batch prior to sale.
      *      Function Selector: 0xc0984f53
@@ -1568,7 +852,7 @@ contract WavDBC {
      * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
      * @param _quantityBatch Total instances of each numToken.
      */
-    function _validateDebitPreReleaseBatch(
+    /*function _validateDebitPreReleaseBatch(
         bytes32[] calldata _hashIdBatch,
         uint16[] calldata _numTokenBatch,
         uint112[] calldata _quantityBatch
@@ -1594,7 +878,9 @@ contract WavDBC {
                 _hashId
             );
             if (_cPriceUsd != 0 && _numToken == 0) {
-                uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+                uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
+                    _cPriceUsd
+                );
                 cDebitPreReleaseSupply(_hashId, _quantity);
                 _weiPrice[i] = WavFeed.usdToWei(uint256(_cPriceUsdVal));
                 unchecked {
@@ -1606,7 +892,9 @@ contract WavDBC {
             // Branch 2: CContentToken cPriceUsdVal
             _cPriceUsd = ReturnMapping.returnCContentTokenCPriceUsdVal(_hashId);
             if (_cPriceUsd == 0 && _numToken == 0) {
-                uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+                uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
+                    _cPriceUsd
+                );
                 cDebitPreReleaseSupply(_hashId, _quantity);
                 _weiPrice[i] = WavFeed.usdToWei(uint256(_cPriceUsdVal));
                 unchecked {
@@ -1622,14 +910,17 @@ contract WavDBC {
                 uint256 _priceMap = ReturnMapping.returnCContentTokenPriceMap(
                     _hashId
                 );
-                uint8 _priceState = _decode2BitState(_priceMap, _numToken);
-                uint256 _usdPrice = sPriceUsdValState(
+                uint8 _priceState = BinaryDBC._decode2BitState(
+                    _priceMap,
+                    _numToken
+                );
+                uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                     _priceMap,
                     _sPriceUsdVal,
                     _hashId
                 );
 
-                uint8 _tierId = _getTier(_hashId, _numToken);
+                uint8 _tierId = BinaryDBC._getTier(_hashId, _numToken);
                 sDebitPreReleaseSupply(_hashId, _tierId, _quantity);
 
                 // (reminder for testing) _weiPrice was previously different undeclared identifier
@@ -1641,9 +932,9 @@ contract WavDBC {
             }
             revert WavDBC__InputError404();
         }
-    }
+    }*/
 
-    /**
+    /** **** ValidateWavSale.sol ****
      * @notice Validates price property, converts to wei, and debits supply.
      * @dev Authenticates Content Token WavStore supply and pricing data prior to sale.
      *      Function Selector: 0x6e1da822
@@ -1651,7 +942,7 @@ contract WavDBC {
      * @param _numToken Content Token identifier used to specify the token index being queried.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function _validateDebitWavStore(
+    /* function _validateDebitWavStore(
         bytes32 _hashId,
         uint16 _numToken,
         uint112 _quantity
@@ -1664,7 +955,7 @@ contract WavDBC {
         // if <x> value is found and exists...
         if (_cPriceUsd != 0 && _numToken == 0) {
             // Decode <x> encoded value
-            uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+            uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(_cPriceUsd);
             cDebitWavStoreSupply(_hashId, _quantity);
             return WavFeed.usdToWei(uint256(_cPriceUsdVal));
         }
@@ -1672,7 +963,7 @@ contract WavDBC {
         _cPriceUsd = ReturnMapping.returnCContentTokenCPriceUsdVal(_hashId);
 
         if (_cPriceUsd != 0 && _numToken == 0) {
-            uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+            uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(_cPriceUsd);
             cDebitWavStoreSupply(_hashId, _quantity);
             return WavFeed.usdToWei(uint256(_cPriceUsdVal));
         }
@@ -1683,30 +974,33 @@ contract WavDBC {
         );
 
         if (_sPriceUsdVal != 0 && _numToken != 0) {
-            if (!tokenEnabledState(_hashId, _numToken))
-                revert WavDBC__BitValIssue();
+            //if(!tokenEnabledState(_hashId, _numToken)) ***tokenEnabledState currently deprecated
+            //revert WavDBC__BitValIssue();
             // resolve tier and compute price from state map
             uint256 _priceMap = ReturnMapping.returnCContentTokenPriceMap(
                 _hashId
             );
-            uint8 _priceState = _decode2BitState(_priceMap, _numToken);
-            uint256 _usdPrice = sPriceUsdValState(
+            uint8 _priceState = BinaryDBC._decode2BitState(
+                _priceMap,
+                _numToken
+            );
+            uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                 _priceState,
                 _sPriceUsdVal,
                 _hashId
             );
 
             // debit tier pre-release supply
-            uint8 _tierId = _getTier(_hashId, _numToken);
+            uint8 _tierId = BinaryDBC._getTier(_hashId, _numToken);
             sDebitWavStoreSupply(_hashId, _tierId, _quantity);
 
             return WavFeed.usdToWei(_usdPrice);
         }
 
         revert WavDBC__InputError404();
-    }
+    } */
 
-    /**
+    /** **** ValidateWavSaleBatch.sol  ****
      * @notice Validates dynamic quantity of price properties, converts to wei, and debits supply.
      * @dev Authenticates Content Token WavStore supply and pricing data batch prior to sale.
      *      Function Selector: 0x83b2de3d
@@ -1714,7 +1008,7 @@ contract WavDBC {
      * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
      * @param _quantityBatch Total instances of each numToken.
      */
-    function _validateDebitWavStoreBatch(
+    /*function _validateDebitWavStoreBatch(
         bytes32[] calldata _hashIdBatch,
         uint16[] calldata _numTokenBatch,
         uint112[] calldata _quantityBatch
@@ -1740,7 +1034,9 @@ contract WavDBC {
                 _hashId
             );
             if (_cPriceUsd != 0 && _numToken == 0) {
-                uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+                uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
+                    _cPriceUsd
+                );
                 cDebitWavStoreSupply(_hashId, _quantity);
                 _weiPrice[i] = WavFeed.usdToWei(uint256(_cPriceUsdVal));
                 unchecked {
@@ -1752,7 +1048,9 @@ contract WavDBC {
             // Branch 2: CContentToken cPriceUsdVal
             _cPriceUsd = ReturnMapping.returnCContentTokenCPriceUsdVal(_hashId);
             if (_cPriceUsd == 0 && _numToken == 0) {
-                uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+                uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
+                    _cPriceUsd
+                );
                 cDebitWavStoreSupply(_hashId, _quantity);
                 _weiPrice[i] = WavFeed.usdToWei(uint256(_cPriceUsdVal));
                 unchecked {
@@ -1768,14 +1066,17 @@ contract WavDBC {
                 uint256 _priceMap = ReturnMapping.returnCContentTokenPriceMap(
                     _hashId
                 );
-                uint8 _priceState = _decode2BitState(_priceMap, _numToken);
-                uint256 _usdPrice = sPriceUsdValState(
+                uint8 _priceState = BinaryDBC._decode2BitState(
+                    _priceMap,
+                    _numToken
+                );
+                uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                     _priceMap,
                     _sPriceUsdVal,
                     _hashId
                 );
 
-                uint8 _tierId = _getTier(_hashId, _numToken);
+                uint8 _tierId = BinaryDBC._getTier(_hashId, _numToken);
                 sDebitWavStoreSupply(_hashId, _tierId, _quantity);
 
                 // (reminder for testing) _weiPrice was previously different undeclared identifier
@@ -1787,9 +1088,9 @@ contract WavDBC {
             }
             revert WavDBC__InputError404();
         }
-    }
+    }*/
 
-    /**
+    /** Messages/ValidateWavReserveSale.txt
      * @notice Validates price property, converts to wei, and debits supply.
      * @dev Authenticates Content Token WavReserve supply and pricing data prior to sale.
      *      Function Selector: 0x7b994452
@@ -1797,7 +1098,7 @@ contract WavDBC {
      * @param _numToken Content Token identifier used to specify the token index being queried.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function _validateDebitWavReserve(
+    /*function _validateDebitWavReserve(
         bytes32 _hashId,
         uint16 _numToken,
         uint112 _quantity
@@ -1810,7 +1111,7 @@ contract WavDBC {
         // if <x> value is found and exists...
         if (_cPriceUsd != 0 && _numToken == 0) {
             // Decode <x> encoded value
-            uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+            uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(_cPriceUsd);
             cDebitWavReserve(_hashId, _quantity);
             return WavFeed.usdToWei(uint256(_cPriceUsdVal));
         }
@@ -1818,7 +1119,7 @@ contract WavDBC {
         _cPriceUsd = ReturnMapping.returnCContentTokenCPriceUsdVal(_hashId);
 
         if (_cPriceUsd != 0 && _numToken == 0) {
-            uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+            uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(_cPriceUsd);
             cDebitWavReserve(_hashId, _quantity);
             return WavFeed.usdToWei(uint256(_cPriceUsdVal));
         }
@@ -1829,30 +1130,33 @@ contract WavDBC {
         );
 
         if (_sPriceUsdVal != 0 && _numToken != 0) {
-            if (!tokenEnabledState(_hashId, _numToken))
-                revert WavDBC__BitValIssue();
+            //if(!tokenEnabledState(_hashId, _numToken)) ***tokenEnabledState currently deprecated
+            //revert WavDBC__BitValIssue();
             // resolve tier and compute price from state map
             uint256 _priceMap = ReturnMapping.returnCContentTokenPriceMap(
                 _hashId
             );
-            uint8 _priceState = _decode2BitState(_priceMap, _numToken);
-            uint256 _usdPrice = sPriceUsdValState(
+            uint8 _priceState = BinaryDBC._decode2BitState(
+                _priceMap,
+                _numToken
+            );
+            uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                 _priceState,
                 _sPriceUsdVal,
                 _hashId
             );
 
             // debit tier pre-release supply
-            uint8 _tierId = _getTier(_hashId, _numToken);
+            uint8 _tierId = BinaryDBC._getTier(_hashId, _numToken);
             sDebitWavReserve(_hashId, _tierId, _quantity);
 
             return WavFeed.usdToWei(_usdPrice);
         }
 
         revert WavDBC__InputError404();
-    }
+    }*/
 
-    /**
+    /** Messages/ValidateWavReserveSale.txt
      * @notice Validates dynamic quantity of price properties, converts to wei, and debits supply.
      * @dev Authenticates Content Token WavReserve supply and pricing data batch prior to sale.
      *      Function Selector: 0xb2ebf7f4
@@ -1860,7 +1164,7 @@ contract WavDBC {
      * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
      * @param _quantityBatch Total instances of each numToken.
      */
-    function _validateDebitWavReserveBatch(
+    /*function _validateDebitWavReserveBatch(
         bytes32[] calldata _hashIdBatch,
         uint16[] calldata _numTokenBatch,
         uint112[] calldata _quantityBatch
@@ -1886,7 +1190,9 @@ contract WavDBC {
                 _hashId
             );
             if (_cPriceUsd != 0 && _numToken == 0) {
-                uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+                uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
+                    _cPriceUsd
+                );
                 cDebitWavReserve(_hashId, _quantity);
                 _weiPrice[i] = WavFeed.usdToWei(uint256(_cPriceUsdVal));
                 unchecked {
@@ -1898,7 +1204,9 @@ contract WavDBC {
             // Branch 2: CContentToken cPriceUsdVal
             _cPriceUsd = ReturnMapping.returnCContentTokenCPriceUsdVal(_hashId);
             if (_cPriceUsd == 0 && _numToken == 0) {
-                uint32 _cPriceUsdVal = _cPriceUsdValDecoder(_cPriceUsd);
+                uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
+                    _cPriceUsd
+                );
                 cDebitWavReserve(_hashId, _quantity);
                 _weiPrice[i] = WavFeed.usdToWei(uint256(_cPriceUsdVal));
                 unchecked {
@@ -1914,14 +1222,17 @@ contract WavDBC {
                 uint256 _priceMap = ReturnMapping.returnCContentTokenPriceMap(
                     _hashId
                 );
-                uint8 _priceState = _decode2BitState(_priceMap, _numToken);
-                uint256 _usdPrice = sPriceUsdValState(
+                uint8 _priceState = BinaryDBC._decode2BitState(
+                    _priceMap,
+                    _numToken
+                );
+                uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                     _priceMap,
                     _sPriceUsdVal,
                     _hashId
                 );
 
-                uint8 _tierId = _getTier(_hashId, _numToken);
+                uint8 _tierId = BinaryDBC._getTier(_hashId, _numToken);
                 sDebitWavReserve(_hashId, _tierId, _quantity);
 
                 _weiPrice[i] = WavFeed.usdToWei(_usdPrice);
@@ -1932,171 +1243,7 @@ contract WavDBC {
             }
             revert WavDBC__InputError404();
         }
-    }
-
-    /**
-     * @notice Creates a price map using symbolic binary states for a sPriceUsdVal property of a cContentToken.
-     * @dev Takes a dynamic quantity of index values correlated to 2-bit binary states which are attributed in chronological order.
-     *      Function Selector: 0x1e310e88
-     * @param _indexArray Total quantity of index values stored as numToken property data.
-     * @param _stateArray Correlating quantity of symbolic bit states attributed numerical user-defined price value(s).
-     */
-    function encode2BitStates(
-        uint16[] calldata _indexArray,
-        uint8[] calldata _stateArray
-    ) external pure returns (uint256 _resultVal) {
-        if (
-            _indexArray.length != _stateArray.length ||
-            _indexArray.length < 1 ||
-            _indexArray.length > 127
-        ) {
-            revert WavDBC__LengthValIssue();
-        }
-        _resultVal = 0;
-
-        for (uint256 i = 0; i < _indexArray.length; ++i) {
-            uint8 _index = _indexArray[i];
-            uint8 _state = _stateArray[i];
-            if (_index >= 128 || _state >= 4) {
-                revert WavDBC__BitValIssue();
-            }
-            // Prepare math to clear bits at index
-            uint256 _mask = ~(uint256(0x3)) << (2 * _index);
-            // Insert 2-bit value
-            uint256 _encodedVal = uint256(_state) << (2 * _index);
-            // Clear existing bits at index, insert new value
-            _resultVal = (_resultVal & _mask) | _encodedVal;
-        }
-        // Ensures one or more index is non-zero bitstate
-        if (_resultVal == 0) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-
-        return _resultVal;
-    }
-
-    /**
-     * @notice Decodes and returns binary state of numToken value from valid encoded bitMap.
-     * @dev Takes an encoded priceMap property and returns binary state of specified numToken index.
-     *      Function Selector: 0x1e310e88
-     * @param _bitmap priceMap associated with cContentToken.
-     * @param _numToken numToken index being queried.
-     */
-    function decode2BitState(
-        uint256 _bitmap,
-        uint16 _numToken
-    ) external pure returns (uint8 _value) {
-        _decode2BitState(_bitmap, _numToken);
-    }
-
-    /**
-     * @notice Decodes and returns binary state of numToken value from valid encoded bitMap.
-     * @dev Takes an encoded priceMap property and returns binary state of specified numToken index.
-     *      Function Selector: 0x1e310e88
-     * @param _bitmap priceMap associated with cContentToken.
-     * @param _numToken numToken index being queried.
-     */
-    function _decode2BitState(
-        uint256 _bitmap,
-        uint16 _numToken
-    ) internal pure returns (uint8 _value) {
-        if (_numToken > 128) {
-            revert WavDBC__LengthValIssue();
-        }
-        return uint8((_bitmap >> (2 * _numToken)) & 0x3);
-    }
-
-    function encode3BitState(
-        uint16[] calldata _indexArray,
-        uint8[] calldata _stateArray
-    ) external pure returns (uint256 _bitmap) {
-        _encode3BitState(_indexArray, _stateArray);
-    }
-
-    function _encode3BitState(
-        uint16[] calldata _indexArray,
-        uint8[] calldata _stateArray
-    ) internal pure returns (uint256 _bitmap) {
-        if (
-            _indexArray.length != _stateArray.length ||
-            _indexArray.length < 1 ||
-            _indexArray.length > 85
-        ) {
-            revert WavDBC__LengthValIssue();
-        }
-
-        uint256 _result = 0;
-        for (uint256 i = 0; i < _indexArray.length; ++i) {
-            uint16 _index = _indexArray[i];
-            uint8 _state = _stateArray[i];
-
-            if (_index >= 85 || _state >= 8) {
-                revert WavDBC__BitValIssue();
-            }
-
-            uint256 _mask = ~(uint256(0x7) << (3 * _index));
-            uint256 _insert = uint256(_state) << (3 * _index);
-
-            _result = (_result & _mask) | _insert;
-        }
-
-        if (_result == 0) {
-            revert WavDBC__MinEncodedValueInvalid();
-        }
-
-        return _result;
-    }
-
-    function decode3BitState(
-        uint256 _bitmap,
-        uint16 _numToken
-    ) external pure returns (uint8 _value) {
-        if (_numToken >= 85) {
-            revert WavDBC__LengthValIssue();
-        }
-        return uint8((_bitmap >> (3 * _numToken)) & 0x7);
-    }
-
-    /**
-     * @notice Returns the tier index of specified numToken in relation to hashId.
-     * @dev Reads 256-bit word that contains 4-bit tier slot for 64 tokens, extracts 4-bit value attributed to numToken input.
-     *      Function Selector: 0x2be87751
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     */
-    function getTier(
-        bytes32 _hashId,
-        uint16 _numToken
-    ) external view returns (uint8) {
-        _getTier(_hashId, _numToken);
-    }
-
-    /**
-     * @notice Returns the tier index of specified numToken in relation to hashId.
-     * @dev Reads 256-bit word that contains 4-bit tier slot for 64 tokens, extracts 4-bit value attributed to numToken input.
-     *      Function Selector: 0x2be87751
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     */
-    function _getTier(
-        bytes32 _hashId,
-        uint16 _numToken
-    ) internal view returns (uint8) {
-        ContentTokenSupplyMapStorage.ContentTokenSupplyMap
-            storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
-                .contentTokenSupplyMapStorage();
-        uint16 _wordIndex = _numToken >> 6;
-        uint8 _within = uint8(_numToken & 63);
-
-        uint256 _packed = ContentTokenSupplyMapStruct.s_tierMap[_hashId][
-            _wordIndex
-        ];
-        // 4 bits per token
-        uint256 _shift = uint256(_within) * 4;
-        uint8 _tierId = uint8((_packed >> _shift) & 0xF);
-
-        return _tierId;
-    }
+    }*/
 
     /**
      * @notice Validates seperate sale availability of provided numToken input in relation to hashId.
@@ -2105,7 +1252,7 @@ contract WavDBC {
      * @param _hashId Identifier of Content Token being queried.
      * @param _numToken Content Token identifier used to specify the token index being queried.
      */
-    function tokenEnabledState(
+    /*function tokenEnabledState(
         bytes32 _hashId,
         uint16 _numToken
     ) internal view returns (bool) {
@@ -2119,10 +1266,9 @@ contract WavDBC {
             _wordIndex
         ];
         return ((_packed >> _within) & 1) == 1;
-    }
+    }*/
 
-    // THIS FUNCTION COULD AND SHOULD BE MADE MUCH BETTER IMO
-    /**
+    /** **** FacetHelpers/LibCollaboratorReserve.sol ****
      * @notice Partitions gross revenue into collaborator reserve.
      * @dev Accesses Collaborator struct and debits earnings based on relevant royalty split
      *      Function Selector: 0x784c9669
@@ -2130,7 +1276,7 @@ contract WavDBC {
      * @param _numToken Content Token identifier used to specify the token index being queried.
      * @param _grossWei Total available ETH share.
      */
-    function _allocateCollaboratorReserve(
+    /*function _allocateCollaboratorReserve(
         bytes32 _hashId,
         uint16 _numToken,
         uint256 _grossWei
@@ -2143,7 +1289,7 @@ contract WavDBC {
 
         CollaboratorStruct.s_collaborators[_hashId];
 
-        uint8 _tokenState = _encode3BitState(_hashId, _numToken);
+        uint8 _tokenState = BinaryDBC._encode3BitState(_hashId, _numToken);
 
         if (CollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
             // Collaborators disabled for numToken
@@ -2160,7 +1306,7 @@ contract WavDBC {
             uint32 r4,
             uint32 r5,
             uint32 r6
-        ) = _royaltyValDecoder(CollaboratorStruct.royaltyVal);
+        ) = PriceDBC._royaltyValDecoder(CollaboratorStruct.royaltyVal);
         if (_tokenState == 1) _selectedSlot = r1;
         else if (_tokenState == 2) _selectedSlot = r2;
         else if (_tokenState == 3) _selectedSlot = r3;
@@ -2183,16 +1329,16 @@ contract WavDBC {
 
         uint256 _netWei = _grossWei - _collaboratorReserveWei;
         return _netWei;
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibWavSupplies.sol ****
      * @notice Deducts quantity of WavStore supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded WavStore supply of hashId.
      *      Function Selector: 0x5a552e46
      * @param _hashId Identifier of Content Token being queried.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function cDebitWavStoreSupply(bytes32 _hashId, uint112 _quantity) internal {
+    /*function cDebitWavStoreSupply(bytes32 _hashId, uint112 _quantity) internal {
         ContentTokenSupplyMapStorage.ContentTokenSupplyMap
             storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
                 .contentTokenSupplyMapStorage();
@@ -2205,7 +1351,7 @@ contract WavDBC {
             uint112 _wavStoreSupply,
             uint112 _wavReserveSupply,
             uint112 _preReleaseSupply
-        ) = _remainingSupplyDecoder(_remainingSupplies);
+        ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
         if (_quantity == 0 || _wavStoreSupply < _quantity) {
             revert WavDBC__NumInputInvalid();
@@ -2213,7 +1359,7 @@ contract WavDBC {
 
         _wavStoreSupply -= _quantity;
 
-        uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
+        uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
             _wavReserveSupply,
             _preReleaseSupply
@@ -2223,16 +1369,16 @@ contract WavDBC {
         ContentTokenSupplyMapStruct.s_cWavSupplies[
             _hashId
         ] = _updatedRemainingSupplies;
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibWavSuppliesBatch.sol ****
      * @notice Deducts batch quantity of WavStore supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded WavStore supply of hashId.
      *      Function Selector: 0xf81676f8
      * @param _hashIdBatch Batch of Content Token identifier values being queried.
      * @param _quantityBatch Instances of each Content Token being purchased.
      */
-    function cDebitWavStoreSupplyBatch(
+    /*function cDebitWavStoreSupplyBatch(
         bytes32[] calldata _hashIdBatch,
         uint112[] calldata _quantityBatch
     ) internal {
@@ -2254,7 +1400,7 @@ contract WavDBC {
                 uint112 _wavStoreSupply,
                 uint112 _wavReserveSupply,
                 uint112 _preReleaseSupply
-            ) = _remainingSupplyDecoder(_remainingSupplies);
+            ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
             if (_quantity == 0 || _wavStoreSupply < _quantity) {
                 revert WavDBC__NumInputInvalid();
@@ -2262,19 +1408,20 @@ contract WavDBC {
 
             _wavStoreSupply -= _quantity;
 
-            uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
-                _wavStoreSupply,
-                _wavReserveSupply,
-                _preReleaseSupply
-            );
+            uint112 _updatedRemainingSupplies = SupplyDBC
+                ._remainingSupplyEncoder(
+                    _wavStoreSupply,
+                    _wavReserveSupply,
+                    _preReleaseSupply
+                );
 
             ContentTokenSupplyMapStruct.s_cWavSupplies[
                 _hashId
             ] = _updatedRemainingSupplies;
         }
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibWavSupplies.sol ****
      * @notice Deducts quantity of WavStore supply tier and updates the encoded value.
      * @dev Reads s_sWavSupplies and updates active encoded WavStore supply tier of hashId.
      *      Function Selector: 0x74750c49
@@ -2282,7 +1429,7 @@ contract WavDBC {
      * @param _tierId Tier index attributed to numToken of CContentToken hashId.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function sDebitWavStoreSupply(
+    /*function sDebitWavStoreSupply(
         bytes32 _hashId,
         uint16 _tierId,
         uint112 _quantity
@@ -2299,7 +1446,7 @@ contract WavDBC {
             uint112 _wavStoreSupply,
             uint112 _wavReserveSupply,
             uint112 _preReleaseSupply
-        ) = _remainingSupplyDecoder(_remainingSupplies);
+        ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
         if (_quantity == 0 || _wavStoreSupply < _quantity) {
             revert WavDBC__NumInputInvalid();
@@ -2307,7 +1454,7 @@ contract WavDBC {
 
         _wavStoreSupply -= _quantity;
 
-        uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
+        uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
             _wavReserveSupply,
             _preReleaseSupply
@@ -2317,9 +1464,9 @@ contract WavDBC {
         ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
             _tierId
         ] = _updatedRemainingSupplies;
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibWavSuppliesBatch.sol ****
      * @notice Deducts batch quantity of WavStore supply and updates the encoded value.
      * @dev Reads s_sWavSupplies and updates active encoded WavStore supply of hashId.
      *      Function Selector: 0x58d94600
@@ -2327,7 +1474,7 @@ contract WavDBC {
      * @param _tierIdBatch The tier value of a particular Content Token.
      * @param _quantityBatch Instances of each Content Token being purchased.
      */
-    function sDebitWavStoreSupplyBatch(
+    /*function sDebitWavStoreSupplyBatch(
         bytes32[] calldata _hashIdBatch,
         uint16[] calldata _tierIdBatch,
         uint112[] calldata _quantityBatch
@@ -2356,7 +1503,7 @@ contract WavDBC {
                 uint112 _wavStoreSupply,
                 uint112 _wavReserveSupply,
                 uint112 _preReleaseSupply
-            ) = _remainingSupplyDecoder(_remainingSupply);
+            ) = SupplyDBC._remainingSupplyDecoder(_remainingSupply);
 
             if (_quantity == 0 || _wavStoreSupply < _quantity) {
                 revert WavDBC__NumInputInvalid();
@@ -2364,7 +1511,7 @@ contract WavDBC {
 
             _wavStoreSupply -= _quantity;
 
-            uint112 _updatedRemainingSupply = _remainingSupplyEncoder(
+            uint112 _updatedRemainingSupply = SupplyDBC._remainingSupplyEncoder(
                 _wavStoreSupply,
                 _wavReserveSupply,
                 _preReleaseSupply
@@ -2378,16 +1525,16 @@ contract WavDBC {
                 ++i;
             }
         }
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibWavReserveSupplies ****
      * @notice Deducts quantity of WavReserve supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded WavReserve supply of hashId.
      *      Function Selector: 0x21373ff6
      * @param _hashId Identifier of Content Token being queried.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function cDebitWavReserve(bytes32 _hashId, uint112 _quantity) internal {
+    /*function cDebitWavReserve(bytes32 _hashId, uint112 _quantity) internal {
         ContentTokenSupplyMapStorage.ContentTokenSupplyMap
             storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
                 .contentTokenSupplyMapStorage();
@@ -2400,7 +1547,7 @@ contract WavDBC {
             uint112 _wavStoreSupply,
             uint112 _wavReserveSupply,
             uint112 _preReleaseSupply
-        ) = _remainingSupplyDecoder(_remainingSupplies);
+        ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
         if (_quantity == 0 || _wavReserveSupply < _quantity) {
             revert WavDBC__NumInputInvalid();
@@ -2408,7 +1555,7 @@ contract WavDBC {
 
         _wavReserveSupply -= _quantity;
 
-        uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
+        uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
             _wavReserveSupply,
             _preReleaseSupply
@@ -2418,16 +1565,16 @@ contract WavDBC {
         ContentTokenSupplyMapStruct.s_cWavSupplies[
             _hashId
         ] = _updatedRemainingSupplies;
-    }
+    }*/
 
-    /**
+    /** FacetHelpers/SupplyHelpers/LibWavReserveSuppliesBatch.sol
      * @notice Deducts batch quantity of WavReserve supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded WavReserve supply of hashId.
      *      Function Selector: 0xa570fed4
      * @param _hashIdBatch Batch of Content Token identifier values being queried.
      * @param _quantityBatch Instances of each Content Token being purchased.
      */
-    function cDebitWavReserveBatch(
+    /*function cDebitWavReserveBatch(
         bytes32[] calldata _hashIdBatch,
         uint112[] calldata _quantityBatch
     ) internal {
@@ -2449,7 +1596,7 @@ contract WavDBC {
                 uint112 _wavStoreSupply,
                 uint112 _wavReserveSupply,
                 uint112 _preReleaseSupply
-            ) = _remainingSupplyDecoder(_remainingSupplies);
+            ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
             if (_quantity == 0 || _wavReserveSupply < _quantity) {
                 revert WavDBC__NumInputInvalid();
@@ -2457,19 +1604,20 @@ contract WavDBC {
 
             _wavReserveSupply -= _quantity;
 
-            uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
-                _wavStoreSupply,
-                _wavReserveSupply,
-                _preReleaseSupply
-            );
+            uint112 _updatedRemainingSupplies = SupplyDBC
+                ._remainingSupplyEncoder(
+                    _wavStoreSupply,
+                    _wavReserveSupply,
+                    _preReleaseSupply
+                );
 
             ContentTokenSupplyMapStruct.s_cWavSupplies[
                 _hashId
             ] = _updatedRemainingSupplies;
         }
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibWavReserveSupplies ****
      * @notice Deducts quantity of WavReserve supply tier and updates the encoded value.
      * @dev Reads s_sWavSupplies and updates active encoded WavReserve supply tier of hashId.
      *      Function Selector: 0x40cb439e
@@ -2477,7 +1625,7 @@ contract WavDBC {
      * @param _tierId Tier index attributed to numToken of CContentToken hashId.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function sDebitWavReserve(
+    /*function sDebitWavReserve(
         bytes32 _hashId,
         uint16 _tierId,
         uint112 _quantity
@@ -2494,7 +1642,7 @@ contract WavDBC {
             uint112 _wavStoreSupply,
             uint112 _wavReserveSupply,
             uint112 _preReleaseSupply
-        ) = _remainingSupplyDecoder(_remainingSupplies);
+        ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
         if (_quantity == 0 || _wavReserveSupply < _quantity) {
             revert WavDBC__NumInputInvalid();
@@ -2502,7 +1650,7 @@ contract WavDBC {
 
         _wavReserveSupply -= _quantity;
 
-        uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
+        uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
             _wavReserveSupply,
             _preReleaseSupply
@@ -2512,9 +1660,9 @@ contract WavDBC {
         ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
             _tierId
         ] = _updatedRemainingSupplies;
-    }
+    }*/
 
-    /**
+    /** FacetHelpers/SupplyHelpers/LibWavReserveSuppliesBatch.sol
      * @notice Deducts batch quantity of WavReserve supply and updates the encoded value.
      * @dev Reads s_sWavSupplies and updates active encoded WavReserve supply of hashId.
      *      Function Selector: 0xf78b6d55
@@ -2522,7 +1670,7 @@ contract WavDBC {
      * @param _tierIdBatch The tier value of a particular Content Token.
      * @param _quantityBatch Instances of each Content Token being purchased.
      */
-    function sDebitWavReserveBatch(
+    /*function sDebitWavReserveBatch(
         bytes32[] calldata _hashIdBatch,
         uint16[] calldata _tierIdBatch,
         uint112[] calldata _quantityBatch
@@ -2551,7 +1699,7 @@ contract WavDBC {
                 uint112 _wavStoreSupply,
                 uint112 _wavReserveSupply,
                 uint112 _preReleaseSupply
-            ) = _remainingSupplyDecoder(_remainingSupply);
+            ) = SupplyDBC._remainingSupplyDecoder(_remainingSupply);
 
             if (_quantity == 0 || _wavReserveSupply < _quantity) {
                 revert WavDBC__NumInputInvalid();
@@ -2559,7 +1707,7 @@ contract WavDBC {
 
             _wavReserveSupply -= _quantity;
 
-            uint112 _updatedRemainingSupply = _remainingSupplyEncoder(
+            uint112 _updatedRemainingSupply = SupplyDBC._remainingSupplyEncoder(
                 _wavStoreSupply,
                 _wavReserveSupply,
                 _preReleaseSupply
@@ -2573,16 +1721,16 @@ contract WavDBC {
                 ++i;
             }
         }
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibPreReleaseSupplies.sol ****
      * @notice Deducts quantity of PreRelease supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded PreRelease supply of hashId.
      *      Function Selector: 0xbeaa0e21
      * @param _hashId Identifier of Content Token being queried.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function cDebitPreReleaseSupply(
+    /*function cDebitPreReleaseSupply(
         bytes32 _hashId,
         uint112 _quantity
     ) internal {
@@ -2598,7 +1746,7 @@ contract WavDBC {
             uint112 _wavStoreSupply,
             uint112 _wavReserveSupply,
             uint112 _preReleaseSupply
-        ) = _remainingSupplyDecoder(_remainingSupplies);
+        ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
         if (_quantity == 0 || _preReleaseSupply < _quantity) {
             revert WavDBC__NumInputInvalid();
@@ -2606,7 +1754,7 @@ contract WavDBC {
 
         _preReleaseSupply -= _quantity;
 
-        uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
+        uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
             _wavReserveSupply,
             _preReleaseSupply
@@ -2616,16 +1764,16 @@ contract WavDBC {
         ContentTokenSupplyMapStruct.s_cWavSupplies[
             _hashId
         ] = _updatedRemainingSupplies;
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibPreReleaseSuppliesBatch ****
      * @notice Deducts batch quantity of PreRelease supply and updates the encoded value.
      * @dev Reads c_cWavSupplies and updates active encoded PreRelease supply of hashId.
      *      Function Selector: 0x8533eed8
      * @param _hashIdBatch Batch of Content Token identifier values being queried.
      * @param _quantityBatch Instances of each Content Token being purchased.
      */
-    function cDebitPreReleaseSupplyBatch(
+    /* function cDebitPreReleaseSupplyBatch(
         bytes32[] calldata _hashIdBatch,
         uint112[] calldata _quantityBatch
     ) internal {
@@ -2647,7 +1795,7 @@ contract WavDBC {
                 uint112 _wavStoreSupply,
                 uint112 _wavReserveSupply,
                 uint112 _preReleaseSupply
-            ) = _remainingSupplyDecoder(_remainingSupplies);
+            ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
             if (_quantity == 0 || _preReleaseSupply < _quantity) {
                 revert WavDBC__NumInputInvalid();
@@ -2655,19 +1803,20 @@ contract WavDBC {
 
             _preReleaseSupply -= _quantity;
 
-            uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
-                _wavStoreSupply,
-                _wavReserveSupply,
-                _preReleaseSupply
-            );
+            uint112 _updatedRemainingSupplies = SupplyDBC
+                ._remainingSupplyEncoder(
+                    _wavStoreSupply,
+                    _wavReserveSupply,
+                    _preReleaseSupply
+                );
 
             ContentTokenSupplyMapStruct.s_cWavSupplies[
                 _hashId
             ] = _updatedRemainingSupplies;
         }
-    }
+    } */
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/sDebitPreReleaseSupply.sol ****
      * @notice Deducts quantity of PreRelease supply tier and updates the encoded value.
      * @dev Reads s_sWavSupplies and updates active encoded PreRelease supply tier of hashId.
      *      Function Selector: 0x58b030c2
@@ -2675,7 +1824,7 @@ contract WavDBC {
      * @param _tierId Tier index attributed to numToken of CContentToken hashId.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function sDebitPreReleaseSupply(
+    /*function sDebitPreReleaseSupply(
         bytes32 _hashId,
         uint16 _tierId,
         uint112 _quantity
@@ -2692,7 +1841,7 @@ contract WavDBC {
             uint112 _wavStoreSupply,
             uint112 _wavReserveSupply,
             uint112 _preReleaseSupply
-        ) = _remainingSupplyDecoder(_remainingSupplies);
+        ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
         if (_quantity == 0 || _preReleaseSupply < _quantity) {
             revert WavDBC__NumInputInvalid();
@@ -2700,7 +1849,7 @@ contract WavDBC {
 
         _preReleaseSupply -= _quantity;
 
-        uint112 _updatedRemainingSupplies = _remainingSupplyEncoder(
+        uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
             _wavReserveSupply,
             _preReleaseSupply
@@ -2710,9 +1859,9 @@ contract WavDBC {
         ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][
             _tierId
         ] = _updatedRemainingSupplies;
-    }
+    }*/
 
-    /**
+    /** **** FacetHelpers/SupplyHelpers/LibPreReleaseSuppliesBatch ****
      * @notice Deducts batch quantity of PreRelease supply and updates the encoded value.
      * @dev Reads s_sWavSupplies and updates active encoded PreRelease supply of hashId.
      *      Function Selector: 0xf38c013b
@@ -2720,7 +1869,7 @@ contract WavDBC {
      * @param _tierIdBatch The tier value of a particular Content Token.
      * @param _quantityBatch Instances of each Content Token being purchased.
      */
-    function sDebitPreReleaseBatch(
+    /* function sDebitPreReleaseBatch(
         bytes32[] calldata _hashIdBatch,
         uint16[] calldata _tierIdBatch,
         uint112[] calldata _quantityBatch
@@ -2749,7 +1898,7 @@ contract WavDBC {
                 uint112 _wavStoreSupply,
                 uint112 _wavReserveSupply,
                 uint112 _preReleaseSupply
-            ) = _remainingSupplyDecoder(_remainingSupply);
+            ) = SupplyDBC._remainingSupplyDecoder(_remainingSupply);
 
             if (_quantity == 0 || _preReleaseSupply < _quantity) {
                 revert WavDBC__NumInputInvalid();
@@ -2757,7 +1906,7 @@ contract WavDBC {
 
             _preReleaseSupply -= _quantity;
 
-            uint112 _updatedRemainingSupply = _remainingSupplyEncoder(
+            uint112 _updatedRemainingSupply = SupplyDBC._remainingSupplyEncoder(
                 _wavStoreSupply,
                 _wavReserveSupply,
                 _preReleaseSupply
@@ -2771,28 +1920,28 @@ contract WavDBC {
                 ++i;
             }
         }
-    }
+    } */
 
-    /**
+    /** **** ReturnValidation.sol ****
      * @notice Provides current timestamp in an hour-based format.
      * @dev Generates timestamp in more compact format
      *      Function Selector: 0x42d86570
      */
-    function _returnHourStamp() internal view returns (uint96 _hourStamp) {
+    /*unction _returnHourStamp() internal view returns (uint96 _hourStamp) {
         uint96 _timeStamp = uint96(block.timestamp);
         _timeStamp /
             SECOND_TO_HOUR_PRECISION = _hourStamp;
         return _hourStamp;
-    }
+    }*/
 
     /**
      * @notice Provides current timestamp in an hour-based format.
      * @dev Generates timestamp in more compact format
      *      Function Selector: 0xed91a6c8
      */
-    function returnHourStamp() external view returns (uint96 _hourStamp) {
+    /*function returnHourStamp() external view returns (uint96 _hourStamp) {
         _hourStamp();
-    }
+    }*/
 
     // END OF JULY 31 2025 NEW FUNCTION / REWRITES
 
@@ -3110,5 +2259,5 @@ contract WavDBC {
             bitVal: _bitVal
         });
         return CONT;
-    } */
+    } /* */
 }

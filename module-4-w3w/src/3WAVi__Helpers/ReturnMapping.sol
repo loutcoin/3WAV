@@ -1,27 +1,53 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {TokenBalanceStorage} from "../../src/Diamond__Storage/CreatorToken/TokenBalanceStorage.sol";
-import {CreatorTokenStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
-import {CreatorTokenMapStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
-import {CreatorProfitStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorProfitStorage.sol";
-import {CreatorAliasMapStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorAliasMapStorage.sol";
+import {
+    TokenBalanceStorage
+} from "../../src/Diamond__Storage/CreatorToken/TokenBalanceStorage.sol";
+import {
+    CreatorTokenStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+import {
+    CreatorTokenMapStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
+import {
+    CreatorProfitStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorProfitStorage.sol";
+import {
+    CreatorAliasMapStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorAliasMapStorage.sol";
 // ContentToken
-import {ContentTokenSearchStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
-import {CContentTokenStorage} from "../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
-import {SContentTokenStorage} from "../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
-import {ContentTokenSupplyMapStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+import {
+    ContentTokenSearchStorage
+} from "../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
+import {
+    CContentTokenStorage
+} from "../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
+import {
+    SContentTokenStorage
+} from "../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
+import {
+    ContentTokenSupplyMapStorage
+} from "../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
 // import {ContentTokenPriceMapStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenPriceMapStorage.sol";
 
 // ContentToken/Optionals
 //import {VariantMapStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/VariantMapStorage.sol";
 //import {VersionStemStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/VersionStemStorage.sol";
-import {CollaboratorStructStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
-import {CollaboratorMapStorage} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
-import {AssociatedContentMap} from "../../src/Diamond__Storage/ContentToken/Optionals/AssociatedContentMap.sol";
+import {
+    CollaboratorStructStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
+import {
+    CollaboratorMapStorage
+} from "../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
+import {
+    AssociatedContentMap
+} from "../../src/Diamond__Storage/ContentToken/Optionals/AssociatedContentMap.sol";
 
 // Active Addresses
-import {AuthorizedAddrStorage} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
+import {
+    AuthorizedAddrStorage
+} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
 
 // ECDSA
 import {ECDSAStorage} from "../../src/Diamond__Storage/ECDSA/ECDSAStorage.sol";
@@ -46,21 +72,51 @@ library ReturnMapping {
         return _earnings;
     }
 
+    function returnTierMap(
+        bytes32 _hashId,
+        uint16 _wordIndex
+    ) internal view returns (uint256) {
+        ContentTokenSupplyMapStorage.ContentTokenSupplyMap
+            storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
+                .contentTokenSupplyMapStorage();
+        uint256 _packed = ContentTokenSupplyMapStruct.s_tierMap[_hashId][
+            _wordIndex
+        ];
+        return _packed;
+    }
+
     /**
      * @notice Retrieves the remaining publically available supply for a token asset.
-     * @dev Returns data in 's_remainingSupply' from 'TokenBalanceStorage.sol'.
+     * @dev Returns data in 's_cWavSupplies' from 'TokenBalanceStorage.sol'.
      *      Function Selector:
      * @param _hashId Identifier of Content Token being queried.
      * @return _cWavSupplies Remaining collection supplies.
      */
-    function returnCWavSupplies(
+    /*function returnCWavSupplies(
         bytes32 _hashId
     ) internal view returns (uint112 _cWavSupplies) {
         ContentTokenSupplyMapStorage.ContentTokenSupplyMap
             storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
                 .contentTokenSupplyMapStorage();
         return ContentTokenSupplyMapStruct.s_cWavSupplies[_hashId];
-    }
+    }*/
+
+    /**
+     * @notice Retrieves the remaining publically available supply for a token asset.
+     * @dev Returns data in 's_sWavSupplies' from 'TokenBalanceStorage.sol'.
+     *      Function Selector:
+     * @param _hashId Identifier of Content Token being queried.
+     * @return _cWavSupplies Remaining collection supplies.
+     */
+    /*function returnSWavSupplies(
+        bytes32 _hashId,
+        uint16 _tierId
+    ) internal view returns (uint112 _sWavSupplies) {
+        ContentTokenSupplyMapStorage.ContentTokenSupplyMap
+            storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
+                .contentTokenSupplyMapStorage();
+        return ContentTokenSupplyMapStruct.s_sWavSupplies[_hashId][_tierId];
+    }*/
 
     /**
      * @notice Retrieves an asset-type token balance of an address.
@@ -88,19 +144,17 @@ library ReturnMapping {
     /**
      * @notice Retrieves basic token identifier data derived from 'CreatorToken'.
      * @dev Returns data in 's_publishedTokenData' from 'CreatorTokenMapStorage.sol'.
-     *      Function Selector: 0x37971d82
+     *      Function Selector:
      * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
      * @return CreatorToken instance-specific token identifier properties.
      */
     function returnPublishedTokenData(
-        bytes32 _hashId,
-        uint16 _numToken
+        bytes32 _hashId
     ) internal view returns (CreatorTokenStorage.CreatorToken memory) {
         CreatorTokenMapStorage.CreatorTokenMap
             storage CreatorTokenMapStruct = CreatorTokenMapStorage
                 .creatorTokenMapStorage();
-        return CreatorTokenMapStruct.s_publishedTokenData[_hashId][_numToken];
+        return CreatorTokenMapStruct.s_publishedTokenData[_hashId];
     }
 
     /**
@@ -141,19 +195,33 @@ library ReturnMapping {
      *      Function Selector: 0xe759bb43
      * @param _userId The address associated to the index count.
      * @param _indexCount Chronological index of asset-type ownership associated to an address.
-     * @param _hashId Identifier of Content Token being queried.
-     * @return _numToken Content Token identifier used to specify the token index being queried.
+     * @return _hashId Identifier of Content Token being queried.
      */
     function returnOwnershipMap(
         address _userId,
-        uint256 _indexCount,
-        bytes32 _hashId
+        uint256 _indexCount
+    ) internal view returns (bytes32 _hashId) {
+        CreatorTokenMapStorage.CreatorTokenMap
+            storage CreatorTokenMapStruct = CreatorTokenMapStorage
+                .creatorTokenMapStorage();
+        /*_numToken = CreatorTokenMapStruct.s_ownershipMap[_userId][_indexCount][
+            _hashId
+        ];
+        return _numToken;*/
+        _hashId = CreatorTokenMapStruct.s_ownershipMap[_userId][_indexCount];
+        return _hashId;
+    }
+
+    function returnOwnershipToken(
+        address _userId,
+        uint256 _indexCount
     ) internal view returns (uint16 _numToken) {
         CreatorTokenMapStorage.CreatorTokenMap
             storage CreatorTokenMapStruct = CreatorTokenMapStorage
                 .creatorTokenMapStorage();
-        _numToken = CreatorTokenMapStruct.s_ownershipMap[_userId][_indexCount][
-            _hashId
+
+        _numToken = CreatorTokenMapStruct.s_ownershipToken[_userId][
+            _indexCount
         ];
         return _numToken;
     }
@@ -206,14 +274,14 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return CContentToken associated to the hashId
      */
-    function returnCContentTokenSearch(
+    /*function returnCContentTokenSearch(
         bytes32 _hashId
     ) internal view returns (CContentTokenStorage.CContentToken memory) {
         ContentTokenSearchStorage.ContentTokenSearch
             storage ContentTokenSearchStruct = ContentTokenSearchStorage
                 .contentTokenSearchStorage();
         return ContentTokenSearchStruct.s_cContentTokenSearch[_hashId];
-    }
+    }*/
 
     /**
      * @notice Retrieves the number of tokens compromising a Content Collective Token.
@@ -238,7 +306,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint112 cSupplyVal of a Content Collective Token.
      */
-    function returnCContentTokenCSupplyVal(
+    /*function returnCContentTokenCSupplyVal(
         bytes32 _hashId
     ) internal view returns (uint112) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -246,7 +314,7 @@ library ReturnMapping {
                 .contentTokenSearchStorage();
         return
             ContentTokenSearchStruct.s_cContentTokenSearch[_hashId].cSupplyVal;
-    }
+    }*/
 
     /**
      * @notice Retrieves seperate supply definitions of members within a Content Collective Token.
@@ -255,7 +323,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint112 sSupplyVal of a Content Collective Token.
      */
-    function returnCContentTokenSPriceUsdVal(
+    /*function returnCContentTokenSPriceUsdVal(
         bytes32 _hashId
     ) internal view returns (uint112) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -265,7 +333,7 @@ library ReturnMapping {
             ContentTokenSearchStruct
                 .s_cContentTokenSearch[_hashId]
                 .sPriceUsdVal;
-    }
+    }*/
 
     /**
      * @notice Retrieves core USD price definition of a Content Collective Token entity.
@@ -274,7 +342,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint32 cPriceUsdVal of a Content Collective Token.
      */
-    function returnCContentTokenCPriceUsdVal(
+    /*function returnCContentTokenCPriceUsdVal(
         bytes32 _hashId
     ) internal view returns (uint32) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -284,7 +352,7 @@ library ReturnMapping {
             ContentTokenSearchStruct
                 .s_cContentTokenSearch[_hashId]
                 .cPriceUsdVal;
-    }
+    }*/
 
     /**
      * @notice Retrieves core total supply values of a Content Collective Token entity.
@@ -293,7 +361,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint224 cTotalSupplyVal of a Content Collective Token.
      */
-    function returnCContentTokenSSupplyVal(
+    /*function returnCContentTokenSSupplyVal(
         bytes32 _hashId
     ) internal view returns (uint224) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -301,7 +369,7 @@ library ReturnMapping {
                 .contentTokenSearchStorage();
         return
             ContentTokenSearchStruct.s_cContentTokenSearch[_hashId].sSupplyVal;
-    }
+    }*/
 
     /**
      * @notice Retrieves core initial supply values of a Content Collective Token entity.
@@ -310,7 +378,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return sReserveVal The seperate sale reserve property of a CContentToken.
      */
-    function returnCContentTokenSReserveVal(
+    /*function returnCContentTokenSReserveVal(
         bytes32 _hashId
     ) internal view returns (uint160) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -318,7 +386,7 @@ library ReturnMapping {
                 .contentTokenSearchStorage();
         return
             ContentTokenSearchStruct.s_cContentTokenSearch[_hashId].sReserveVal;
-    }
+    }*/
 
     /** DEPRECATED
      * @notice Retrieves WavReserve values for members of a Content Collective Token.
@@ -356,7 +424,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint96 releaseVal of a Content Collective Token.
      */
-    function returnCContentTokenReleaseVal(
+    /*function returnCContentTokenReleaseVal(
         bytes32 _hashId
     ) internal view returns (uint96) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -364,7 +432,7 @@ library ReturnMapping {
                 .contentTokenSearchStorage();
         return
             ContentTokenSearchStruct.s_cContentTokenSearch[_hashId].cReleaseVal;
-    }
+    }*/
 
     /** DEPRECATED
      * @notice Retrieves enabled and disabled 3-bit functional flag states of a Content Collective Token
@@ -386,14 +454,14 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return SContentToken associated to the hashId
      */
-    function returnSContentTokenSearch(
+    /*function returnSContentTokenSearch(
         bytes32 _hashId
     ) internal view returns (SContentTokenStorage.SContentToken memory) {
         ContentTokenSearchStorage.ContentTokenSearch
             storage ContentTokenSearchStruct = ContentTokenSearchStorage
                 .contentTokenSearchStorage();
         return ContentTokenSearchStruct.s_sContentTokenSearch[_hashId];
-    }
+    }*/
 
     /**
      * @notice Retrieves the number of tokens compromising a Standard Content Token
@@ -402,14 +470,14 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint16 numToken of a Standard Content Token.
      */
-    function returnSContentTokenNumToken(
+    /*function returnSContentTokenNumToken(
         bytes32 _hashId
     ) internal view returns (uint16) {
         ContentTokenSearchStorage.ContentTokenSearch
             storage ContentTokenSearchStruct = ContentTokenSearchStorage
                 .contentTokenSearchStorage();
         return ContentTokenSearchStruct.s_sContentTokenSearch[_hashId].numToken;
-    }
+    }*/
 
     /**
      * @notice Retrieves the USD price definition of a Standard Content Token
@@ -418,7 +486,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint32 priceUsdVal of a Standard Content Token.
      */
-    function returnSContentTokenPriceUsdVal(
+    /*function returnSContentTokenPriceUsdVal(
         bytes32 _hashId
     ) internal view returns (uint32) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -426,7 +494,7 @@ library ReturnMapping {
                 .contentTokenSearchStorage();
         return
             ContentTokenSearchStruct.s_sContentTokenSearch[_hashId].priceUsdVal;
-    }
+    }*/
 
     /**
      * @notice Retrieves the raw supply definitions of a Standard Content Token
@@ -435,7 +503,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint112 supplyVal of a Standard Content Token.
      */
-    function returnSContentTokenSupplyVal(
+    /*function returnSContentTokenSupplyVal(
         bytes32 _hashId
     ) internal view returns (uint112) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -443,7 +511,7 @@ library ReturnMapping {
                 .contentTokenSearchStorage();
         return
             ContentTokenSearchStruct.s_sContentTokenSearch[_hashId].supplyVal;
-    }
+    }*/
 
     /**
      * @notice Retrieves time-based sale properties of a Standard Content Token
@@ -452,7 +520,7 @@ library ReturnMapping {
      * @param _hashId Identifier of Content Token being queried.
      * @return uint96 releaseVal of a Standard Content Token.
      */
-    function returnSContentTokenReleaseVal(
+    /*function returnSContentTokenReleaseVal(
         bytes32 _hashId
     ) internal view returns (uint96) {
         ContentTokenSearchStorage.ContentTokenSearch
@@ -460,7 +528,7 @@ library ReturnMapping {
                 .contentTokenSearchStorage();
         return
             ContentTokenSearchStruct.s_sContentTokenSearch[_hashId].releaseVal;
-    }
+    }*/
 
     /**
      * @notice Retrieves enabled and disabled 3-bit functional flag states of a Standard Content Token
@@ -480,13 +548,25 @@ library ReturnMapping {
      * @dev Returns data in 's_contentPriceMap' from 'ContentTokenPriceMapStorage.sol'.
      *      Function Selector: 0x6e8796cf
      * @param _hashId Identifier of Content Token being queried.
-     * @return uint256 _priceMap associated to a Content Collective Token
+     * @return _priceMap associated to a Content Collective Token
      */
     /*function returnContentTokenPriceMap(
         bytes32 _hashId
     ) internal view returns (uint256 _priceMap) {
         return s_contentTokenPriceMap[_hashId];
     }*/
+
+    // Needs to be able to return <x> pages depending on numToken input
+    function returnSPriceMap(
+        bytes32 _hashId,
+        uint16 _page
+    ) internal view returns (uint256 _priceMap) {
+        ContentTokenSupplyMapStorage.ContentTokenSupplyMap
+            storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
+                .contentTokenSupplyMapStorage();
+
+        return ContentTokenSupplyMapStruct.s_sPriceMap[_hashId][_page];
+    }
 
     /**
      * @notice Retrieves property data of a Variant Content Token.

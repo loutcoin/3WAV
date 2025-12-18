@@ -7,6 +7,7 @@ library AuthorizedAddrStorage {
     struct AuthorizedAddrStruct {
         mapping(address => bool) s_authorizedAddrMap;
         mapping(uint256 => address) s_authorizedAddrSearch;
+        uint8 initialization;
     }
 
     function authorizedAddrStorage()

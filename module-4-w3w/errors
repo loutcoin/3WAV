@@ -1,0 +1,110 @@
+/*bytes4[] memory _cutSelectors = new bytes4[](1);
+        _cutSelectors[0] = DiamondCutFacet.diamondCut.selector;
+        _cut[1] = LibDiamond.FacetCut({
+            facetAddress: address(diamondCutFacet),
+            action: LibDiamond.FacetCutAction.Add,
+            functionSelectors: _cutSelectors
+        });
+
+        bytes4[] memory loupeSelectors = new bytes4[](2);
+        loupeSelectors[0] = DiamondLoupeFacet.facets.selector;
+        loupeSelectors[1] = DiamondLoupeFacet.facetFunctionSelectors.selector;
+        _cut[2] = LibDiamond.FacetCut({
+            facetAddress: address(diamondLoupeFacet),
+            action: LibDiamond.FacetCutAction.Add,
+            functionSelectors: loupeSelectors
+        });
+
+        IDiamondCut(address(wavDiamond)).diamondCut(_cut, address(0), "");
+        vm.stopPrank();
+
+        //PublishCContentToken(address(wavDiamond)).getPublishedInfo(0);
+    }
+
+    // setUp runs before this meaningless function runs so it's a good way to make sure setUp actually works 1st
+    // run: ' forge test --match-test testSetupRuns '
+    // I got an error and I believe it could be a result of the access control
+    function testSetupRuns() public returns (uint256) {
+        uint256 i = 0;
+        uint256 x = 1;
+        uint256 y = i + x;
+        return (y);
+    }
+}
+
+// create setUp() function
+// then we'll fake anvil publish publishCCT
+// then using example data we'll try and route the publish call thorugh delegatecall
+// and see if on paper it works
+
+// Anvil address[0]: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+// Anvil address[0] private key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+//
+// Anvil address[2]: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+// Anvil address[2] private key: 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+
+// forge test --match-test "testSetupRuns" -vvv --debug
+
+// SYNTAX TO DUMP ERRORS OF A CONTRACT:
+// forge inspect src/Diamond__Libraries/LibDiamond.sol:LibDiamond errors
+
+//
+
+// THE PROBLEMATIC ERROR FOR 'setUp': FAIL: custom error 0x1f931c1c
+//0x1f931c1c
+//
+
+/* LibDiamond.sol errors: 
+"system__CalldataZeroWithInitConflict()": "70b87fd8",
+  "system__FacetAddressIsNotZero()": "a69fce7e",
+  "system__FacetAddressIsZero()": "cb29b377",
+  "system__FacetContainsNoCode()": "c6294b2d",
+  "system__FunctionDoesNotExist()": "6b2bccea",
+  "system__FunctionExists()": "706504c1",
+  "system__FunctionIsImmutable()": "864079db",
+  "system__InitRevert()": "1d40a2e7",
+  "system__InitZeroWithCalldataConflict()": "e85bfe24",
+  "system__InvalidFacetCutAction()": "5c8c4491",
+  "system__OnlyLout()": "84a0ce87",
+  "system__SelectorLengthInvalid()": "4c4ed601"
+
+    PublishCContentToken:
+  "PublishCContentToken__NumInputInvalid()": "3b10af08",
+  "PublishContentTokenCollaborator__LengthMismatch()": "eeb33622",
+  "ReturnValidation__AccessProhibited()": "f8606323",
+  "SupplyDBC__MinEncodedValueInvalid()": "8492b67f",
+  "SupplyDBC__NumInputInvalid()": "096a11e7"
+
+    WavDiamond
+"system__CalldataZeroWithInitConflict()": "70b87fd8",
+  "system__FacetAddressIsNotZero()": "a69fce7e",
+  "system__FacetAddressIsZero()": "cb29b377",
+  "system__FacetContainsNoCode()": "c6294b2d",
+  "system__FunctionDoesNotExist()": "6b2bccea",
+  "system__FunctionExists()": "706504c1",
+  "system__FunctionIsImmutable()": "864079db",
+  "system__InitRevert()": "1d40a2e7",
+  "system__InitZeroWithCalldataConflict()": "e85bfe24",
+  "system__InvalidFacetCutAction()": "5c8c4491",
+  "system__SelectorLengthInvalid()": "4c4ed601"
+
+
+
+    DiamondCutFacet
+  "system__CalldataZeroWithInitConflict()": "70b87fd8",
+  "system__FacetAddressIsNotZero()": "a69fce7e",
+  "system__FacetAddressIsZero()": "cb29b377",
+  "system__FacetContainsNoCode()": "c6294b2d",
+  "system__FunctionDoesNotExist()": "6b2bccea",
+  "system__FunctionExists()": "706504c1",
+  "system__FunctionIsImmutable()": "864079db",
+  "system__InitRevert()": "1d40a2e7",
+  "system__InitZeroWithCalldataConflict()": "e85bfe24",
+  "system__InvalidFacetCutAction()": "5c8c4491",
+  "system__OnlyLout()": "84a0ce87",
+  "system__SelectorLengthInvalid()": "4c4ed601"
+
+  forge inspect src/Diamond__ProxyFacets/DiamondLoupeFacet.sol:DiamondLoupeFacet errors;
+  "{}"
+
+*/

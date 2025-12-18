@@ -20,7 +20,7 @@ library CContentTokenStorage {
         //uint80 sPreSaleR;
         uint96 cReleaseVal;
         // *SLOT 4*
-        uint256 bitVal;
+        //uint256 bitVal;
     }
 
     function cContentTokenStructStorage()

@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {CollaboratorStructStorage} from "../Optionals/CollaboratorStructStorage.sol";
+import {
+    CollaboratorStructStorage
+} from "../Optionals/CollaboratorStructStorage.sol";
+
+import {
+    SCollaboratorStructStorage
+} from "../Optionals/SCollaboratorStructStorage.sol";
 
 library CollaboratorMapStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Collaborator.Map.Storage");
@@ -12,11 +18,13 @@ library CollaboratorMapStorage {
      */
     struct CollaboratorMap {
         mapping(bytes32 hashId => CollaboratorStructStorage.Collaborator) s_collaborators;
-        mapping(bytes32 hashId => uint256 royaltyMap) s_royalties;
+        //mapping(bytes32 hashId => uint256 royaltyMap) s_royalties;
+        mapping(bytes32 hashId => SCollaboratorStructStorage.SCollaborator) s_sCollaborators;
+        // This can be used for SCollaborator and CCollaborator (IE: Index[0])
         mapping(bytes32 hashId => mapping(uint16 numToken => uint256 reserve)) s_collaboratorReserve;
-        // add royaltyMap for numToken of hashId
-        // add address to allow address(collaborator) to join for <x> splitVal
     }
+    // add royaltyMap for numToken of hashId
+    // add address to allow address(collaborator) to join for <x> splitVal
 
     function collaboratorMapStorage()
         internal

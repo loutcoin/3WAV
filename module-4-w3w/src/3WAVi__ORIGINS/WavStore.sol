@@ -33,22 +33,47 @@ import {WavFeed} from "../../src/3WAVi__ORIGINS/WavFeed.sol";
 import {WavToken} from "../../src/3WAVi__ORIGINS/WavToken.sol";
 import {WavDBC} from "../../src/3WAVi__ORIGINS/WavDBC.sol";
 
-import {AuthorizedAddrStorage} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
+/*import {
+    AuthorizedAddrStorage
+} from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
 // CreatorToken
-import {CreatorTokenStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
-import {CreatorTokenMapStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
-import {TokenBalanceStorage} from "../../src/Diamond__Storage/CreatorToken/TokenBalanceStorage.sol";
-import {CreatorProfitStorage} from "../../src/Diamond__Storage/CreatorToken/CreatorProfitStorage.sol";
+import {
+    CreatorTokenStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+import {
+    CreatorTokenMapStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
+import {
+    TokenBalanceStorage
+} from "../../src/Diamond__Storage/CreatorToken/TokenBalanceStorage.sol";
+import {
+    CreatorProfitStorage
+} from "../../src/Diamond__Storage/CreatorToken/CreatorProfitStorage.sol";
 // ContentToken
-import {SpecialLimitedSalesMap} from "../../src/Diamond__Storage/ContentToken/Optionals/SpecialLimitedSalesMap.sol";
-import {ContentTokenSearchStorage} from "../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
+import {
+    SpecialLimitedSalesMap
+} from "../../src/Diamond__Storage/ContentToken/Optionals/SpecialLimitedSalesMap.sol";
+import {
+    SContentTokenStorage
+} from "../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
+import {
+    CContentTokenStorage
+} from "../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
+import {
+    ContentTokenSearchStorage
+} from "../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
 //Helpers
 import {ReturnMapping} from "../../src/3WAVi__Helpers/ReturnMapping.sol";
 import {ReturnValidation} from "../../src/3WAVi__Helpers/ReturnValidation.sol";
+import {EncoderDecoder} from "../../src/3WAVi__Helpers/EncoderDecoder.sol";
 
-contract WavStore is WavRoot {
-    WavToken WAVT;
+import {ReleaseDBC} from "../../src/3WAVi__Helpers/ReleaseDBC.sol";
 
+import {LibAccess} from "../../src/3WAVi__Helpers/FacetHelpers/LibAccess.sol";
+import {LibFeed} from "../../src/3WAVi__Helpers/FacetHelpers/LibFeed.sol";
+*/
+contract WavStore {
+    /*
     event PreSalePausing(bytes32 indexed _hashId, uint256 indexed _pausedAt);
 
     event PreSaleResume(bytes32 indexed _hashId);
@@ -115,392 +140,12 @@ contract WavStore is WavRoot {
     error WavStore__InputStateInEffect();
     error WavStore__InputError404();
     error WavStore__LengthMismatch();
+    error WavStore__InvalidSignature();
     error WavStore__InputInvalid();
     error WavStore__InvalidSale();
     error WavStore__Immutable();
-
-    constructor(address _wavAccess) {
-        s_WavAccess = _wavAccess;
-        s_lout = msg.sender;
-    }
-
-    /** ***** MAKE SURE THIS ENSURES PRERELEASE IS CURRENTLY ACTIVE (preReleaseValidation)
-     * @notice Allows manual intervention to pause or resume an active preRelease sale.
-     * @dev The input state is '0' by default. An input state of '1' indicates a paused sale state.
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _inputState Value affecting sale state of Content Token.
-     */
-    function preReleaseState(bytes32 _hashId, uint8 _inputState) external {
-        ReturnValidation.returnIsAuthorized();
-
-        if (_inputState > 1) revert WavStore__InputInvalid();
-
-        // cContentToken branch
-        uint96 _releaseVal = ReturnMapping.returnCContentTokenReleaseVal(
-            _hashId
-        );
-        if (_releaseVal != 0) {
-            (
-                uint96 _startRelease,
-                uint96 _endRelease,
-                uint96 _preRelease,
-                uint8 _pausedAt
-            ) = WavDBC.cReleaseValDecoder6(_releaseVal);
-
-            // Only allow pause if preSale is currently active, only allow resume if preSale is paused
-            if (
-                (_inputState == 1 && _pausedAt != 0) ||
-                (_inputState == 0 && _pausedAt != 1)
-            ) revert WavStore__InputStateInEffect();
-            // Activate _pausedAt state and encode
-            uint96 _updatedReleaseVal = WavDBC.cReleaseValEncoder6(
-                _startRelease,
-                _endRelease,
-                _preRelease,
-                _inputState
-            );
-
-            // Write into cContentToken storage
-            CContentTokenStorage.CContentToken
-                storage CContentTokenStruct = CContentTokenStorage
-                    .cContentTokenStructStorage();
-            CContentTokenStruct.cReleaseVal = _updatedReleaseVal;
-
-            emit PreReleaseState(_hashId, _inputState);
-            return;
-        }
-        // sContentToken branch
-        // sContentToken branch
-        _releaseVal = ReturnMapping.returnSContentTokenReleaseVal(_hashId);
-
-        if (_releaseVal != 0) {
-            // Decode
-            (
-                uint96 _startRelease,
-                uint96 _endRelease,
-                uint96 _preRelease,
-                uint8 _pausedAt
-            ) = WavDBC.cReleaseValDecoder6(_releaseVal);
-
-            // Only allow pause if preSale is currently active, only allow resume if preSale is paused
-            if (
-                (_inputState == 1 && _pausedAt != 0) ||
-                (_inputState == 0 && _pausedAt != 1)
-            ) revert WavStore__InputStateInEffect();
-
-            // Activate _pausedAt state and encode
-            uint96 _updatedReleaseVal = WavDBC.cReleaseValEncoder6(
-                _startRelease,
-                _endRelease,
-                _preRelease,
-                _inputState
-            );
-
-            SContentTokenStorage.SContentToken
-                storage SContentTokenStruct = SContentTokenStorage
-                    .sContentTokenStructStorage();
-            SContentTokenStruct.releaseVal = _updatedReleaseVal;
-
-            emit PreReleaseState(_hashId, _inputState);
-            return;
-        }
-        // Content Token not found in either storage location
-        revert WavStore__InputError404();
-    }
-
-    /**
-     * @notice Allows manual intervention to pause or resume a plurality of active preRelease sales
-     * @dev The input state is '0' by default. An input state of '1' indicates a paused sale state.
-     * @param _hashIdBatch Batch of Content Token identifier values being queried.
-     * @param _inputStateBatch Batch of values affecting PreRelease sale states of Content Tokens.
-     */
-    function preReleaseStateBatch(
-        bytes32[] calldata _hashIdBatch,
-        uint8[] calldata _inputStateBatch
-    ) external {
-        ReturnValidation.returnIsAuthorized();
-
-        uint256 _hashLength = _hashIdBatch.length;
-        if (_hashLength == 0 || _inputStateBatch.length != _hashLength)
-            revert WavStore__LengthMismatch();
-
-        // Validate input states
-        for (uint256 i = 0; i < _hashLength; ) {
-            if (_inputStateBatch[i] > 1) revert WavStore__InvalidInputState();
-            unchecked {
-                ++i;
-            }
-        }
-        // Batch releaseVal data validation
-        (
-            uint96[] memory _startReleaseBatch,
-            uint96[] memory _endReleaseBatch,
-            uint96[] memory _preReleaseBatch,
-            uint8[] memory _pausedAtBatch
-        ) = WavDBC.validateContentTokenReleaseDataBatch(_hashIdBatch);
-
-        // Build updated _pausedAt batch
-        uint8[] memory _updatedPausedAtBatch = new uint8[](_hashLength);
-        for (uint i = 0; i < _hashLength; ) {
-            uint8 _pausedAt = _pausedAtBatch[i];
-            uint8 _updatedPausedAt = _inputStateBatch[i];
-
-            // Only allow pause if preSale is currently active, only allow resume if preSale is paused
-            if (
-                (_inputState == 1 && _pausedAt != 0) ||
-                (_inputState == 0 && _pausedAt != 1)
-            ) {
-                revert WavStore__InputStateInEffect();
-            }
-            _updatedPausedAtBatch[i] = _updatedPausedAt;
-            unchecked {
-                ++i;
-            }
-        }
-        // Encode releaseVal data in batch
-        uint96[] memory _updatedReleaseValBatch = WavDBC
-            .cReleaseValEncoderBatch6(
-                _startReleaseBatch,
-                _endReleaseBatch,
-                _preReleaseBatch,
-                _updatedPausedAtBatch
-            );
-        // Write back into correct branch by checking storage presence
-        for (uint256 i = 0; i < _hashLength; ) {
-            bytes32 _hashId = _hashIdBatch[i];
-            uint96 _updatedReleaseVal = _updatedReleaseValBatch[i];
-
-            uint96 _returnData = ReturnMapping.returnCContentTokenReleaseVal(
-                _hashId
-            );
-            if (_checkCContentToken != 0) {
-                // Write into cContentToken storage
-                CContentTokenStorage.CContentToken
-                    storage CContentTokenStruct = CContentTokenStorage
-                        .cContentTokenStructStorage();
-                CContentTokenStruct.cReleaseVal = _updatedReleaseVal;
-                unchecked {
-                    ++i;
-                }
-                continue;
-            }
-            // make sure can just reuse _returnData
-            _returnData = ReturnMapping.returnSContentTokenReleaseVal(_hashId);
-            if (_returnData != 0) {
-                SContentTokenStorage.SContentToken
-                    storage SContentTokenStruct = SContentTokenStorage
-                        .sContentTokenStructStorage();
-                SContentTokenStruct.releaseVal = _updatedReleaseVal;
-                unchecked {
-                    ++i;
-                }
-                continue;
-            }
-            // Should not happen because validateContentTokenReleaseDataBatch should revert
-            // In place just as simple extra defensive check
-            revert WavStore__InputError404();
-        }
-        // Emit single batch event
-        emit PreReleaseStateBatch(_hashIdBatch, _inputStateBatch);
-    }
-
-    /**
-     * @notice Allows definition of an _endRelease date for a Content Token post-publication.
-     * @dev Mandatory minimum of 72-hour window before _endRelease may be executed.
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _disablePeriod Quantity of hours until _endRelease takes effect.
-     */
-    function postManualEndRelease(
-        bytes32 _hashId,
-        uint96 _disablePeriod
-    ) external {
-        ReturnValidation.returnIsAuthorized();
-
-        // Minimum enforced _endRelease execution window (72 hours)
-        if (_disablePeriod < 72) revert WavStore__InputInvalid();
-
-        // load current hour stamp once
-        uint96 _hourStamp = WavDBC.currentHourStamp();
-
-        // cContentToken Branch
-        uint96 _releaseVal = ReturnMapping.returnCContentTokenReleaseVal(
-            _hashId
-        );
-
-        if (_releaseVal != 0) {
-            (
-                uint96 _startRelease,
-                uint96 _endRelease,
-                uint96 _preRelease,
-                uint8 _pausedAt
-            ) = WavDBC.cReleaseValDecoder6(_releaseVal);
-
-            // Only allow scheduling if _endRelease undefined
-            if (_endRelease != 0) revert WavStore__Immutable();
-
-            // Compute _updatedEndRelease
-            uint96 _updatedEndRelease = _hourStamp + _disablePeriod;
-
-            // Create, validate, encode _updatedReleaseVal
-            uint96 _updatedReleaseVal = WavDBC.cReleaseValEncoder6(
-                _startRelease,
-                _updatedEndRelease,
-                _preRelease,
-                _pausedAt
-            );
-
-            // Write into cContentToken storage
-            CContentTokenStorage.CContentToken
-                storage CContentTokenStruct = CContentTokenStorage
-                    .cContentTokenStructStorage();
-            CContentTokenStruct.cReleaseVal = _updatedReleaseVal;
-
-            emit PostManualEndRelease(_hashId, _updatedEndRelease);
-            return;
-        }
-        // sContentToken branch
-        _releaseVal = ReturnMapping.returnSContentTokenReleaseVal(_hashId);
-
-        if (_releaseVal != 0) {
-            // decode
-            (
-                uint96 _startRelease,
-                uint96 _endRelease,
-                uint96 _preRelease,
-                uint8 _pausedAt
-            ) = WavDBC.cReleaseValDecoder6(_releaseVal);
-
-            // Only allow scheduling if _endRelease undefined
-            if (_endRelease != 0) revert WavStore__Immutable();
-
-            // Compute _updatedEndRelease
-            uint96 _updatedEndRelease = _hourStamp + _disablePeriod;
-
-            // Create, validate, encode _updatedReleaseVal
-            uint96 _updatedReleaseVal = WavDBC.cReleaseValEncoder6(
-                _startRelease,
-                _updatedEndRelease,
-                _preRelease,
-                _pausedAt
-            );
-            SContentTokenStorage.SContentToken
-                storage SContentTokenStruct = SContentTokenStorage
-                    .sContentTokenStructStorage();
-            SContentTokenStruct.releaseVal = _updatedReleaseVal;
-
-            emit PostManualEndRelease(_hashId, _updatedEndRelease);
-            return;
-        }
-        // Content Token not found in either storage location
-        revert WavStore__InputError404();
-    }
-
-    /**
-     * @notice Allows definition of _endRelease date for a batch of Content Tokens post-publication.
-     * @dev Mandatory minimum of 72-hour window before _endRelease may be executed.
-     * @param _hashIdBatch Batch of Content Token identifier values being queried.
-     * @param _disablePeriodBatch Quantity of hours until _endRelease takes effect for each hash.
-     */
-    function postManualEndReleaseBatch(
-        bytes32[] calldata _hashIdBatch,
-        uint96[] calldata _disablePeriodBatch
-    ) external {
-        ReturnValidation.returnIsAuthorized();
-
-        uint256 _hashLength = _hashIdBatch.length;
-        if (_hashLength < 2 || _disablePeriodBatch.length != _hashLength)
-            revert WavStore__LengthMismatch();
-
-        for (uint256 i = 0; i < _hashLength; ) {
-            if (_disablePeriodBatch[i] < 72) revert WavStore__InputInvalid();
-            unchecked {
-                ++i;
-            }
-        }
-
-        // Load hourStamp
-        uint96 _hourStamp = WavDBC.currentHourStamp();
-
-        for (uint256 i = 0; i < _hashLength; ) {
-            bytes32 _hashId = _hashIdBatch[i];
-            uint96 _disablePeriod = _disablePeriodBatch[i];
-
-            // cContentToken Branch
-            uint96 _releaseVal = ReturnMapping.returnCContentTokenReleaseVal(
-                _hashId
-            );
-            if (_releaseVal != 0) {
-                (
-                    uint96 _startRelease,
-                    uint96 _endRelease,
-                    uint96 _preRelease,
-                    uint8 _pausedAt
-                ) = WavDBC.cReleaseValDecoder6(_releaseVal);
-
-                // Only allow scheduling if _endRelease undefined
-                if (_endRelease != 0) revert WavStore__Immutable();
-
-                // Compute _updatedEndRelease
-                uint96 _updatedEndRelease = _hourStamp + _disablePeriod;
-
-                // Create, validate, encode _updatedReleaseVal
-                uint96 _updatedReleaseVal = WavDBC.cReleaseValEncoder6(
-                    _startRelease,
-                    _updatedEndRelease,
-                    _preRelease,
-                    _pausedAt
-                );
-
-                // Write into cContentToken storage
-                CContentTokenStorage.CContentToken
-                    storage CContentTokenStruct = CContentTokenStorage
-                        .cContentTokenStructStorage();
-                CContentTokenStruct.cReleaseVal = _updatedReleaseVal;
-                unchecked {
-                    ++i;
-                }
-                continue;
-            }
-
-            uint96 _releaseVal = ReturnMapping.returnSContentTokenReleaseVal(
-                _hashId
-            );
-            if (_releaseVal != 0) {
-                // decode
-                (
-                    uint96 _startRelease,
-                    uint96 _endRelease,
-                    uint96 _preRelease,
-                    uint8 _pausedAt
-                ) = WavDBC.cReleaseValDecoder6(_releaseVal);
-
-                // Only allow scheduling if _endRelease undefined
-                if (_endRelease != 0) revert WavStore__Immutable();
-
-                // Compute _updatedEndRelease
-                uint96 _updatedEndRelease = _hourStamp + _disablePeriod;
-
-                // Create, validate, encode _updatedReleaseVal
-                uint96 _updatedReleaseVal = WavDBC.cReleaseValEncoder6(
-                    _startRelease,
-                    _updatedEndRelease,
-                    _preRelease,
-                    _pausedAt
-                );
-                SContentTokenStorage.SContentToken
-                    storage SContentTokenStruct = SContentTokenStorage
-                        .sContentTokenStructStorage();
-                SContentTokenStruct.releaseVal = _updatedReleaseVal;
-
-                unchecked {
-                    ++i;
-                }
-                continue;
-            }
-        }
-    }
-
-    /**
+*/
+    /** Sale/WavStore.sol
      * @notice Allows a user to purchase music using ETH.
      * @param _buyer Address initiating execution.
      * @param _creatorId The address of the creator.
@@ -508,7 +153,7 @@ contract WavStore is WavRoot {
      * @param _numToken Content Token identifier used to specify the token index being queried.
      * @param _purchaseQuantity Instances of the Content Token being purchased.
      */
-    function wavSaleSingle(
+    /*function wavSaleSingle(
         address _buyer,
         address _creatorId,
         bytes32 _hashId,
@@ -532,11 +177,11 @@ contract WavStore is WavRoot {
         uint256 _serviceFee = (_hashPrice * 100) / 1000;
         uint256 _creatorShare = _hashPrice - _serviceFee;
 
-        CreatorProfitStorage.CreatorProfitMap
-            storage creatorProfitMapStruct = CreatorProfitStorage
-                .creatorProfitMapStructStorage();
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
         // (original) address wavId stuff originally went after here
-        address _wavId = creatorProfitMapStruct.wavId;
+        address _wavId = CreatorProfitStructStorage.wavId;
 
         uint256 _netProfit = WavDBC._allocateCollaboratorReserve(
             _hashId,
@@ -544,15 +189,16 @@ contract WavStore is WavRoot {
             _creatorShare
         );
 
-        creatorProfitMapStruct.s_ethEarnings[_creatorId][_hashId] += _netProfit;
-        creatorProfitMapStruct.s_serviceBalance[_wavId][_serviceFee];
+        CreatorProfitStructStorage.s_ethEarnings[_creatorId][
+            _hashId
+        ] += _netProfit;
+        CreatorProfitStructStorage.s_serviceBalance[_wavId][_serviceFee];
 
         WavAccess.wavAccess(_buyer, _hashId, _numToken, _purchaseQuantity);
 
         emit WavSaleSingle(msg.sender, _hashId, _numToken, _purchaseQuantity);
-    }
-
-    /**
+    }*/
+    /** Sale/WavSaleBatch.sol
      * @notice Facilitates purchase, in ETH, of content in active pre-sale. Emits `PreReleaseSale` upon successful execution.
      * @dev Exclusive to authorized addresses. Verifies pre-sale state, and transfers ownership and payment sufficiency.
      * @param _buyer Address initiating execution.
@@ -561,7 +207,7 @@ contract WavStore is WavRoot {
      * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
      * @param _purchaseQuantityBatch Instances of each Content Token being purchased.
      */
-    function wavSaleBatch(
+    /*function wavSaleBatch(
         address _buyer,
         address[] calldata _creatorIdBatch,
         bytes32[] calldata _hashIdBatch,
@@ -605,10 +251,10 @@ contract WavStore is WavRoot {
         }
 
         // Distribute creator earnings & service fees
-        CreatorProfitStorage.CreatorProfitMap
-            storage creatorProfitMapStruct = CreatorProfitStorage
-                .creatorProfitMapStructStorage();
-        address _wavId = creatorProfitMapStruct.wavId;
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
+        address _wavId = CreatorProfitStructStorage.wavId;
 
         for (uint256 i = 0; i < _purchaseLength; ) {
             uint256 _amountWei = _weiPrices[i] *
@@ -625,10 +271,10 @@ contract WavStore is WavRoot {
                 _creatorShare
             );
 
-            creatorProfitMapStruct.s_ethEarnings[_creator][_hashId] +=
+            CreatorProfitStructStorage.s_ethEarnings[_creator][_hashId] +=
                 (_amountWei * 900) /
                 1000;
-            creatorProfitMapStruct.s_serviceBalance[_wavId] += _serviceFee;
+            CreatorProfitStructStorage.s_serviceBalance[_wavId] += _serviceFee;
             unchecked {
                 ++i;
             }
@@ -648,20 +294,17 @@ contract WavStore is WavRoot {
             _numTokenBatch,
             _purchaseQuantityBatch
         );
-    }
-
+    }*/
     /* uint256[] memory _usdPrices = WavDBC.validateAssetTokenPriceBatch(
             _hashIdBatch,
             _numTokenBatch
         );
         uint256[] memory _weiPrices = WavFeed.usdToWeiBatch(_usdPrices); */
-
     /* NEW NOTETOSELF: Ideally ownership index should be returned through entirely enforced means
     Otherwise we are putting MUCH faith on 'returnIsAuthorized' 
     
     NEW NoteToSelf Ensure we did that (been a min) and delete these comments, lol*/
-
-    /**
+    /** Sale/PreReleaseSale.sol
      * @notice Facilitates purchase, in ETH, of content in active pre-sale. Emits `PreReleaseSale` upon successful execution.
      * @dev Exclusive to authorized addresses. Verifies pre-sale state, and transfers ownership and payment sufficiency.
      * @param _buyer Address initiating execution.
@@ -670,7 +313,7 @@ contract WavStore is WavRoot {
      * @param _numToken Content Token identifier used to specify the token index being queried.
      * @param _purchaseQuantity Instances of the Content Token being purchased.
      */
-    function preReleasePurchaseSingle(
+    /*function preReleasePurchaseSingle(
         address _buyer,
         address _creatorId,
         bytes32 _hashId,
@@ -686,8 +329,7 @@ contract WavStore is WavRoot {
         /* uint256 _hashPrice = WavDBC.validateContentTokenPriceVal(_hashId, _numToken);
 
         _hashPrice = WavFeed.usdToWei(_hashPrice); */
-
-        uint256 _hashPrice = WavDBC._validateDebitPreRelease(
+    /*uint256 _hashPrice = WavDBC._validateDebitPreRelease(
             _hashId,
             _numToken,
             _purchaseQuantity
@@ -700,12 +342,12 @@ contract WavStore is WavRoot {
         uint256 _serviceFee = (_hashPrice * 100) / 1000;
         uint256 _creatorShare = _hashPrice - _serviceFee;
 
-        CreatorProfitStorage.CreatorProfitMap
-            storage creatorProfitMapStruct = CreatorProfitStorage
-                .creatorProfitMapStructStorage();
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
 
         // (original) address wavId stuff originally went after here
-        address _wavId = creatorProfitMapStruct.wavId;
+        address _wavId = CreatorProfitStructStorage.wavId;
 
         uint256 _netProfit = WavDBC._allocateCollaboratorReserve(
             _hashId,
@@ -713,8 +355,10 @@ contract WavStore is WavRoot {
             _creatorShare
         );
 
-        creatorProfitMapStruct.s_ethEarnings[_creatorId][_hashId] += _netProfit;
-        creatorProfitMapStruct.s_serviceBalance[_wavId][_serviceFee];
+        CreatorProfitStructStorage.s_ethEarnings[_creatorId][
+            _hashId
+        ] += _netProfit;
+        CreatorProfitStructStorage.s_serviceBalance[_wavId][_serviceFee];
 
         WavAccess.wavAccess(_buyer, _hashId, _numToken, _purchaseQuantity);
         // uint256 _ownershipIndex = ReturnMapping.returnOwnershipIndex(_buyer);
@@ -733,8 +377,7 @@ contract WavStore is WavRoot {
         creatorProfitMapStruct.serviceProfit +=
             (msg.value * 100) /
             1000; */
-
-    /**
+    /** Sale/PreReleaseSaleBatch.sol
      * @notice Facilitates purchase, in ETH, of content in active pre-sale. Emits `PreReleaseSale` upon successful execution.
      * @dev Exclusive to authorized addresses. Verifies pre-sale state, and transfers ownership and payment sufficiency.
      * @param _buyer Address initiating execution.
@@ -743,7 +386,7 @@ contract WavStore is WavRoot {
      * @param _numTokenBatch Batch of Content Token identifiers used to specify the token index being queried.
      * @param _purchaseQuantityBatch Instances of each Content Token being purchased.
      */
-    function preReleasePurchaseBatch(
+    /*function preReleasePurchaseBatch(
         address _buyer,
         address[] calldata _creatorIdBatch,
         bytes32[] calldata _hashIdBatch,
@@ -776,7 +419,7 @@ contract WavStore is WavRoot {
         // Sum total Wei required
         uint256 _totalWei;
         for (uint256 i = 0; i < _purchaseLength; ) {
-            _totalWei += weiPrices[i] * _purchaseQuantityBatch[i];
+            _totalWei += _weiPrices[i] * _purchaseQuantityBatch[i];
             unchecked {
                 ++i;
             }
@@ -787,10 +430,10 @@ contract WavStore is WavRoot {
         }
 
         // Distribute creator earnings & service fees
-        CreatorProfitStorage.CreatorProfitMap
-            storage creatorProfitMapStruct = CreatorProfitStorage
-                .creatorProfitMapStructStorage();
-        address _wavId = creatorProfitMapStruct.wavId;
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
+        address _wavId = CreatorProfitStructStorage.wavId;
 
         for (uint256 i = 0; i < _purchaseLength; ) {
             uint256 _amountWei = _weiPrices[i] *
@@ -807,10 +450,10 @@ contract WavStore is WavRoot {
                 _creatorShare
             );
 
-            creatorProfitMapStruct.s_ethEarnings[_creator][_hashId] +=
+            CreatorProfitStructStorage.s_ethEarnings[_creator][_hashId] +=
                 (_amountWei * 900) /
                 1000;
-            creatorProfitMapStruct.s_serviceBalance[_wavId] += _serviceFee;
+            CreatorProfitStructStorage.s_serviceBalance[_wavId] += _serviceFee;
             unchecked {
                 ++i;
             }
@@ -830,8 +473,7 @@ contract WavStore is WavRoot {
             _numTokenBatch,
             _purchaseQuantityBatch
         );
-    }
-
+    } */
     /*  // Batch price lookup (in USD, 6-decimals),
         // Conversion to Wei
         uint256[] memory _usdPrices = WavDBC.validateAssetTokenPriceBatch(
@@ -839,14 +481,13 @@ contract WavStore is WavRoot {
             _numTokenBatch
         );
         uint256[] memory _weiPrices = WavFeed.usdToWeiBatch(_usdPrices); */
-
-    /**
+    /** Sale/WavSale.sol
      * @notice Validates _hashId input to ensure valid standard sale state.
      * @dev Authenticates provided _hashId before completion of standard sale purchase logic.
      *      Function Selector: 0x022a8b81
      * @param _hashId Identifier of Content Token being queried.
      */
-    function _singleSaleReleaseValidation(bytes32 _hashId) internal view {
+    /*function _singleSaleReleaseValidation(bytes32 _hashId) internal view {
         // Returns and decodes all values contained in releaseVal associated to hashId input
         (
             uint96 _startRelease,
@@ -856,7 +497,7 @@ contract WavStore is WavRoot {
         ) = WavDBC.validateContentTokenReleaseData(_hashId);
 
         // Returns current hourStamp
-        uint96 _hourStamp = WavDBC.currentHourStamp();
+        uint96 _hourStamp = ReturnValidation._currentHourStamp();
 
         // Ensures current hourStamp is not greater than non-zero endRelease
         if (_endRelease > 0 && _endRelease < _hourStamp) {
@@ -871,19 +512,18 @@ contract WavStore is WavRoot {
         ) {
             revert WavStore__InvalidSale();
         }
-    }
-
-    /**
+    }*/
+    /** Sale/WavSaleBatch.sol
      * @notice Validates dynamic quantities of _hashId inputs to ensure valid preSale states.
      * @dev Authenticates provided _hashIdBatch before completion of preSale purchase logic.
      *      Function Selector: 0x637f234b
      * @param _hashIdBatch Batch of Content Token identifier values being queried.
      */
-    function _batchSaleReleaseValidation(
+    /*function _batchSaleReleaseValidation(
         bytes32[] calldata _hashIdBatch
     ) internal view {
         uint256 _hashLength = _hashIdBatch.length;
-        uint96 _hourStamp = WavDBC.currentHourStamp();
+        uint96 _hourStamp = ReturnValidation._currentHourStamp();
 
         for (uint256 i = 0; i < _hashLength; ) {
             bytes32 _hashId = _hashIdBatch[i];
@@ -904,7 +544,7 @@ contract WavStore is WavRoot {
                 uint96 _endRelease,
                 uint96 _preRelease,
                 uint8 _pausedAt
-            ) = WavDBC.cReleaseValDecoder6(_packed);
+            ) = EncoderDecoder._cReleaseValDecoder6(_packed);
 
             // Validate time window & pausedAt
             if (_endRelease > 0 && _endRelease < _hourStamp) {
@@ -923,19 +563,18 @@ contract WavStore is WavRoot {
                 ++i;
             }
         }
-    }
-
+    }*/
     // check current hrStamp
     // Publication process should ensure _preRelease < _startRelease,
     //_pausedAt value has not disabled sale,
     //_endRelease is either zero or less than current timestamp
-    /**
+    /** Sale/PreReleaseSale.sol
      * @notice Validates _hashId input to ensure valid preSale state.
      * @dev Authenticates provided _hashId before completion of preSale purchase logic.
      *      Function Selector: 0x64bbbc2f
      * @param _hashId Identifier of Content Token being queried.
      */
-    function _preReleaseValidation(bytes32 _hashId) internal view {
+    /*function _preReleaseValidation(bytes32 _hashId) internal view {
         // Returns and decodes all values contained in releaseVal associated to hashId input
         (
             uint96 _startRelease,
@@ -945,7 +584,7 @@ contract WavStore is WavRoot {
         ) = WavDBC.validateContentTokenReleaseData(_hashId);
 
         // Returns current hourStamp
-        uint96 _hourStamp = WavDBC.currentHourStamp();
+        uint96 _hourStamp = ReturnValidation._currentHourStamp();
 
         // Ensures current hourStamp is not greater than non-zero endRelease
         if (_endRelease > 0 && _endRelease < _hourStamp) {
@@ -960,19 +599,18 @@ contract WavStore is WavRoot {
         ) {
             revert WavStore__InvalidSale();
         }
-    }
-
-    /**
+    }*/
+    /** Sale/PreReleaseSaleBatch.sol
      * @notice Validates dynamic quantities of _hashId inputs to ensure valid preSale states.
      * @dev Authenticates provided _hashIdBatch before completion of preSale purchase logic.
      *      Function Selector: 0x9b23bdf0
      * @param _hashIdBatch Batch of Content Token identifier values being queried.
      */
-    function _preReleaseValidationBatch(
+    /*function _preReleaseValidationBatch(
         bytes32[] calldata _hashIdBatch
     ) internal view {
         uint256 _hashLength = _hashIdBatch.length;
-        uint96 _currentHourStamp = WavDBC.currentHourStamp();
+        uint96 _currentHourStamp = ReturnValidation._currentHourStamp();
 
         for (uint256 i = 0; i < _hashLength; ) {
             bytes32 _hashId = _hashIdBatch[i];
@@ -993,16 +631,16 @@ contract WavStore is WavRoot {
                 uint96 _endRelease,
                 uint96 _preRelease,
                 uint8 _pausedAt
-            ) = WavDBC.cReleaseValDecoder6(_packed);
+            ) = EncoderDecoder._cReleaseValDecoder6(_packed);
 
             // Validate time window & pausedAt
-            if (_endRelease > 0 && _endRelease < _currentHour) {
+            if (_endRelease > 0 && _endRelease < _currentHourStamp) {
                 revert WavStore__PreSaleNotFound();
             }
             // Must be before 'startRelease' (during active preSale window)
             if (
-                _currentHour >= _startRelease ||
-                _currentHour < _preRelease ||
+                _currentHourStamp >= _startRelease ||
+                _currentHourStamp < _preRelease ||
                 _pausedAt > 0
             ) {
                 revert WavStore__PreSaleNotFound();
@@ -1012,35 +650,37 @@ contract WavStore is WavRoot {
                 ++i;
             }
         }
-    }
-
-    /**
+    }*/
+    /** Sale/ProfitWithdrawl.sol
      * @notice Withdraws earnings from the caller's balance.
      * @dev Ensures sufficient balance, updates and transfers value. Gasless checks and automated inputs preformed by front-end.
      * @param _creatorId The address of the creator.
      * @param _to The address to send the funds to.
      * @param _amount The amount to withdraw.
      */
-    function withdrawEthEarnings(
+    /*function withdrawEthEarnings(
         address _creatorId,
+        bytes32 _hashId,
         address _to, // Address to send the funds to
         uint256 _amount // Amount to withdraw
     ) external {
-        uint256 _earnings = returnEthEarnings(_creatorId, _hashId);
+        uint256 _earnings = ReturnMapping.returnEthEarnings(
+            _creatorId,
+            _hashId
+        );
         // Ensure caller has enough balance
         if (_earnings < _amount) {
             revert WavStore__InsufficientEarnings();
         }
-        CreatorProfitStorage.CreatorProfitMap
-            storage creatorProfitMapStruct = CreatorProfitStorage
-                .creatorProfitMapStructStorage();
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
         // Update caller's balance
-        creatorProfitMapStruct.s_ethEarnings[msg.sender] -= _amount;
+        CreatorProfitStructStorage.s_ethEarnings[msg.sender] -= _amount;
         // Transfer specified amount to _to
         payable(_to).transfer(_amount);
-    }
-
-    /**
+    }*/
+    /** Sale/WavExchange.sol
      * @notice Handles core logic for purchase of resale content.
      * @dev Verifies payment, signature, ownership, and updates the state. Distributes fees and transfers ownership.
      * @param _seller The address of the seller.
@@ -1053,7 +693,7 @@ contract WavStore is WavRoot {
      * @param _nonce A unique number to prevent replay attacks.
      * @param _signature The signature to verify the transaction.
      */
-    function wavResaleSingle(
+    /*function wavResaleSingle(
         address _seller,
         address _buyer,
         address _creatorId,
@@ -1075,26 +715,28 @@ contract WavStore is WavRoot {
             abi.encodePacked(_nonce, msg.sender, _priceInEth)
         );
         address _signer = WavFortress.verifySignature(_messageHash, _signature);
-        if (_signer != msg.sender) revert WavFortress__InvalidSignature();
+        if (_signer != msg.sender) revert WavStore__InvalidSignature();
 
         // Consume nonce (replay protection)
         WavFortress.checkUseUpdateNonce(_nonce);
 
         // Distribute creator earnings & service fees
-        CreatorProfitStorage.CreatorProfitMap
-            storage creatorProfitMapStruct = CreatorProfitStorage
-                .creatorProfitMapStructStorage();
-        address _wavId = creatorProfitMapStruct.wavId;
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
+        address _wavId = CreatorProfitStructStorage.wavId;
 
         uint256 _sellerShare = (_valueRequired * 900) / 1000;
         uint256 _creatorShare = (_valueRequired * 50) / 1000;
         uint256 _serviceFee = (_valueRequired * 50) / 1000;
 
-        creatorProfitMapStruct.s_ethEarnings[_seller][_hashId] += _sellerShare;
-        creatorProfitMapStruct.s_ethEarnings[_creatorId][
+        CreatorProfitStructStorage.s_ethEarnings[_seller][
+            _hashId
+        ] += _sellerShare;
+        CreatorProfitStructStorage.s_ethEarnings[_creatorId][
             _hashId
         ] += _creatorShare;
-        creatorProfitMapStruct.s_serviceBalance[_wavId] += _serviceFee;
+        CreatorProfitStructStorage.s_serviceBalance[_wavId] += _serviceFee;
 
         // Transfer ownership to buyer
         WavAccess.wavExchange(
@@ -1106,9 +748,8 @@ contract WavStore is WavRoot {
         );
 
         // Emit an event for the resale
-        emit WavResaleSingle(_buyer, _hashId, _numToken, _purchaseQuantity);
-    }
-
+        emit WavResaleSale(_buyer, _hashId, _numToken, _purchaseQuantity);
+    }*/
     /*  WavAccess(s_WavAccess).wavAccess(
             _buyer,
             _seller,
@@ -1123,8 +764,7 @@ contract WavStore is WavRoot {
             }
         }
     */
-
-    /**
+    /** Sale/WavExchangeBatch.sol
      * @notice Handles core logic for purchase of resale content.
      * @dev Verifies payment, signature, ownership, and updates the state. Distributes fees and transfers ownership.
      * @param _sellerBatch Batch of addresses selling Content Tokens.
@@ -1137,7 +777,7 @@ contract WavStore is WavRoot {
      * @param _nonce A unique number to prevent replay attacks.
      * @param _signature The signature to verify the transaction.
      */
-    function wavResaleBatch(
+    /*function wavResaleBatch(
         address[] calldata _sellerBatch,
         address _buyer,
         address[] calldata _creatorIdBatch,
@@ -1183,29 +823,29 @@ contract WavStore is WavRoot {
         WavFortress.checkUseUpdateNonce(_nonce);
 
         // Distribute creator earnings & service fees
-        CreatorProfitStorage.CreatorProfitMap
-            storage creatorProfitMapStruct = CreatorProfitStorage
-                .creatorProfitMapStructStorage();
-        address _wavId = creatorProfitMapStruct.wavId;
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
+        address _wavId = CreatorProfitStructStorage.wavId;
 
         for (uint256 i = 0; i < _hashLength; ) {
             uint256 _contentValue = _priceInEthBatch[i] *
                 _purchaseQuantityBatch[i];
             address _seller = _sellerBatch[i];
             address _creatorId = _creatorIdBatch[i];
-            bytes32 _hashId = hashIdBatch[i];
+            bytes32 _hashId = _hashIdBatch[i];
 
             uint256 _sellerShare = (_contentValue * 900) / 1000;
             uint256 _creatorShare = (_contentValue * 50) / 1000;
             uint256 _serviceFee = (_contentValue * 50) / 1000;
 
-            creatorProfitMapStruct.s_ethEarnings[_seller][
+            CreatorProfitStructStorage.s_ethEarnings[_seller][
                 _hashId
             ] += _sellerShare;
-            creatorProfitMapStruct.s_ethEarnings[_creatorId][
+            CreatorProfitStructStorage.s_ethEarnings[_creatorId][
                 _hashId
             ] += _creatorShare;
-            creatorProfitMapStruct.serviceProfit += _serviceFee;
+            CreatorProfitStructStorage.serviceProfit += _serviceFee;
 
             unchecked {
                 ++i;
@@ -1227,8 +867,7 @@ contract WavStore is WavRoot {
             _numTokenBatch,
             _purchaseQuantityBatch
         );
-    }
-
+    }*/
     /*    WavAccess(s_WavAccess).wavAccessBatch(
             _buyer,
             _sellerBatch
@@ -1243,7 +882,7 @@ contract WavStore is WavRoot {
             }
         }
         */
-
+    /* Possibly deprecated
     function generateResaleSplitBatch(
         bytes32 _hashId,
         uint256 _purchaseQuantity,
@@ -1273,8 +912,7 @@ contract WavStore is WavRoot {
         _creatorSplit = (_total * 50) / 1000;
         _collaboratorSplit = (_total * 25) / 1000;
         _serviceShare = (_total * 25) / 1000;
-    }
-
+    }*/
     /* function generateResaleSplitSingle(
         uint256 _purchaseQuantity,
         uint256 _ethPrice,
@@ -1299,23 +937,22 @@ contract WavStore is WavRoot {
         _creatorSplit = (_total * 75) / 1000;
         _serviceShare = (_total * 25) / 1000;
     }*/
-
-    /**
+    /** Deprecated for now
      * @notice Validates sufficient remaining supply relative to a purchase quantity.
      * @dev Should always be called before final execution of an asset purchase.
      * @param _hashId of the asset being validated.
      * @param _purchaseQuantity of instances to be purchased.
      * @return _tokenSupplyRemainder
      */
-    function validatePurchaseQuantity(
+    /*function validatePurchaseQuantity(
         bytes32 _hashId,
         uint256 _purchaseQuantity
     ) external view returns (uint256 _tokenSupplyRemainder) {
-        uint256 _remainder = returnRemainingSupply(_hashId);
+        uint256 _remainder = ReturnMapping.returnRemainingSupply(_hashId);
         if (_remainder < _purchaseQuantity) {
             revert WavStore__InsufficientTokenSupply();
         }
         _tokenSupplyRemainder = (_remainder - _purchaseQuantity);
         return _tokenSupplyRemainder;
-    }
+    }*/
 }
