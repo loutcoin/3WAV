@@ -143,7 +143,3 @@ Foundry test suite
     Every line of code in this repository was written by Matthew Joseph Lout II. This project is the result of over a year of focused development and three years of Solidity experience.
 - **Intention**
     This project has been built to address real market utility. It reflects a genuine passion and long-term commitment. Furthermore, it demonstrates an ability to conceptualize and creatively apply blockchain knowledge to build advanced smart contract systems.
-
-
-    // Natspec
-    // Prepare deploy v0.1.0
