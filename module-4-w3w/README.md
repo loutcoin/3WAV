@@ -127,7 +127,7 @@ Core smart contract source code
 Foundry test suite
 - **Mock/** - mock contracts
 - **Sale/** - tests for publication, sale flows, ownership of sales, and expected system behavior
-    -**State/** - tests and assertions related to a wide-range of specialized sale states
+    - **State/** - tests and assertions related to a wide-range of specialized sale states
 - **CollaboratorAssertions.t.sol** - collaborator-related tests
 
 ## Future Plans
