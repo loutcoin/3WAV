@@ -2,13 +2,13 @@
 pragma solidity ^0.8.24;
 import {SupplyDBC} from "../../../../src/3WAVi__Helpers/DBC/SupplyDBC.sol";
 
+// should be pure in reality temporarily removed to debug
 library LibPublishSWavSuppliesHelper {
     function publishSWavSuppliesHelper(
         uint224 _sSupplyVal,
         uint160 _sReserveVal
     )
         internal
-        pure
         returns (
             uint112 _sWavSuppliesTier1,
             uint112 _sWavSuppliesTier2,

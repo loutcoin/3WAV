@@ -20,8 +20,7 @@ library LibPublishSContentTokenCollaboratorMap {
             _hashId
         ] = SCollaboratorStructStorage.SCollaborator({
             numCollaborator: _sCollaborator.numCollaborator,
-            royaltyVal: _sCollaborator.royaltyVal,
-            royaltyMap: _sCollaborator.royaltyMap
+            cRoyaltyVal: _sCollaborator.cRoyaltyVal
         });
         CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
     }

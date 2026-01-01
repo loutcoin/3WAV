@@ -38,9 +38,9 @@ library LibFeed {
     }
 
     /**
-     * @notice Returns the latest price
+     * @notice Returns the latest price.
      * @dev Function Selector: 0x8e15f473
-     * @return int256 The latest price
+     * @return int256 The latest price.
      */
     function _getLatestPrice() internal view returns (int256) {
         FacetAddrStorage.FacetAddrStruct
@@ -52,6 +52,12 @@ library LibFeed {
         return price;
     }
 
+    /**
+     * @notice Converts USD amount to ETH.
+     * @dev Function Selector: 0xa3053e2a
+     * @param _usdVal The amount of USD in 8 decimal places.
+     * @return uint256 The equivalent amount in ETH.
+     */
     function _usdToWei(uint256 _usdVal) internal view returns (uint256) {
         FacetAddrStorage.FacetAddrStruct
             storage FacetAddrStructStorage = FacetAddrStorage
@@ -73,6 +79,12 @@ library LibFeed {
         return _ethWei;
     }
 
+    /**
+     * @notice Converts a batch of USD data into ETH equivalent values.
+     * @dev Function Selector:
+     * @param _usdValBatch Batch of USD data in 8 decimal places.
+     * @return uint256[] The equivalent values in ETH.
+     */
     function _usdToEthBatch(
         uint256[] calldata _usdValBatch
     ) internal view returns (uint256[] memory _ethWeiBatch) {
@@ -101,35 +113,5 @@ library LibFeed {
         }
 
         return _ethWeiBatch;
-    }
-
-    /**
-     * @notice Converts USD amount to ETH
-     * @dev Function Selector: 0xa3053e2a
-     * @param usdAmount The amount of USD in 8 decimal places
-     * @return uint256 The equivalent amount in ETH
-     */
-    function _convertUsdToEth(
-        uint256 usdAmount
-    ) internal view returns (uint256) {
-        int256 price = _getLatestPrice();
-        // USD amount is in 8 decimal places
-        // Price is in 8 decimal places, so we need to adjust the conversion
-        return (usdAmount * 10 ** 8) / uint256(price);
-    }
-
-    /**
-     * @notice Converts ETH amount to USD
-     * @dev Function Selector: 0xc086381e
-     * @param ethAmount The amount of ETH in wei
-     * @return uint256 The equivalent amount in USD
-     */
-    function _convertEthToUsd(
-        uint256 ethAmount
-    ) internal view returns (uint256) {
-        int256 price = _getLatestPrice();
-        // ETH amount is in wei (1 ETH = 10^18 wei)
-        // Price is in 8 decimal places, so we need to adjust the conversion
-        return (ethAmount * uint256(price)) / 10 ** 8;
     }
 }

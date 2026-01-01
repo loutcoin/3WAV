@@ -6,12 +6,12 @@ import {
 } from "../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
 
 import {
-    CollaboratorStructStorage
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
+    SCollaboratorStructStorage
+} from "../../../src/Diamond__Storage/ContentToken/Optionals/SCollaboratorStructStorage.sol";
 
 import {
-    LibPublishContentTokenCollaboratorMap
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishContentTokenCollaboratorMap.sol";
+    LibPublishSContentTokenCollaboratorMap
+} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenCollaboratorMap.sol";
 
 import {
     LibPublishCreatorToken
@@ -37,78 +37,11 @@ library LibPublishSContentTokenSearchBatch {
     );
 
     error PublishSContentTokenBatch__NumInputInvalid();
-    // This is literally an identical copy of that in 'LibPublishSContentTokenSearchBatch',
-    // Should just be placed in a library and used in both of these helper libraries
-    /*function _publishSContentTokenSearchBatch(
-        bytes32 _hashId,
-        SContentTokenStorage.SContentToken calldata _sContentToken
-    ) internal {
-        ContentTokenSearchStorage.ContentTokenSearch
-            storage ContentTokenSearchStruct = ContentTokenSearchStorage
-                .contentTokenSearchStorage();
-
-        SContentTokenStorage.SContentToken calldata _sCTKN = _sContentToken;
-
-        ContentTokenSearchStruct.s_sContentTokenSearch[
-            _hashId
-        ] = SContentTokenStorage.SContentToken({
-            numToken: _sCTKN.numToken,
-            priceUsdVal: _sCTKN.priceUsdVal,
-            supplyVal: _sCTKN.supplyVal,
-            releaseVal: _sCTKN.releaseVal
-        });
-    }*/
-
-    /*function _publishSContentStackTest(
-        address _creatorId,
-        bytes32[] calldata _hashIdBatch,
-        SContentTokenStorage.SContentToken[] calldata _sContentToken,
-        CollaboratorStructStorage.Collaborator[] calldata _collaborator
-    ) internal {
-        for (uint256 i = 0; i < _hashIdBatch.length; ) {
-            bytes32 _hashId = _hashIdBatch[i];
-            SContentTokenStorage.SContentToken calldata _sCKTN = _sContentToken[
-                i
-            ];
-            uint16 _numToken = _sCKTN.numToken;
-
-            if (_numToken == 0 || _sCKTN.supplyVal == 0)
-                revert PublishSContentTokenBatch__NumInputInvalid();
-            {
-                _publishSContentTokenSearchBatch(_hashId, _sCKTN);
-            }
-
-            {
-                LibPublishCreatorToken._publishCreatorToken(
-                    _creatorId,
-                    _hashId,
-                    _numToken
-                );
-            }
-
-            if (_collaborator.length > 0) {
-                //uint256 _royaltyMap = _royaltyMapBatch[i];
-                CollaboratorStructStorage.Collaborator
-                    calldata _collab = _collaborator[i];
-
-                {
-                    LibPublishContentTokenCollaboratorMap
-                        ._publishContentTokenCollaboratorMap(_hashId, _collab);
-                }
-            }
-            emit SContentTokenPublished(_creatorId, _hashId, _numToken);
-
-            unchecked {
-                ++i;
-            }
-        }
-    }*/
 
     function _publishSContentTokenVariantSearchBatch(
-        // SHOULD possibly just be CreatorToken
         CreatorTokenVariantStorage.CreatorTokenVariant[] calldata _creatorTokenVariant,
         SContentTokenStorage.SContentToken[] calldata _sContentToken,
-        CollaboratorStructStorage.Collaborator[] calldata _collaborator
+        SCollaboratorStructStorage.SCollaborator[] calldata _sCollaborator
     ) internal {
         for (uint256 i = 0; i < _sContentToken.length; ) {
             bytes32 _hashId = _creatorTokenVariant[i].creatorToken.hashId;
@@ -130,14 +63,17 @@ library LibPublishSContentTokenSearchBatch {
                     _sCTKN.numToken
                 );
             }
-            if (_collaborator.length > 0) {
+            if (_sCollaborator.length > 0) {
                 //uint256 _royaltyMap = _royaltyMapBatch[i];
-                CollaboratorStructStorage.Collaborator
-                    calldata _collab = _collaborator[i];
+                SCollaboratorStructStorage.SCollaborator
+                    calldata _sCollab = _sCollaborator[i];
 
                 {
-                    LibPublishContentTokenCollaboratorMap
-                        ._publishContentTokenCollaboratorMap(_hashId, _collab);
+                    LibPublishSContentTokenCollaboratorMap
+                        ._publishSContentTokenCollaboratorMap(
+                            _hashId,
+                            _sCollab
+                        );
                 }
             }
             emit SContentTokenPublished(
@@ -153,10 +89,9 @@ library LibPublishSContentTokenSearchBatch {
     }
 
     function _publishSContentTokenSearchBatch(
-        // SHOULD possibly just be CreatorToken
         CreatorTokenStorage.CreatorToken[] calldata _creatorToken,
         SContentTokenStorage.SContentToken[] calldata _sContentToken,
-        CollaboratorStructStorage.Collaborator[] calldata _collaborator
+        SCollaboratorStructStorage.SCollaborator[] calldata _sCollaborator
     ) internal {
         for (uint256 i = 0; i < _sContentToken.length; ) {
             bytes32 _hashId = _creatorToken[i].hashId;
@@ -178,14 +113,17 @@ library LibPublishSContentTokenSearchBatch {
                     _sCTKN.numToken
                 );
             }
-            if (_collaborator.length > 0) {
+            if (_sCollaborator.length > 0) {
                 //uint256 _royaltyMap = _royaltyMapBatch[i];
-                CollaboratorStructStorage.Collaborator
-                    calldata _collab = _collaborator[i];
+                SCollaboratorStructStorage.SCollaborator
+                    calldata _sCollab = _sCollaborator[i];
 
                 {
-                    LibPublishContentTokenCollaboratorMap
-                        ._publishContentTokenCollaboratorMap(_hashId, _collab);
+                    LibPublishSContentTokenCollaboratorMap
+                        ._publishSContentTokenCollaboratorMap(
+                            _hashId,
+                            _sCollab
+                        );
                 }
             }
             emit SContentTokenPublished(

@@ -15,6 +15,7 @@ import {
 
 library LibPublishCContentTokenSearchHelper {
     error LibPublishCContentTokenSearchHelper__InputInvalid();
+
     function _publishCContentTokenSearchHelper(
         bytes32 _hashId,
         CContentTokenStorage.CContentToken calldata _cContentToken

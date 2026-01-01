@@ -10,9 +10,11 @@ library CollaboratorStructStorage {
      */
     struct Collaborator {
         uint8 numCollaborator; // number of collaborators across an entire work / hashId non-specific to numToken
-        uint128 royaltyVal;
+        uint32 cRoyaltyVal;
+        uint128 sRoyaltyVal;
         uint256[] royaltyMap;
     }
+
     // should honestly be 'cRoyalty' and 'sRoyaltyMap' to operate using same bit decode/encode as elsewhere in system...
 
     /* dynamic percentages of 90% creator profit available to collaborators

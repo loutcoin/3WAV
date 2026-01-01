@@ -23,172 +23,21 @@ import {
 } from "../../../src/3WAVi__Helpers/NumericalConstants.sol";
 
 library LibCollaboratorReserve {
-    // THIS FUNCTION COULD AND SHOULD BE MADE MUCH BETTER IMO
-    /*
-     * @notice Partitions gross revenue into collaborator reserve.
-     * @dev Accesses Collaborator struct and debits earnings based on relevant royalty split
-     *      Function Selector: 0x784c9669
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     * @param _grossWei Total available ETH share.
-     */
-    /*function _allocateCollaboratorReserve(
-        bytes32 _hashId,
-        uint16 _numToken,
-        uint256 _grossWei
-    ) internal returns (uint256) {
-        if (_grossWei == 0) return 0;
-
-        CollaboratorMapStorage.CollaboratorMap
-            storage CollaboratorMapStruct = CollaboratorMapStorage
-                .collaboratorMapStorage();
-
-        CollaboratorStructStorage.Collaborator
-            storage CollaboratorStruct = CollaboratorStructStorage
-                .collaboratorStructStorage();
-
-        CollaboratorMapStruct.s_collaborators[_hashId];
-
-        // Needs to be altered to access s_collaborators
-        //uint256 _bitmap = CollaboratorMapStruct.s_royalties[_hashId];
-        // *** NTS: Specific "page" is to be determined relative to numToken being queried.
-        // That can probably be done in a simple sub-function (I think we have to do something similar elsewhere already)
-        uint256 _bitmap = CollaboratorMapStruct
-            .s_collaborators[_hashId]
-            .royaltyMap;
-
-        //uint8 _tokenState = Binary3BitDBC._encode3BitState(_hashId, _numToken);
-        uint8 _tokenState = Binary3BitDBC._decode3BitState(_bitmap, _numToken);
-
-        if (CollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
-            // Collaborators disabled for numToken
-            return _grossWei;
-        }
-
-        uint32 _selectedSlot;
-
-        (
-            ,
-            uint32 r1,
-            uint32 r2,
-            uint32 r3,
-            uint32 r4,
-            uint32 r5,
-            uint32 r6
-        ) = RoyaltyDBC._royaltyValDecoder(CollaboratorStruct.royaltyVal);
-        if (_tokenState == 1) _selectedSlot = r1;
-        else if (_tokenState == 2) _selectedSlot = r2;
-        else if (_tokenState == 3) _selectedSlot = r3;
-        else if (_tokenState == 4) _selectedSlot = r4;
-        else if (_tokenState == 5) _selectedSlot = r5;
-        else _selectedSlot = r6;
-
-        if (_selectedSlot == 0) return _grossWei;
-
-        uint256 _collaboratorReserveWei = (_grossWei * uint256(_selectedSlot)) /
-            uint256(NumericalConstants.CRELEASE_6_MAX);
-
-        if (_collaboratorReserveWei > _grossWei) {
-            _collaboratorReserveWei = _grossWei;
-        }
-
-        CollaboratorMapStruct.s_collaboratorReserve[_hashId][
-            _numToken
-        ] += _collaboratorReserveWei;
-
-        uint256 _netWei = _grossWei - _collaboratorReserveWei;
-        return _netWei;
-    }*/
-
-    /*
-     * @notice Partitions gross revenue into collaborator reserve.
-     * @dev Accesses Collaborator struct and debits earnings based on relevant royalty split
-     *      Function Selector: 0x784c9669
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     * @param _grossWei Total available ETH share.
-     */
-    /*function _allocateSCollaboratorReserve(
-        bytes32 _hashId,
-        uint16 _numToken,
-        uint256 _grossWei
-    ) internal returns (uint256) {
-        if (_grossWei == 0) return 0;
-
-        CollaboratorMapStorage.CollaboratorMap
-            storage CollaboratorMapStruct = CollaboratorMapStorage
-                .collaboratorMapStorage();
-
-        SCollaboratorStructStorage.SCollaborator
-            storage SCollaboratorStruct = SCollaboratorStructStorage
-                .sCollaboratorStructStorage();
-
-        CollaboratorMapStruct.s_sCollaborators[_hashId];
-
-        // Needs to be altered to access s_collaborators
-        //uint256 _bitmap = CollaboratorMapStruct.s_royalties[_hashId];
-        // *** NTS: Specific "page" is to be determined relative to numToken being queried.
-        // That can probably be done in a simple sub-function (I think we have to do something similar elsewhere already)
-        uint256 _bitmap = CollaboratorMapStruct
-            .s_sCollaborators[_hashId]
-            .royaltyMap;
-
-        //uint8 _tokenState = Binary3BitDBC._encode3BitState(_hashId, _numToken);
-        uint8 _tokenState = Binary3BitDBC._decode3BitState(_bitmap, _numToken);
-
-        if (CollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
-            // Collaborators disabled for numToken
-            return _grossWei;
-        }
-
-        uint32 _selectedSlot;
-
-        (
-            ,
-            uint32 r1,
-            uint32 r2,
-            uint32 r3,
-            uint32 r4,
-            uint32 r5,
-            uint32 r6
-        ) = RoyaltyDBC._royaltyValDecoder(CollaboratorStruct.royaltyVal);
-        if (_tokenState == 1) _selectedSlot = r1;
-        else if (_tokenState == 2) _selectedSlot = r2;
-        else if (_tokenState == 3) _selectedSlot = r3;
-        else if (_tokenState == 4) _selectedSlot = r4;
-        else if (_tokenState == 5) _selectedSlot = r5;
-        else _selectedSlot = r6;
-
-        if (_selectedSlot == 0) return _grossWei;
-
-        uint256 _collaboratorReserveWei = (_grossWei * uint256(_selectedSlot)) /
-            uint256(NumericalConstants.CRELEASE_6_MAX);
-
-        if (_collaboratorReserveWei > _grossWei) {
-            _collaboratorReserveWei = _grossWei;
-        }
-
-        CollaboratorMapStruct.s_collaboratorReserve[_hashId][
-            _numToken
-        ] += _collaboratorReserveWei;
-
-        uint256 _netWei = _grossWei - _collaboratorReserveWei;
-        return _netWei;
-    }*/
-
     /**
      * @notice Partitions gross revenue into collaborator reserve.
      * @dev Accesses Collaborator struct and debits earnings based on relevant royalty split
      *      Function Selector:
      * @param _hashId Identifier of Content Token being queried.
      * @param _numToken Content Token identifier used to specify the token index being queried.
+     * @param _cRoyaltyVal Encoded cRoyaltyVal SContentToken data.
      * @param _grossWei Total available ETH share.
      */
     function _allocateSCollaboratorReserve(
         bytes32 _hashId,
         uint16 _numToken,
-        uint256 _grossWei,
-        uint256 _bitmap
+        uint32 _cRoyaltyVal,
+        uint256 _grossWei
+        //uint256 _bitmap
     ) internal returns (uint256 _netWei) {
         if (_grossWei == 0) return 0;
 
@@ -196,48 +45,10 @@ library LibCollaboratorReserve {
             storage CollaboratorMapStruct = CollaboratorMapStorage
                 .collaboratorMapStorage();
 
-        SCollaboratorStructStorage.SCollaborator
-            storage SCollaboratorStruct = SCollaboratorStructStorage
-                .sCollaboratorStructStorage();
+        uint32 _cSlot = RoyaltyDBC._cRoyaltyValDecoder(_cRoyaltyVal);
+        if (_cSlot == 0) return _grossWei;
 
-        //CollaboratorMapStruct.s_sCollaborators[_hashId];
-
-        // Needs to be altered to access s_collaborators
-        //uint256 _bitmap = CollaboratorMapStruct.s_royalties[_hashId];
-        // *** NTS: Specific "page" is to be determined relative to numToken being queried.
-        // That can probably be done in a simple sub-function (I think we have to do something similar elsewhere already)
-
-        //uint8 _tokenState = Binary3BitDBC._encode3BitState(_hashId, _numToken);
-        uint8 _tokenState = Binary3BitDBC._decode3BitState(_bitmap, _numToken);
-
-        if (SCollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
-            // Collaborators disabled for numToken
-            return _grossWei;
-        }
-
-        uint32 _selectedSlot;
-
-        {
-            (
-                ,
-                uint32 r1,
-                uint32 r2,
-                uint32 r3,
-                uint32 r4,
-                uint32 r5,
-                uint32 r6
-            ) = RoyaltyDBC._royaltyValDecoder(SCollaboratorStruct.royaltyVal);
-            if (_tokenState == 1) _selectedSlot = r1;
-            else if (_tokenState == 2) _selectedSlot = r2;
-            else if (_tokenState == 3) _selectedSlot = r3;
-            else if (_tokenState == 4) _selectedSlot = r4;
-            else if (_tokenState == 5) _selectedSlot = r5;
-            else _selectedSlot = r6;
-
-            if (_selectedSlot == 0) return _grossWei;
-        }
-
-        uint256 _collaboratorReserveWei = (_grossWei * uint256(_selectedSlot)) /
+        uint256 _collaboratorReserveWei = (_grossWei * uint256(_cSlot)) /
             uint256(NumericalConstants.CRELEASE_6_MAX);
 
         if (_collaboratorReserveWei > _grossWei) {
@@ -252,86 +63,6 @@ library LibCollaboratorReserve {
         return _netWei;
     }
 
-    // THIS FUNCTION COULD AND SHOULD BE MADE MUCH BETTER IMO
-    /*
-     * @notice Partitions gross revenue into collaborator reserve.
-     * @dev Accesses Collaborator struct and debits earnings based on relevant royalty split
-     *      Function Selector: 0x784c9669
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     * @param _grossWei Total available ETH share.
-     */
-    /*function _allocateCollaboratorReserve(
-        bytes32 _hashId,
-        uint16 _numToken,
-        uint256 _grossWei
-    ) internal returns (uint256) {
-        if (_grossWei == 0) return 0;
-
-        CollaboratorMapStorage.CollaboratorMap
-            storage CollaboratorMapStruct = CollaboratorMapStorage
-                .collaboratorMapStorage();
-
-        CollaboratorStructStorage.Collaborator
-            storage CollaboratorStruct = CollaboratorStructStorage
-                .collaboratorStructStorage();
-
-        CollaboratorMapStruct.s_collaborators[_hashId];
-
-        // Needs to be altered to access s_collaborators
-        //uint256 _bitmap = CollaboratorMapStruct.s_royalties[_hashId];
-        // *** NTS: Specific "page" is to be determined relative to numToken being queried.
-        // That can probably be done in a simple sub-function (I think we have to do something similar elsewhere already)
-        uint256[] storage _bitmap = CollaboratorMapStruct
-            .s_collaborators[_hashId]
-            .royaltyMap;
-
-        Binary3BitDBC._get3BitMapPage(_bitmap, _numToken);
-
-        //uint8 _tokenState = Binary3BitDBC._encode3BitState(_hashId, _numToken);
-        uint8 _tokenState = Binary3BitDBC._decode3BitState(_bitmap, _numToken);
-
-        if (CollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
-            // Collaborators disabled for numToken
-            return _grossWei;
-        }
-
-        uint32 _selectedSlot;
-
-        (
-            ,
-            uint32 r1,
-            uint32 r2,
-            uint32 r3,
-            uint32 r4,
-            uint32 r5,
-            uint32 r6
-        ) = RoyaltyDBC._royaltyValDecoder(CollaboratorStruct.royaltyVal);
-        if (_tokenState == 1) _selectedSlot = r1;
-        else if (_tokenState == 2) _selectedSlot = r2;
-        else if (_tokenState == 3) _selectedSlot = r3;
-        else if (_tokenState == 4) _selectedSlot = r4;
-        else if (_tokenState == 5) _selectedSlot = r5;
-        else _selectedSlot = r6;
-
-        if (_selectedSlot == 0) return _grossWei;
-
-        uint256 _collaboratorReserveWei = (_grossWei * uint256(_selectedSlot)) /
-            uint256(NumericalConstants.CRELEASE_6_MAX);
-
-        if (_collaboratorReserveWei > _grossWei) {
-            _collaboratorReserveWei = _grossWei;
-        }
-
-        CollaboratorMapStruct.s_collaboratorReserve[_hashId][
-            _numToken
-        ] += _collaboratorReserveWei;
-
-        uint256 _netWei = _grossWei - _collaboratorReserveWei;
-        return _netWei;
-    }*/
-
-    // THIS FUNCTION COULD AND SHOULD BE MADE MUCH BETTER IMO
     /**
      * @notice Partitions gross revenue into collaborator reserve.
      * @dev Accesses Collaborator struct and debits earnings based on relevant royalty split
@@ -352,29 +83,30 @@ library LibCollaboratorReserve {
             storage CollaboratorMapStruct = CollaboratorMapStorage
                 .collaboratorMapStorage();
 
-        CollaboratorStructStorage.Collaborator
-            storage CollaboratorStruct = CollaboratorStructStorage
-                .collaboratorStructStorage();
-
-        //CollaboratorMapStruct.s_collaborators[_hashId];
-
-        /*uint256[] storage _bitmap = CollaboratorMapStruct
-            .s_collaborators[_hashId]
-            .royaltyMap;
-
-        Binary3BitDBC._get3BitMapPage(_bitmap, _numToken);*/
-
-        //uint8 _tokenState = Binary3BitDBC._encode3BitState(_hashId, _numToken);
         uint8 _tokenState = Binary3BitDBC._decode3BitState(_bitmap, _numToken);
 
-        if (CollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
-            // Collaborators disabled for numToken
+        //_tokenState = 1;
+
+        // Collaborators undefined for numToken; **** Stuff like this if included would be best in the router function
+        /*if (CollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
             return _grossWei;
-        }
+        }*/
 
         uint32 _selectedSlot;
 
-        {
+        if (_numToken == 0) {
+            uint32 _cSlot = CollaboratorMapStruct
+                .s_collaborators[_hashId]
+                .cRoyaltyVal;
+
+            uint32 _rawVal = RoyaltyDBC._cRoyaltyValDecoder(_cSlot);
+            if (_rawVal == 0) return _grossWei;
+            _selectedSlot = _rawVal;
+        } else {
+            uint128 _cSlot = CollaboratorMapStruct
+                .s_collaborators[_hashId]
+                .sRoyaltyVal;
+
             (
                 ,
                 uint32 r1,
@@ -383,7 +115,7 @@ library LibCollaboratorReserve {
                 uint32 r4,
                 uint32 r5,
                 uint32 r6
-            ) = RoyaltyDBC._royaltyValDecoder(CollaboratorStruct.royaltyVal);
+            ) = RoyaltyDBC._royaltyValDecoder(_cSlot);
             if (_tokenState == 1) _selectedSlot = r1;
             else if (_tokenState == 2) _selectedSlot = r2;
             else if (_tokenState == 3) _selectedSlot = r3;
@@ -418,25 +150,23 @@ library LibCollaboratorReserve {
             storage CollaboratorMapStruct = CollaboratorMapStorage
                 .collaboratorMapStorage();
 
-        uint256 _sBitmap = CollaboratorMapStruct
+        uint32 _cRoyalty = CollaboratorMapStruct
             .s_sCollaborators[_hashId]
-            .royaltyMap;
-
-        if (_sBitmap != 0) {
-            // logic
+            .cRoyaltyVal;
+        if (_cRoyalty != 0) {
             return
                 _allocateSCollaboratorReserve(
                     _hashId,
                     _numToken,
-                    _grossWei,
-                    _sBitmap
+                    _cRoyalty,
+                    _grossWei
                 );
         }
         uint256[] storage _cBitmap = CollaboratorMapStruct
             .s_collaborators[_hashId]
-            .royaltyMap; // _cBitmap[0] could be mildly problematic, should look into
+            .royaltyMap;
+
         if (_cBitmap.length > 0 && _cBitmap[0] != 0) {
-            // logic
             (uint256 _bitmap, ) = Binary3BitDBC._get3BitMapPage(
                 _cBitmap,
                 _numToken
@@ -452,4 +182,54 @@ library LibCollaboratorReserve {
             return _grossWei;
         }
     }
+
+    /* _tokenState == 0
+    ─ emit emitTokenState(_tokenState: 0)
+    │   │   ├─ emit cSlotIs(_cSlot: 100050000100000050000100000050000100000 [1e38])
+    │   │   ├─ emit WhatIsR1(r1: 50000 [5e4], r2: 100000 [1e5], r3: 50000 [5e4], r4: 100000 [1e5], r5: 50000 [5e4], r6: 100000 [1e5])
+    │   │   ├─ emit SelectedSlotIs(_selectedSlot: 100000 [1e5])
+    │   │   ├─ emit SCollaboratorReserveDebitsEthCheck(_weiDebit: 20700000000000 [2.07e13])
+    │   │   ├─ emit CollabReserveWei(_collabReserveWei: 20700000000000 [2.07e13])
+    │   │   ├─ emit NetWeiIs(_netWei: 186300000000000 [1.863e14])
+    │   │   ├─ emit WavSaleSingle(_buyer: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, _hashId: 0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, _numToken: 8, _purchaseQuantity: 1)
+    │   │   └─ ← [Stop] 
+    │   └─ ← [Return] 
+    ├─ [6651] WavDiamond::fallback(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8)
+    │   ├─ [1718] ProfitWithdrawl::getCollaboratorReserve(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8) [delegatecall]
+    │   │   ├─ emit earningsAmount(_earnings: 20700000000000 [2.07e13])
+
+    --
+    Original sRoyalty data
+    */
+
+    /* tokenState == 0
+    ├─ emit cSlotIs(_cSlot: 100050000100000050000100000050000100000 [1e38])
+    │   │   ├─ emit WhatIsR1(r1: 50000 [5e4], r2: 100000 [1e5], r3: 50000 [5e4], r4: 100000 [1e5], r5: 50000 [5e4], r6: 100000 [1e5])
+    │   │   ├─ emit SelectedSlotIs(_selectedSlot: 50000 [5e4])
+    │   │   ├─ emit SCollaboratorReserveDebitsEthCheck(_weiDebit: 10350000000000 [1.035e13])
+    │   │   ├─ emit CollabReserveWei(_collabReserveWei: 10350000000000 [1.035e13])
+    │   │   ├─ emit NetWeiIs(_netWei: 196650000000000 [1.966e14])
+    │   │   ├─ emit WavSaleSingle(_buyer: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, _hashId: 0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, _numToken: 8, _purchaseQuantity: 1)
+    │   │   └─ ← [Stop] 
+    │   └─ ← [Return] 
+    ├─ [6651] WavDiamond::fallback(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8)
+    │   ├─ [1718] ProfitWithdrawl::getCollaboratorReserve(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8) [delegatecall]
+    │   │   ├─ emit earningsAmount(_earnings: 10350000000000 [1.035e13])
+    
+    --
+    Original sRoyalty data:
+    ├─ emit cSlotIs(_cSlot: 100050000000000000000000000000000000000 [1e38])
+    │   │   ├─ emit WhatIsR1(r1: 50000 [5e4], r2: 0, r3: 0, r4: 0, r5: 0, r6: 0)
+    │   │   ├─ emit SelectedSlotIs(_selectedSlot: 50000 [5e4])
+    │   │   ├─ emit SCollaboratorReserveDebitsEthCheck(_weiDebit: 10350000000000 [1.035e13])
+    │   │   ├─ emit CollabReserveWei(_collabReserveWei: 10350000000000 [1.035e13])
+    │   │   ├─ emit NetWeiIs(_netWei: 196650000000000 [1.966e14])
+    │   │   ├─ emit WavSaleSingle(_buyer: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, _hashId: 0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, _numToken: 8, _purchaseQuantity: 1)
+    │   │   └─ ← [Stop] 
+    │   └─ ← [Return] 
+    ├─ [6651] WavDiamond::fallback(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8)
+    │   ├─ [1718] ProfitWithdrawl::getCollaboratorReserve(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8) [delegatecall]
+    │   │   ├─ emit earningsAmount(_earnings: 10350000000000 [1.035e13])
+    
+    */
 }

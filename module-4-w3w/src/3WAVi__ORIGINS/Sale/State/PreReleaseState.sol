@@ -4,23 +4,22 @@ pragma solidity ^0.8.24;
 import {
     ReturnValidation
 } from "../../../../src/3WAVi__Helpers/ReturnValidation.sol";
-// ***To be 'granular-ized'***
-// import {ReturnMapping} from "../../../../src/3WAVi__Helpers/ReturnMapping.sol";
+
 import {ReleaseDBC} from "../../../../src/3WAVi__Helpers/DBC/ReleaseDBC.sol";
+
 import {
     CContentTokenStorage
 } from "../../../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
+
 import {
     SContentTokenStorage
 } from "../../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
 
-// Trying to totally consolidate storage access
 import {
     ContentTokenSearchStorage
 } from "../../../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
 
 contract PreReleaseState {
-    event TestUpdatedReleaseVal(uint96 indexed _releaseVal);
     event PRState(bytes32 indexed _hashId, uint8 indexed _inputState);
 
     error PreReleaseState__InputInvalid();
@@ -39,9 +38,6 @@ contract PreReleaseState {
         if (_inputState > 1) revert PreReleaseState__InputInvalid();
 
         // cContentToken branch
-        /*uint96 _releaseVal = ReturnMapping.returnCContentTokenReleaseVal(
-            _hashId
-        );*/
         ContentTokenSearchStorage.ContentTokenSearch
             storage ContentTokenSearchStruct = ContentTokenSearchStorage
                 .contentTokenSearchStorage();
@@ -50,6 +46,7 @@ contract PreReleaseState {
             .s_cContentTokenSearch[_hashId]
             .cReleaseVal;
         if (_releaseVal != 0) {
+            // Decode cReleaseVal
             (
                 uint96 _startRelease,
                 uint96 _endRelease,
@@ -57,11 +54,13 @@ contract PreReleaseState {
                 uint8 _pausedAt
             ) = ReleaseDBC._cReleaseValDecoder6(_releaseVal);
 
-            // Only allow pause if preSale is currently active, only allow resume if preSale is paused
+            // Only allow pause if preSale is currently active,
+            // only allow resume if preSale is paused
             if (
                 (_inputState == 1 && _pausedAt != 0) ||
                 (_inputState == 0 && _pausedAt != 1)
             ) revert PreReleaseState__InputStateInEffect();
+
             // Activate _pausedAt state and encode
             uint96 _updatedReleaseVal = ReleaseDBC._cReleaseValEncoder6(
                 _startRelease,
@@ -69,8 +68,6 @@ contract PreReleaseState {
                 _preRelease,
                 _inputState
             );
-
-            emit TestUpdatedReleaseVal(_updatedReleaseVal);
 
             // Write into cContentToken storage
             ContentTokenSearchStruct
@@ -80,17 +77,14 @@ contract PreReleaseState {
             emit PRState(_hashId, _inputState);
             return;
         }
-        // sContentToken branch
-        // sContentToken branch
-        //_releaseVal = ReturnMapping.returnSContentTokenReleaseVal(_hashId);
 
-        // was "uint96 _releaseVal" but was already declared
+        // sContentToken branch
         _releaseVal = ContentTokenSearchStruct
             .s_sContentTokenSearch[_hashId]
             .releaseVal;
 
         if (_releaseVal != 0) {
-            // Decode
+            // Decode cReleaseVal
             (
                 uint96 _startRelease,
                 uint96 _endRelease,
@@ -117,6 +111,7 @@ contract PreReleaseState {
                 .releaseVal = _updatedReleaseVal;
 
             emit PRState(_hashId, _inputState);
+
             return;
         }
         // Content Token not found in either storage location

@@ -38,16 +38,4 @@ library ReturnValidation {
         //_hourStamp = _timeStamp / SECOND_TO_HOUR_PRECISION;
         return _hourStamp;
     }
-
-    /** MAYBE belongs as external view in WavAccess
-     * @notice Checks if an alias is already taken.
-     * @dev Ensures that the desired alias is not already associated with another artist.
-     *      Function Selector: 0xd97eaaa9
-     * @param _creatorAlias The username to be checked.
-     */
-    /*function checkAlias(string memory _creatorAlias) internal view {
-        if (s_aliasToAddr[_creatorAlias] != address(0)) {
-            revert WavAccess__NameIsTaken();
-        }
-    }*/
 }

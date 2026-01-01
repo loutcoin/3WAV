@@ -43,7 +43,7 @@ library PriceDBC {
         return _cPriceUsdRaw;
     }
 
-    /** Technically doesn't currently check that accessible < standard < exclusive
+    /**
      * @notice Encodes four raw values related to the 30-digit sPriceUsdVal CContentToken property.
      * @dev Function called by script to correctly format stored sPriceUsdVal data.
      *      Function Selector: 0x6fb1d5e3

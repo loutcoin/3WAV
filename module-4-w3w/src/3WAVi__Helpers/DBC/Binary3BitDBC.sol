@@ -8,6 +8,7 @@ library Binary3BitDBC {
     error Binary3BitDBC__LengthValIssue();
     error Binary3BitDBC__BitValIssue();
     error Binary3BitDBC__MinEncodedValueInvalid();
+
     function _encode3BitState(
         uint16[] calldata _indexArray,
         uint8[] calldata _stateArray

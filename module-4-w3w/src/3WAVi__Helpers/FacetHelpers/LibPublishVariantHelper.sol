@@ -41,5 +41,5 @@ library LibPublishVariantHelper {
             _baseHashId,
             _variantIndex
         );
-    } // bytes32 _hashId = _creatorTokenVariant.creatorToken.hashId[i];
+    }
 }

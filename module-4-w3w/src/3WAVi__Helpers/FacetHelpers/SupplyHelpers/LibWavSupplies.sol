@@ -11,6 +11,7 @@ import {
 
 library LibWavSupplies {
     error WavSupplies__NumInputInvalid();
+
     /**
      * @notice Deducts quantity of WavStore supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded WavStore supply of hashId.
@@ -103,7 +104,7 @@ library LibWavSupplies {
      * @param _wavSaleToken User-defined WavSale struct.
      * @param _tierId Tier index attributed to numToken of CContentToken hashId.
      */
-    function sDebitWavStoreSupply2(
+    function sDebitWavStoreSupplySale(
         WavSaleToken.WavSale calldata _wavSaleToken,
         uint16 _tierId
     ) internal {
@@ -141,30 +142,4 @@ library LibWavSupplies {
             _tierId
         ] = _updatedRemainingSupplies;
     }
-
-    /**
-     * @notice Returns the tier index of a specified numToken in relation to hashId.
-     * @dev Reads 256-bit word that contains 4-bit tier slot for 64 tokens, extracts 4-bit value attributed to numToken input
-     *       Function selector: 0x2be87751
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _numToken Content Token identifier used to specify the token index being queried.
-     */
-    /*function _getTier(
-        bytes32 _hashId,
-        uint16 _numToken
-    ) internal view returns (uint8) {
-        ContentTokenSupplyMapStorage.ContentTokenSupplyMap
-            storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
-                .contentTokenSupplyMapStorage();
-        uint16 _wordIndex = _numToken >> 6;
-        uint8 _within = uint8(_numToken & 63);
-
-        uint256 _packed = ContentTokenSupplyMapStruct.s_tierMap[_hashId][
-            _wordIndex
-        ];
-        uint256 _shift = uint256(_within) * 4;
-        uint8 _tierId = uint8((_packed >> _shift) & 0xF);
-
-        return _tierId;
-    }*/
 }

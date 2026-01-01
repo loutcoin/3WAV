@@ -22,7 +22,11 @@ import {
     PublishSVariant
 } from "../src/3WAVi__ORIGINS/Publish/PublishSVariant.sol";
 
+import {WavAccess} from "../src/3WAVi__ORIGINS/WavAccess.sol";
+
 import {WavSale} from "../src/3WAVi__ORIGINS/Sale/WavSale.sol";
+
+import {ProfitWithdrawl} from "../src/3WAVi__ORIGINS/Sale/ProfitWithdrawl.sol";
 
 import {
     CreatorTokenStorage
@@ -48,6 +52,10 @@ import {
     CollaboratorStructStorage
 } from "../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
 
+import {
+    SCollaboratorStructStorage
+} from "../src/Diamond__Storage/ContentToken/Optionals/SCollaboratorStructStorage.sol";
+
 import {MockV3Aggregator} from "../test/Mock/MockV3Aggregator.t.sol";
 
 import {TestPriceFeedSetter} from "../test/Mock/TestPriceFeedSetter.t.sol";
@@ -55,6 +63,10 @@ import {TestPriceFeedSetter} from "../test/Mock/TestPriceFeedSetter.t.sol";
 import {IDiamondCut} from "../src/Interfaces/IDiamondCut.sol";
 
 contract CollaboratorAssertions is Test {
+    // **** GOAL:
+    // 1. Update the current tests to directly prove what we already know (possibly make getter if not already for CollaboratorReserve)
+    // 2. Begin working on first deployment scripts
+
     uint112 constant EX_CSUPPLY_01 = 100000099990000000999100000000000; // TS: 9,999 | IS: 999 | WR: 10% | PR: 0%
     uint112 constant EX_CSUPPLY_PR = 100000099990000000999100000100000; // TS: 9,999 | IS: 999 | WR: 10% | PR: 10%
     uint112 constant EX_SPRICE_USD_01 = 100000000074000000069000000000; // SP: 0.74$ | AP: 0.69$
@@ -69,7 +81,11 @@ contract CollaboratorAssertions is Test {
     uint8 constant EX_NUM_COLLABORATOR = 2;
     uint128 constant EX_ROYALTY_VAL_01 =
         100050000000000000000000000000000000000;
-    uint256 constant EX_ROYALTY_MAP_01 = uint256(0x40000);
+
+    uint128 constant EX_SROYALTY_VAL = 100050000000000000000000000000000000000;
+
+    uint128 constant EX_SROYALTY_VAL_02 =
+        100050000100000050000100000050000100000;
 
     // 490140 * 3600 = 1764504000
     // 490150 * 3600 = 1764540000
@@ -87,7 +103,9 @@ contract CollaboratorAssertions is Test {
     PublishCContentToken public publishCContentToken;
     PublishSContentToken public publishSContentToken;
     PublishSVariant public publishSVariant;
+    WavAccess public wavAccess;
     WavSale public wavSale;
+    ProfitWithdrawl public profitWithdrawl;
     TestPriceFeedSetter public priceSetterFacet;
 
     address public owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
@@ -108,7 +126,9 @@ contract CollaboratorAssertions is Test {
         publishCContentToken = new PublishCContentToken();
         publishSContentToken = new PublishSContentToken();
         publishSVariant = new PublishSVariant();
+        wavAccess = new WavAccess();
         wavSale = new WavSale();
+        profitWithdrawl = new ProfitWithdrawl();
         diamondCutFacet = new DiamondCutFacet();
         diamondLoupeFacet = new DiamondLoupeFacet();
         priceSetterFacet = new TestPriceFeedSetter();
@@ -121,7 +141,7 @@ contract CollaboratorAssertions is Test {
         wavDiamond = new WavDiamond(owner, address(diamondCutFacet));
 
         // Build the cut array (which facet selectors to include)
-        LibDiamond.FacetCut[] memory _cut = new LibDiamond.FacetCut[](6);
+        LibDiamond.FacetCut[] memory _cut = new LibDiamond.FacetCut[](8);
 
         // Publish facet selectors
         bytes4[] memory _publishCCTSelectors = new bytes4[](1);
@@ -186,12 +206,327 @@ contract CollaboratorAssertions is Test {
             functionSelectors: _wavSaleSelectors
         });
 
+        bytes4[] memory _wavAccessSelectors = new bytes4[](5);
+        _wavAccessSelectors[0] = WavAccess.returnOwnership.selector;
+        _wavAccessSelectors[1] = WavAccess.returnOwnershipIndex.selector;
+        _wavAccessSelectors[2] = WavAccess.addOwnerAddr.selector;
+        _wavAccessSelectors[3] = WavAccess.addApprovedAddr.selector;
+        _wavAccessSelectors[4] = WavAccess.removeApprovedAddr.selector;
+
+        _cut[6] = LibDiamond.FacetCut({
+            facetAddress: address(wavAccess),
+            action: LibDiamond.FacetCutAction.Add,
+            functionSelectors: _wavAccessSelectors
+        });
+
+        bytes4[] memory _profitWithdrawlSelectors = new bytes4[](3);
+        _profitWithdrawlSelectors[0] = ProfitWithdrawl
+            .withdrawEthEarnings
+            .selector;
+        _profitWithdrawlSelectors[1] = ProfitWithdrawl
+            .returnEthEarnings
+            .selector;
+        _profitWithdrawlSelectors[2] = ProfitWithdrawl
+            .getCollaboratorReserve
+            .selector;
+
+        _cut[7] = LibDiamond.FacetCut({
+            facetAddress: address(profitWithdrawl),
+            action: LibDiamond.FacetCutAction.Add,
+            functionSelectors: _profitWithdrawlSelectors
+        });
+
         vm.prank(owner);
         IDiamondCut(address(wavDiamond)).diamondCut(_cut, address(0), "");
 
         vm.prank(owner);
         TestPriceFeedSetter(address(wavDiamond)).setPriceFeed(
             address(_mockAggregator)
+        );
+
+        vm.prank(owner);
+        WavAccess(address(wavDiamond)).addOwnerAddr(owner);
+    }
+
+    // forge test --match-test testPublishSContentTokenWithCollaboratorDataHappyPath -vvvv
+
+    // (NetWei, 15 digits) 942300000000000 / 9 == 104700000000000 (collaboratorReserve, 15 digits)
+    // Gross: 1047000000000000 (16 digits)
+    function testPublishSContentTokenWithCollaboratorDataHappyPath() public {
+        CreatorTokenStorage.CreatorToken
+            memory _creatorToken = CreatorTokenStorage.CreatorToken({
+                creatorId: publisher,
+                contentId: uint256(0),
+                hashId: bytes32(
+                    0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+                )
+            });
+
+        SContentTokenStorage.SContentToken
+            memory _sContentToken = SContentTokenStorage.SContentToken({
+                numToken: uint16(8),
+                priceUsdVal: uint32(EX_CPRICE_USD_01),
+                supplyVal: uint112(EX_CSUPPLY_01),
+                releaseVal: uint96(EX_CRELEASE_01)
+            });
+
+        uint256[] memory _royaltyMap = new uint256[](1);
+        _royaltyMap[0] = uint256(0);
+
+        SCollaboratorStructStorage.SCollaborator
+            memory _sCollaborator = SCollaboratorStructStorage.SCollaborator({
+                numCollaborator: uint8(2),
+                cRoyaltyVal: uint32(1100000)
+            });
+
+        vm.prank(owner);
+        PublishSContentToken(address(wavDiamond)).publishSContentToken(
+            _creatorToken,
+            _sContentToken,
+            _sCollaborator
+        );
+
+        WavSaleToken.WavSale memory _wavSale = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken.hashId,
+            numToken: uint16(0),
+            purchaseQuantity: uint112(1)
+        });
+
+        uint256 feedAnswer = uint256(3000 * 10 ** 8);
+        uint256 usdVal = 349; // 3.49$
+        uint256 usd8 = usdVal * 1e6;
+        uint256 expectedWei = (usd8 * 1e18) / feedAnswer;
+
+        vm.deal(buyer_01, 1 ether);
+        vm.prank(owner);
+        vm.warp(EX_PURCHASE_STAMP);
+        WavSale(address(wavDiamond)).wavSaleSingle{value: expectedWei}(
+            buyer_01,
+            _wavSale
+        );
+
+        uint32 royaltyVal = 100000;
+
+        uint256 expectedCollaboratorReserve = ((expectedWei *
+            90 *
+            uint256(royaltyVal)) / 100000000);
+
+        uint256 actualCollaboratorReserve = ProfitWithdrawl(address(wavDiamond))
+            .getCollaboratorReserve(_creatorToken.hashId, _wavSale.numToken);
+
+        assertTrue(
+            actualCollaboratorReserve >= expectedCollaboratorReserve &&
+                expectedCollaboratorReserve <= actualCollaboratorReserve + 1,
+            "collaborator reserve mismatch"
+        );
+    }
+
+    function testPublishSVariantWithCollaboratorDataHappyPath() public {
+        {
+            CreatorTokenStorage.CreatorToken
+                memory _creatorToken = CreatorTokenStorage.CreatorToken({
+                    creatorId: publisher,
+                    contentId: uint256(0),
+                    hashId: bytes32(
+                        0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+                    )
+                });
+
+            SContentTokenStorage.SContentToken
+                memory _sContentToken = SContentTokenStorage.SContentToken({
+                    numToken: uint16(8),
+                    priceUsdVal: uint32(EX_CPRICE_USD_01),
+                    supplyVal: uint112(EX_CSUPPLY_01),
+                    releaseVal: uint96(EX_CRELEASE_01)
+                });
+
+            uint256[] memory _royaltyMap = new uint256[](1);
+            _royaltyMap[0] = uint256(0);
+
+            SCollaboratorStructStorage.SCollaborator
+                memory _sCollaborator = SCollaboratorStructStorage
+                    .SCollaborator({
+                        numCollaborator: uint8(2),
+                        cRoyaltyVal: uint32(1100000)
+                    });
+
+            vm.prank(owner);
+            PublishSContentToken(address(wavDiamond)).publishSContentToken(
+                _creatorToken,
+                _sContentToken,
+                _sCollaborator
+            );
+        }
+        //
+    }
+
+    // forge test --match-test testPublishCContentTokenWithCollaboratorDataHappyPath -vvvv
+    function testPublishCContentTokenWithCollaboratorDataHappyPath() public {
+        CreatorTokenStorage.CreatorToken
+            memory _creatorToken = CreatorTokenStorage.CreatorToken({
+                creatorId: publisher,
+                contentId: uint256(0),
+                hashId: bytes32(
+                    0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+                )
+            });
+
+        CContentTokenStorage.CContentToken
+            memory _cContentToken = CContentTokenStorage.CContentToken({
+                numToken: uint16(8),
+                cSupplyVal: EX_CSUPPLY_01,
+                sPriceUsdVal: EX_SPRICE_USD_01,
+                cPriceUsdVal: EX_CPRICE_USD_01,
+                sSupplyVal: EX_SSUPPLY_01,
+                sReserveVal: EX_SRESERVE_01,
+                cReleaseVal: EX_CRELEASE_01
+            });
+
+        uint256[] memory _royaltyMap = new uint256[](1);
+        _royaltyMap[0] = uint256(0x201248);
+
+        CollaboratorStructStorage.Collaborator
+            memory _collaborator = CollaboratorStructStorage.Collaborator({
+                numCollaborator: uint8(3),
+                cRoyaltyVal: uint32(1100000),
+                sRoyaltyVal: EX_SROYALTY_VAL,
+                royaltyMap: _royaltyMap
+            });
+
+        uint256[] memory _tierMapPages = new uint256[](1);
+        _tierMapPages[0] = uint256(0x058885580); // 10-01011000100010000101010110000000
+
+        uint256[] memory _priceMapPages = new uint256[](1);
+        _priceMapPages[0] = uint256(0x5564); // 1-00101010101100100
+
+        vm.prank(owner);
+        PublishCContentToken(address(wavDiamond)).publishCContentToken(
+            _creatorToken,
+            _cContentToken,
+            _collaborator,
+            _tierMapPages,
+            _priceMapPages
+        );
+
+        WavSaleToken.WavSale memory _wavSale = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken.hashId,
+            numToken: uint16(0),
+            purchaseQuantity: uint112(1)
+        });
+
+        uint256 feedAnswer = uint256(3000 * 10 ** 8);
+        uint256 usdVal = 349; // 3.49$
+        uint256 usd8 = usdVal * 1e6;
+        uint256 expectedWei = (usd8 * 1e18) / feedAnswer;
+
+        vm.deal(buyer_01, 1 ether);
+        vm.prank(owner);
+        vm.warp(EX_PURCHASE_STAMP);
+        WavSale(address(wavDiamond)).wavSaleSingle{value: expectedWei}(
+            buyer_01,
+            _wavSale
+        );
+
+        uint32 royaltyVal = 100000;
+
+        uint256 expectedCollaboratorReserve = ((expectedWei *
+            90 *
+            uint256(royaltyVal)) / 100000000);
+
+        uint256 actualCollaboratorReserve = ProfitWithdrawl(address(wavDiamond))
+            .getCollaboratorReserve(_creatorToken.hashId, _wavSale.numToken);
+
+        assertTrue(
+            actualCollaboratorReserve >= expectedCollaboratorReserve &&
+                expectedCollaboratorReserve <= actualCollaboratorReserve + 1,
+            "collaborator reserve mismatch"
+        );
+    }
+
+    // forge test --match-test testPublishCContentTokenWithCollaboratorDataAltHappyPath -vvvv
+    function testPublishCContentTokenSeperateSaleWithCollaboratorDataHappyPath()
+        public
+    {
+        CreatorTokenStorage.CreatorToken
+            memory _creatorToken = CreatorTokenStorage.CreatorToken({
+                creatorId: publisher,
+                contentId: uint256(0),
+                hashId: bytes32(
+                    0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+                )
+            });
+
+        CContentTokenStorage.CContentToken
+            memory _cContentToken = CContentTokenStorage.CContentToken({
+                numToken: uint16(8),
+                cSupplyVal: EX_CSUPPLY_01,
+                sPriceUsdVal: EX_SPRICE_USD_01,
+                cPriceUsdVal: EX_CPRICE_USD_01,
+                sSupplyVal: EX_SSUPPLY_01,
+                sReserveVal: EX_SRESERVE_01,
+                cReleaseVal: EX_CRELEASE_01
+            });
+
+        uint256[] memory _royaltyMap = new uint256[](1);
+        _royaltyMap[0] = uint256(0x1201248);
+
+        CollaboratorStructStorage.Collaborator
+            memory _collaborator = CollaboratorStructStorage.Collaborator({
+                numCollaborator: uint8(3),
+                cRoyaltyVal: uint32(1100000),
+                sRoyaltyVal: EX_SROYALTY_VAL,
+                royaltyMap: _royaltyMap
+            });
+
+        uint256[] memory _tierMapPages = new uint256[](1);
+        _tierMapPages[0] = uint256(0x158885580); // 10-01011000100010000101010110000000
+
+        uint256[] memory _priceMapPages = new uint256[](1);
+        _priceMapPages[0] = uint256(0x15564); // 1-00101010101100100
+
+        vm.prank(owner);
+        PublishCContentToken(address(wavDiamond)).publishCContentToken(
+            _creatorToken,
+            _cContentToken,
+            _collaborator,
+            _tierMapPages,
+            _priceMapPages
+        );
+
+        WavSaleToken.WavSale memory _wavSale = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken.hashId,
+            numToken: uint16(8),
+            purchaseQuantity: uint112(1)
+        });
+
+        uint256 feedAnswer = uint256(3000 * 10 ** 8);
+        uint256 usdVal = 69; // 0.69$
+        uint32 royaltyVal = 50000;
+        uint256 usd8 = usdVal * 1e6;
+        uint256 expectedWei = (usd8 * 1e18) / feedAnswer;
+
+        uint256 expectedCollaboratorReserve = (expectedWei *
+            90 *
+            uint256(royaltyVal)) / 100000000;
+
+        vm.deal(buyer_01, 1 ether);
+        vm.prank(owner);
+        vm.warp(EX_PURCHASE_STAMP);
+        WavSale(address(wavDiamond)).wavSaleSingle{value: expectedWei}(
+            buyer_01,
+            _wavSale
+        );
+
+        uint256 actualCollaboratorReserve = ProfitWithdrawl(address(wavDiamond))
+            .getCollaboratorReserve(_creatorToken.hashId, _wavSale.numToken);
+
+        assertTrue(
+            actualCollaboratorReserve >= expectedCollaboratorReserve &&
+                expectedCollaboratorReserve <= actualCollaboratorReserve + 1,
+            "collaborator reserve mismatch"
         );
     }
 }

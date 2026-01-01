@@ -15,6 +15,7 @@ import {
 
 library LibPublishSContentTokenSearchHelper {
     error LibPublishSContentTokenSearchHelper__InputInvalid();
+
     function _publishSContentTokenSearchHelper(
         bytes32 _hashId,
         SContentTokenStorage.SContentToken calldata _sContentToken

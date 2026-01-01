@@ -18,6 +18,8 @@ library NumericalConstants {
 
     uint32 internal constant MAX_ENCODED_CPRICE_USD_VAL = 1999999999;
 
+    uint32 internal constant MIN_ENCODED_CROYALTY = 1000001;
+
     /// Used in sPriceUsdValDecoder
     uint112 internal constant MIN_ENCODED_SPRICE_USD_VAL =
         100000000001000000000000000000;
@@ -50,7 +52,7 @@ library NumericalConstants {
 
     uint96 internal constant SHIFT_1__96 = 10 ** 1;
 
-    uint96 internal constant SHIFT_7__32 = 10 ** 6;
+    uint32 internal constant SHIFT_7__32 = 10 ** 6;
 
     uint80 internal constant SHIFT_7__80 = 10 ** 6;
 

@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {CreatorProfitStorage} from "../../../src/Diamond__Storage/CreatorToken/CreatorProfitStorage.sol";
-//import {ReturnMapping} from "../../../src/3WAVi__Helpers/ReturnMapping.sol";
+import {
+    CreatorProfitStorage
+} from "../../../src/Diamond__Storage/CreatorToken/CreatorProfitStorage.sol";
+
+import {
+    ReturnMapMapping
+} from "../../../src/3WAVi__Helpers/ReturnMapping/ReturnMapMapping.sol";
 
 contract ProfitWithdrawl {
     error ProfitWithdrawl__InsufficientEarnings();
@@ -16,8 +21,8 @@ contract ProfitWithdrawl {
     function withdrawEthEarnings(
         address _creatorId,
         bytes32 _hashId,
-        address payable _to, // Address to send the funds to
-        uint256 _amount // Amount to withdraw
+        address payable _to,
+        uint256 _amount
     ) external {
         CreatorProfitStorage.CreatorProfitStruct
             storage CreatorProfitStructStorage = CreatorProfitStorage
@@ -39,5 +44,41 @@ contract ProfitWithdrawl {
         if (!_sent) {
             revert ProfitWithdrawl__TransferFailed();
         }
+    }
+
+    /**
+     * @notice Returns associated earnings pool of a Content Token.
+     * @dev Returns unclaimed balance of provided hashId.
+     * @param _creatorId Address of the publisher.
+     * @param _hashId Identifier of Content Token being queried.
+     */
+    function returnEthEarnings(
+        address _creatorId,
+        bytes32 _hashId
+    ) external view returns (uint256 _earnings) {
+        CreatorProfitStorage.CreatorProfitStruct
+            storage CreatorProfitStructStorage = CreatorProfitStorage
+                .creatorProfitStorage();
+        _earnings = CreatorProfitStructStorage.s_ethEarnings[_creatorId][
+            _hashId
+        ];
+        return _earnings;
+    }
+
+    /**
+     * @notice Returns associated collaborator reserve of a Content Token.
+     * @dev Returns unclaimed collaborator earnings of provided hashId.
+     * @param _hashId Identifier of Content Token being queried.
+     * @param _numToken Content Token identifier used to specify the token index being queried.
+     */
+    function getCollaboratorReserve(
+        bytes32 _hashId,
+        uint16 _numToken
+    ) external view returns (uint256 _value) {
+        _value = ReturnMapMapping._returnCollaboratorReserve(
+            _hashId,
+            _numToken
+        );
+        return _value;
     }
 }

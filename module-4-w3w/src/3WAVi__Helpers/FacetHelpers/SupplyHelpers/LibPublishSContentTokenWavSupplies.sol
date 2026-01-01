@@ -21,24 +21,13 @@ import {
 
 library LibPublishSContentTokenWavSupplies {
     error PublishSContentToken__LengthMismatch();
-    /*
-     * @notice Publishes the remaining supply data of a SContentToken.
-     * @dev Writes and stores the remaining supply data of two or more CContentToken Variants on the blockchain.
-     * @param _hashId Identifier of Content Token being queried.
-     * @param _cSupplyVal Collection supply property.
-     */
-    /*function _publishSContentTokenWavSupplies(
-        bytes32 _hashId,
-        uint112 _cSupplyVal
-    ) internal {
-        ContentTokenSupplyMapStorage.ContentTokenSupplyMap
-            storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
-                .contentTokenSupplyMapStorage();
-        ContentTokenSupplyMapStruct.s_cWavSupplies[
-            _hashId
-        ] = LibPublishCWavSuppliesHelper.publishCWavSuppliesHelper(_cSupplyVal);
-    }*/
 
+    /**
+     * @notice Publishes the remaining supply data of a SContentToken Variant.
+     * @dev Writes and stores the remaining supply data of a SContentToken Variant on the blockchain.
+     * @param _creatorTokenVariant User-defined creatorTokenVariant struct.
+     * @param _sContentToken User-defined sContentToken struct.
+     */
     function _publishSContentTokenVariantWavSupplies(
         CreatorTokenVariantStorage.CreatorTokenVariant calldata _creatorTokenVariant,
         SContentTokenStorage.SContentToken calldata _sContentToken
@@ -53,6 +42,12 @@ library LibPublishSContentTokenWavSupplies {
         );
     }
 
+    /**
+     * @notice Publishes the remaining supply data of a SContentToken.
+     * @dev Writes and stores the remaining supply data of a SContentToken on the blockchain.
+     * @param _creatorToken User-defined creatorToken struct.
+     * @param _sContentToken User-defined sContentToken struct.
+     */
     function _publishSContentTokenWavSupplies(
         CreatorTokenStorage.CreatorToken calldata _creatorToken,
         SContentTokenStorage.SContentToken calldata _sContentToken

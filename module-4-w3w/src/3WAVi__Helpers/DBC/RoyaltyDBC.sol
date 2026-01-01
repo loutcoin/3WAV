@@ -16,7 +16,7 @@ library RoyaltyDBC {
         uint32 _royalty4,
         uint32 _royalty5,
         uint32 _royalty6
-    ) external pure returns (uint128 _royaltyVal) {
+    ) internal pure returns (uint128 _royaltyVal) {
         if (
             _zeroVal > 1 ||
             _royalty1 >= NumericalConstants.SHIFT_7__32 ||
@@ -33,11 +33,11 @@ library RoyaltyDBC {
         if (_zeroVal == 1) {
             _royaltyVal += uint128(10 ** 36);
         }
-        _royaltyVal += uint128(uint256(_royalty1) * 10 ** 31);
-        _royaltyVal += uint128(uint256(_royalty2) * 10 ** 25);
-        _royaltyVal += uint128(uint256(_royalty3) * 10 ** 19);
-        _royaltyVal += uint128(uint256(_royalty4) * 10 ** 13);
-        _royaltyVal += uint128(uint256(_royalty5) * 10 ** 7);
+        _royaltyVal += uint128(uint256(_royalty1) * 10 ** 30);
+        _royaltyVal += uint128(uint256(_royalty2) * 10 ** 24);
+        _royaltyVal += uint128(uint256(_royalty3) * 10 ** 18);
+        _royaltyVal += uint128(uint256(_royalty4) * 10 ** 12);
+        _royaltyVal += uint128(uint256(_royalty5) * 10 ** 6);
         _royaltyVal += uint128(_royalty6);
 
         return _royaltyVal;
@@ -65,11 +65,31 @@ library RoyaltyDBC {
         if (_zeroVal > 1) {
             revert RoyaltyDBC__MinEncodedValueInvalid();
         }
-        _royalty1 = uint32((_royaltyVal / 10 ** 31) % 10 ** 6);
-        _royalty2 = uint32((_royaltyVal / 10 ** 25) % 10 ** 6);
-        _royalty3 = uint32((_royaltyVal / 10 ** 19) % 10 ** 6);
-        _royalty4 = uint32((_royaltyVal / 10 ** 13) % 10 ** 6);
-        _royalty5 = uint32((_royaltyVal / 10 ** 7) % 10 ** 6);
+        _royalty1 = uint32((_royaltyVal / 10 ** 30) % 10 ** 6);
+        _royalty2 = uint32((_royaltyVal / 10 ** 24) % 10 ** 6);
+        _royalty3 = uint32((_royaltyVal / 10 ** 18) % 10 ** 6);
+        _royalty4 = uint32((_royaltyVal / 10 ** 12) % 10 ** 6);
+        _royalty5 = uint32((_royaltyVal / 10 ** 6) % 10 ** 6);
         _royalty6 = uint32(_royaltyVal % 10 ** 6);
+    }
+
+    function _cRoyaltyValEncoder(
+        uint32 _royaltyVal
+    ) internal pure returns (uint32 _cRoyaltyVal) {
+        if (_royaltyVal >= NumericalConstants.SHIFT_7__32) {
+            revert RoyaltyDBC__NumInputInvalid();
+        }
+        _cRoyaltyVal = NumericalConstants.SHIFT_7__32 + _royaltyVal;
+        return _cRoyaltyVal;
+    }
+
+    function _cRoyaltyValDecoder(
+        uint32 _cRoyaltyVal
+    ) internal pure returns (uint32 _royaltyValRaw) {
+        if (_cRoyaltyVal < NumericalConstants.MIN_ENCODED_CROYALTY) {
+            revert RoyaltyDBC__MinEncodedValueInvalid();
+        }
+        _royaltyValRaw = _cRoyaltyVal - NumericalConstants.SHIFT_7__32;
+        return _royaltyValRaw;
     }
 }

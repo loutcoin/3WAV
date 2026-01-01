@@ -10,9 +10,9 @@ library SCollaboratorStructStorage {
      */
     struct SCollaborator {
         uint8 numCollaborator;
-        uint128 royaltyVal;
-        uint32 royaltyMap;
+        uint32 cRoyaltyVal;
     }
+    //uint256 royaltyMap;
 
     function sCollaboratorStructStorage()
         internal

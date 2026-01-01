@@ -107,7 +107,7 @@ library LibPreReleaseSupplies {
      * @param _wavSaleToken User-defined WavSale struct.
      * @param _tierId Tier index attributed to numToken of CContentToken hashId.
      */
-    function sDebitPreReleaseSupply2(
+    function sDebitPreReleaseSupplyWavSaleToken(
         WavSaleToken.WavSale calldata _wavSaleToken,
         uint16 _tierId
     ) internal {
