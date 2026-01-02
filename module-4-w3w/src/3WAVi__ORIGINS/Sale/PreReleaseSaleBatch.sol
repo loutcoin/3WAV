@@ -14,7 +14,7 @@ import {
 
 import {
     ValidatePreReleaseSaleBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/ValidatePreReleaseSaleBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/ValidateSupply/ValidatePreReleaseSaleBatch.sol";
 
 import {
     LibCollaboratorReserve

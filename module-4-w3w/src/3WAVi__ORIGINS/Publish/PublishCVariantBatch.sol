@@ -14,11 +14,11 @@ import {
 
 import {
     LibPublishVariantHelper
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishVariantHelper.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishVariantHelper.sol";
 
 import {
     LibPublishCContentTokenWavSuppliesBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishCContentTokenWavSuppliesBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishCContentTokenWavSuppliesBatch.sol";
 
 import {
     CreatorTokenVariantStorage
@@ -26,11 +26,11 @@ import {
 
 import {
     LibPublishCContentTokenSearchBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCContentTokenSearchBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearchBatch.sol";
 
 import {
     LibPublishCContentTokenSearch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCContentTokenSearch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearch.sol";
 
 contract PublishCVariantBatch {
     /**

@@ -15,11 +15,11 @@ import {
 
 import {
     LibPublishCContentTokenWavSupplies
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishCContentTokenWavSupplies.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishCContentTokenWavSupplies.sol";
 
 import {
     LibPublishCContentTokenSearch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCContentTokenSearch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearch.sol";
 
 import {
     CreatorTokenVariantStorage
@@ -27,7 +27,7 @@ import {
 
 import {
     LibPublishVariantHelper
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishVariantHelper.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishVariantHelper.sol";
 
 contract PublishCVariant {
     event CVariantPublished(

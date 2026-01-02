@@ -18,11 +18,11 @@ import {
 
 import {
     LibPublishSContentTokenSearchBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenSearchBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenSearchBatch.sol";
 
 import {
     LibPublishSContentTokenWavSuppliesBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishSContentTokenWavSuppliesBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishSContentTokenWavSuppliesBatch.sol";
 
 contract PublishSContentTokenBatch {
     event SContentTokenPublished(

@@ -14,19 +14,19 @@ import {
 
 import {
     LibPublishSContentTokenWavSuppliesBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishSContentTokenWavSuppliesBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishSContentTokenWavSuppliesBatch.sol";
 
 import {
     LibPublishSContentTokenSearchBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenSearchBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenSearchBatch.sol";
 
 import {
     LibPublishVariantHelper
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishVariantHelper.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishVariantHelper.sol";
 
 import {
     LibPublishSContentTokenSearch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenSearch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenSearch.sol";
 
 import {
     CreatorTokenVariantStorage

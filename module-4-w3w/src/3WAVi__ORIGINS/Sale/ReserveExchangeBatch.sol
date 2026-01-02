@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
 import {
     ReturnValidation
 } from "../../../src/3WAVi__Helpers/ReturnValidation.sol";
@@ -10,7 +11,7 @@ import {
 
 import {
     LibWavReserveSupplies
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibWavReserveSupplies.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/DebitSupply/LibWavReserveSupplies.sol";
 
 import {ReleaseDBC} from "../../../src/3WAVi__Helpers/DBC/ReleaseDBC.sol";
 

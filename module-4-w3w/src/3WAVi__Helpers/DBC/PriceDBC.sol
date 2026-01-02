@@ -155,5 +155,5 @@ library PriceDBC {
             );
             return _exclusivePriceVal;
         }
-    } // either return(0) or possibly revert as you cannot buy something that isn't for sale
+    }
 }

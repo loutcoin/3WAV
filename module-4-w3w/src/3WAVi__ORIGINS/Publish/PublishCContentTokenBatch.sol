@@ -19,11 +19,11 @@ import {
 
 import {
     LibPublishCContentTokenWavSuppliesBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishCContentTokenWavSuppliesBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishCContentTokenWavSuppliesBatch.sol";
 
 import {
     LibPublishCContentTokenSearchBatch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCContentTokenSearchBatch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearchBatch.sol";
 
 contract PublishCContentTokenBatch {
     /**

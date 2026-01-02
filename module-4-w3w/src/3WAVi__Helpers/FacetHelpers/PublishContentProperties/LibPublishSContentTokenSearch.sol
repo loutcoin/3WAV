@@ -3,31 +3,31 @@ pragma solidity ^0.8.24;
 
 import {
     SContentTokenStorage
-} from "../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
 
 import {
     CreatorTokenVariantStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
 
 import {
     CreatorTokenStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
 
 import {
     SCollaboratorStructStorage
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/SCollaboratorStructStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/Optionals/SCollaboratorStructStorage.sol";
 
 import {
     LibPublishSContentTokenCollaboratorMap
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenCollaboratorMap.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenCollaboratorMap.sol";
 
 import {
     LibPublishCreatorToken
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCreatorToken.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCreatorToken.sol";
 
 import {
     LibPublishSContentTokenSearchHelper
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenSearchHelper.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenSearchHelper.sol";
 
 library LibPublishSContentTokenSearch {
     event SContentTokenPublished(
@@ -56,7 +56,6 @@ library LibPublishSContentTokenSearch {
                 _sContentToken.numToken
             );
         }
-        // ** Look back over
         if (_sCollaborator.numCollaborator != 0) {
             LibPublishSContentTokenCollaboratorMap
                 ._publishSContentTokenCollaboratorMap(_hashId, _sCollaborator);
@@ -89,7 +88,6 @@ library LibPublishSContentTokenSearch {
             );
         }
         if (_sCollaborator.numCollaborator != 0) {
-            // ** Look back over
             LibPublishSContentTokenCollaboratorMap
                 ._publishSContentTokenCollaboratorMap(_hashId, _sCollaborator);
         }

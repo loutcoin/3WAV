@@ -3,15 +3,15 @@ pragma solidity ^0.8.24;
 
 import {
     ContentTokenSearchStorage
-} from "../../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/ContentTokenSearchStorage.sol";
 
 import {
     CContentTokenStorage
-} from "../../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
 
 import {
     NumericalConstants
-} from "../../../src/3WAVi__Helpers/NumericalConstants.sol";
+} from "../../../../src/3WAVi__Helpers/NumericalConstants.sol";
 
 library LibPublishCContentTokenSearchHelper {
     error LibPublishCContentTokenSearchHelper__InputInvalid();

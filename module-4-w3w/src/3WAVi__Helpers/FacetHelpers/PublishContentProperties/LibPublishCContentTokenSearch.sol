@@ -3,31 +3,31 @@ pragma solidity ^0.8.24;
 
 import {
     CContentTokenStorage
-} from "../../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";
 
 import {
     CollaboratorStructStorage
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
 
 import {
     LibPublishCreatorToken
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCreatorToken.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCreatorToken.sol";
 
 import {
     LibPublishContentTokenCollaboratorMap
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishContentTokenCollaboratorMap.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishContentTokenCollaboratorMap.sol";
 
 import {
     CreatorTokenVariantStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
 
 import {
     CreatorTokenStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
 
 import {
     LibPublishCContentTokenSearchHelper
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCContentTokenSearchHelper.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearchHelper.sol";
 
 library LibPublishCContentTokenSearch {
     event CContentTokenPublished(

@@ -1,25 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
 import {
     ContentTokenSupplyMapStorage
-} from "../../../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+} from "../../../../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+
 import {SupplyDBC} from "src/3WAVi__Helpers/DBC/SupplyDBC.sol";
 
 import {
     WavSaleToken
-} from "../../../../src/Diamond__Storage/ContentToken/SaleTemporaries/WavSaleToken.sol";
+} from "../../../../../src/Diamond__Storage/ContentToken/SaleTemporaries/WavSaleToken.sol";
 
-library LibWavSupplies {
-    error WavSupplies__NumInputInvalid();
+library LibPreReleaseSupplies {
+    error PreReleaseSupplies__NumInputInvalid();
 
     /**
-     * @notice Deducts quantity of WavStore supply and updates the encoded value.
-     * @dev Reads s_cWavSupplies and updates active encoded WavStore supply of hashId.
-     *      Function Selector: 0x5a552e46
+     * @notice Deducts quantity of PreRelease supply and updates the encoded value.
+     * @dev Reads s_cWavSupplies and updates active encoded PreRelease supply of hashId.
+     *      Function Selector: 0xbeaa0e21
      * @param _hashId Identifier of Content Token being queried.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function cDebitWavStoreSupply(bytes32 _hashId, uint112 _quantity) internal {
+    function cDebitPreReleaseSupply(
+        bytes32 _hashId,
+        uint112 _quantity
+    ) internal {
         ContentTokenSupplyMapStorage.ContentTokenSupplyMap
             storage ContentTokenSupplyMapStruct = ContentTokenSupplyMapStorage
                 .contentTokenSupplyMapStorage();
@@ -34,11 +39,11 @@ library LibWavSupplies {
             uint112 _preReleaseSupply
         ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
-        if (_quantity == 0 || _wavStoreSupply < _quantity) {
-            revert WavSupplies__NumInputInvalid();
+        if (_quantity == 0 || _preReleaseSupply < _quantity) {
+            revert PreReleaseSupplies__NumInputInvalid();
         }
 
-        _wavStoreSupply -= _quantity;
+        _preReleaseSupply -= _quantity;
 
         uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
@@ -53,14 +58,14 @@ library LibWavSupplies {
     }
 
     /**
-     * @notice Deducts quantity of WavStore supply tier and updates the encoded value.
-     * @dev Reads s_sWavSupplies and updates active encoded WavStore supply tier of hashId.
-     *      Function Selector: 0x74750c49
+     * @notice Deducts quantity of PreRelease supply tier and updates the encoded value.
+     * @dev Reads s_sWavSupplies and updates active encoded PreRelease supply tier of hashId.
+     *      Function Selector: 0x58b030c2
      * @param _hashId Identifier of Content Token being queried.
      * @param _tierId Tier index attributed to numToken of CContentToken hashId.
      * @param _quantity Value being deducted from relevant remaining supply source.
      */
-    function sDebitWavStoreSupply(
+    function sDebitPreReleaseSupply(
         bytes32 _hashId,
         uint16 _tierId,
         uint112 _quantity
@@ -79,11 +84,11 @@ library LibWavSupplies {
             uint112 _preReleaseSupply
         ) = SupplyDBC._remainingSupplyDecoder(_remainingSupplies);
 
-        if (_quantity == 0 || _wavStoreSupply < _quantity) {
-            revert WavSupplies__NumInputInvalid();
+        if (_quantity == 0 || _preReleaseSupply < _quantity) {
+            revert PreReleaseSupplies__NumInputInvalid();
         }
 
-        _wavStoreSupply -= _quantity;
+        _preReleaseSupply -= _quantity;
 
         uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,
@@ -98,13 +103,12 @@ library LibWavSupplies {
     }
 
     /**
-     * @notice Deducts quantity of WavStore supply tier and updates the encoded value.
-     * @dev Reads s_sWavSupplies and updates active encoded WavStore supply tier of hashId.
-     *      Function Selector:
+     * @notice Deducts quantity of PreRelease supply tier and updates the encoded value.
+     * @dev Reads s_sWavSupplies and updates active encoded PreRelease supply tier of hashId.
      * @param _wavSaleToken User-defined WavSale struct.
      * @param _tierId Tier index attributed to numToken of CContentToken hashId.
      */
-    function sDebitWavStoreSupplySale(
+    function sDebitPreReleaseSupplyWavSaleToken(
         WavSaleToken.WavSale calldata _wavSaleToken,
         uint16 _tierId
     ) internal {
@@ -124,12 +128,12 @@ library LibWavSupplies {
 
         if (
             _wavSaleToken.purchaseQuantity == 0 ||
-            _wavStoreSupply < _wavSaleToken.purchaseQuantity
+            _preReleaseSupply < _wavSaleToken.purchaseQuantity
         ) {
-            revert WavSupplies__NumInputInvalid();
+            revert PreReleaseSupplies__NumInputInvalid();
         }
 
-        _wavStoreSupply -= _wavSaleToken.purchaseQuantity;
+        _preReleaseSupply -= _wavSaleToken.purchaseQuantity;
 
         uint112 _updatedRemainingSupplies = SupplyDBC._remainingSupplyEncoder(
             _wavStoreSupply,

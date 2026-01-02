@@ -1,23 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
 import {
     ContentTokenSupplyMapStorage
-} from "../../../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+} from "../../../../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+
 import {
     LibPublishCWavSuppliesHelper
-} from "../../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishCWavSuppliesHelper.sol";
+} from "../../../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishCWavSuppliesHelper.sol";
 
 import {
     SContentTokenStorage
-} from "../../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
+} from "../../../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
 
 import {
     CreatorTokenVariantStorage
-} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
+} from "../../../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
 
 import {
     CreatorTokenStorage
-} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+} from "../../../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
 
 library LibPublishSContentTokenWavSupplies {
     error PublishSContentToken__LengthMismatch();

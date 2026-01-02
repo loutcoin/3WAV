@@ -19,11 +19,11 @@ import {
 
 import {
     LibPublishSContentTokenWavSupplies
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishSContentTokenWavSupplies.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishSContentTokenWavSupplies.sol";
 
 import {
     LibPublishSContentTokenSearch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenSearch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenSearch.sol";
 
 contract PublishSContentToken {
     event SContentTokenPublished(

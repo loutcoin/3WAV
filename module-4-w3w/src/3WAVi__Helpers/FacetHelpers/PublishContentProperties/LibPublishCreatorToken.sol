@@ -2,10 +2,10 @@
 pragma solidity ^0.8.24;
 import {
     CreatorTokenStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
 import {
     CreatorTokenMapStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenMapStorage.sol";
 
 library LibPublishCreatorToken {
     error PublishCreatorToken__InputIssue();

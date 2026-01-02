@@ -3,11 +3,11 @@ pragma solidity ^0.8.24;
 
 import {
     CreatorTokenVariantStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
 
 import {
     AssociatedContentMap
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/AssociatedContentMap.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/Optionals/AssociatedContentMap.sol";
 
 library LibPublishVariantHelper {
     error LibPublishVariantHelper__IndexIssue();

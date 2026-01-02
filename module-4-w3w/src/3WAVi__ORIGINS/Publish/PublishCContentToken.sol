@@ -17,11 +17,11 @@ import {
 
 import {
     LibPublishCContentTokenSearch
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCContentTokenSearch.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearch.sol";
 
 import {
     LibPublishCContentTokenWavSupplies
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibPublishCContentTokenWavSupplies.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishCContentTokenWavSupplies.sol";
 
 contract PublishCContentToken {
     event CContentTokenPublished(

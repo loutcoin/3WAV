@@ -16,8 +16,11 @@ import {
 import {
     CollaboratorMapStorage
 } from "src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
+
 import {Binary3BitDBC} from "../../../src/3WAVi__Helpers/DBC/Binary3BitDBC.sol";
+
 import {RoyaltyDBC} from "../../../src/3WAVi__Helpers/DBC/RoyaltyDBC.sol";
+
 import {
     NumericalConstants
 } from "../../../src/3WAVi__Helpers/NumericalConstants.sol";

@@ -106,7 +106,11 @@ Core smart contract source code
 - **3WAVi__Helpers/** - internal logic only helper libraries
     - **DBC/** - encode/decode helpers
     - **FacetHelpers/** - library helper logic for facets
-        - **SupplyHelpers/** - supply-related library helper logic for facets
+        - **PublishContentProperties** - library logic handling the publication of content property data
+        - **SupplyHelpers/** - supply helper logic for facets
+            - **DebitSupply** - handles supply deductions during sale and exchange processes
+            - **PublishSupply** - handles the writing of supply data during the publication process
+            - **ValidateSupply** - handles supply and sale-related validation processes
     - **ReturnMapping/** - library storage getter logic
 - **3WAVi__ORIGINS/** - the first generation of 3Wav facet implementation
     - **Publish/** - content publication facets

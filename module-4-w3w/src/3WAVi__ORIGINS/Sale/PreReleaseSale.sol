@@ -10,7 +10,7 @@ import {
 
 import {
     ValidatePreReleaseSale
-} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/ValidatePreReleaseSale.sol";
+} from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/ValidateSupply/ValidatePreReleaseSale.sol";
 
 import {
     LibCollaboratorReserve

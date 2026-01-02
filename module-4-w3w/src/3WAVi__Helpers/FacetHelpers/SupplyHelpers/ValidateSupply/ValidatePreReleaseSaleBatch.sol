@@ -1,44 +1,54 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
 import {
     ContentTokenSupplyMapStorage
-} from "../../../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
-import {LibFeed} from "../../../../src/3WAVi__Helpers/FacetHelpers/LibFeed.sol";
+} from "../../../../../src/Diamond__Storage/ContentToken/ContentTokenSupplyMapStorage.sol";
+
 import {
-    LibWavSupplies
-} from "../../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/LibWavSupplies.sol";
+    LibFeed
+} from "../../../../../src/3WAVi__Helpers/FacetHelpers/LibFeed.sol";
+
+import {
+    LibPreReleaseSupplies
+} from "../../../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/DebitSupply/LibPreReleaseSupplies.sol";
+
 import {
     Binary2BitDBC
-} from "../../../../src/3WAVi__Helpers/DBC/Binary2BitDBC.sol";
-import {PriceDBC} from "../../../../src/3WAVi__Helpers/DBC/PriceDBC.sol";
+} from "../../../../../src/3WAVi__Helpers/DBC/Binary2BitDBC.sol";
+
+import {PriceDBC} from "../../../../../src/3WAVi__Helpers/DBC/PriceDBC.sol";
+
 import {
     ReturnContentToken
-} from "../../../../src/3WAVi__Helpers/ReturnMapping/ReturnContentToken.sol";
+} from "../../../../../src/3WAVi__Helpers/ReturnMapping/ReturnContentToken.sol";
+
 import {
     ReturnMapMapping
-} from "../../../../src/3WAVi__Helpers/ReturnMapping/ReturnMapMapping.sol";
+} from "../../../../../src/3WAVi__Helpers/ReturnMapping/ReturnMapMapping.sol";
 
 import {
     WavSaleToken
-} from "../../../../src/Diamond__Storage/ContentToken/SaleTemporaries/WavSaleToken.sol";
+} from "../../../../../src/Diamond__Storage/ContentToken/SaleTemporaries/WavSaleToken.sol";
 
-library ValidateWavSaleBatch {
-    error ValidateWavSaleBatch__LengthValIssue();
-    error ValidateWavSaleBatch__InputError404();
+library ValidatePreReleaseSaleBatch {
+    error ValidatePreReleaseSaleBatch__LengthValIssue();
+    error ValidatePreReleaseSaleBatch__InputError404();
 
     /**
      * @notice Validates dynamic quantity of price properties, converts to wei, and debits supply.
-     * @dev Authenticates Content Token WavStore supply and pricing data batch prior to sale.
-     * @param _wavSaleToken User-defined batch of WavSaleToken structs.
+     * @dev Authenticates Content Token PreRelease supply and pricing data batch prior to sale.
+     *      Function Selector: 0xc0984f53
+     * @param _wavSaleToken Batch of user-defined WavSale structs.
      */
-    function _validateDebitWavStoreBatch(
+    function _validateDebitPreReleaseBatch(
         WavSaleToken.WavSale[] calldata _wavSaleToken
-    ) internal returns (uint256[] memory _weiPrice) {
+    ) internal returns (uint256[] memory) {
         if (_wavSaleToken.length == 0) {
-            revert ValidateWavSaleBatch__LengthValIssue();
+            revert ValidatePreReleaseSaleBatch__LengthValIssue();
         }
 
-        _weiPrice = new uint256[](_wavSaleToken.length);
+        uint256[] memory _weiPrice = new uint256[](_wavSaleToken.length);
 
         for (uint256 i = 0; i < _wavSaleToken.length; ++i) {
             bytes32 _hashId = _wavSaleToken[i].hashId;
@@ -52,7 +62,10 @@ library ValidateWavSaleBatch {
                 uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
                     _cPriceUsd
                 );
-                LibWavSupplies.cDebitWavStoreSupply(_hashId, _quantity);
+                LibPreReleaseSupplies.cDebitPreReleaseSupply(
+                    _hashId,
+                    _quantity
+                );
                 _weiPrice[i] = LibFeed._usdToWei(uint256(_cPriceUsdVal));
             }
 
@@ -64,7 +77,10 @@ library ValidateWavSaleBatch {
                 uint32 _cPriceUsdVal = PriceDBC._cPriceUsdValDecoder(
                     _cPriceUsd
                 );
-                LibWavSupplies.cDebitWavStoreSupply(_hashId, _quantity);
+                LibPreReleaseSupplies.cDebitPreReleaseSupply(
+                    _hashId,
+                    _quantity
+                );
                 _weiPrice[i] = LibFeed._usdToWei(uint256(_cPriceUsdVal));
             }
 
@@ -78,11 +94,11 @@ library ValidateWavSaleBatch {
                     _hashId,
                     _pages
                 );
-
                 uint8 _priceState = Binary2BitDBC._decode2BitState(
                     _priceMap,
                     _numToken
                 );
+
                 uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                     _priceState,
                     _sPriceUsdVal
@@ -101,13 +117,13 @@ library ValidateWavSaleBatch {
                     ][_wordIndex];
                     uint256 _shift = uint256(_within) * 4;
                     uint8 _tierId = uint8((_packed >> _shift) & 0xF);
-
-                    LibWavSupplies.sDebitWavStoreSupply(
+                    LibPreReleaseSupplies.sDebitPreReleaseSupply(
                         _hashId,
                         _tierId,
                         _quantity
                     );
                 }
+
                 _weiPrice[i] = LibFeed._usdToWei(_usdPrice);
             }
             if (_weiPrice[i] == 0) {
@@ -125,7 +141,7 @@ library ValidateWavSaleBatch {
                     ) ==
                     0
                 ) {
-                    revert ValidateWavSaleBatch__InputError404();
+                    revert ValidatePreReleaseSaleBatch__InputError404();
                 }
             }
         }

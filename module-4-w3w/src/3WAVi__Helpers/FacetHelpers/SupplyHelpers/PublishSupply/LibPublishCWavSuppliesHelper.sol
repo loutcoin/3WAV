@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {SupplyDBC} from "../../../../src/3WAVi__Helpers/DBC/SupplyDBC.sol";
+import {SupplyDBC} from "../../../../../src/3WAVi__Helpers/DBC/SupplyDBC.sol";
 
 library LibPublishCWavSuppliesHelper {
     function publishCWavSuppliesHelper(

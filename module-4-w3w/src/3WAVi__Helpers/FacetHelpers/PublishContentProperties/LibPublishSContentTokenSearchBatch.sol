@@ -3,31 +3,31 @@ pragma solidity ^0.8.24;
 
 import {
     SContentTokenStorage
-} from "../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/SContentTokenStorage.sol";
 
 import {
     SCollaboratorStructStorage
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/SCollaboratorStructStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/Optionals/SCollaboratorStructStorage.sol";
 
 import {
     LibPublishSContentTokenCollaboratorMap
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenCollaboratorMap.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenCollaboratorMap.sol";
 
 import {
     LibPublishCreatorToken
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishCreatorToken.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCreatorToken.sol";
 
 import {
     CreatorTokenVariantStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
 
 import {
     CreatorTokenStorage
-} from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
+} from "../../../../src/Diamond__Storage/CreatorToken/CreatorTokenStorage.sol";
 
 import {
     LibPublishSContentTokenSearchHelper
-} from "../../../src/3WAVi__Helpers/FacetHelpers/LibPublishSContentTokenSearchHelper.sol";
+} from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishSContentTokenSearchHelper.sol";
 
 library LibPublishSContentTokenSearchBatch {
     event SContentTokenPublished(
@@ -64,7 +64,6 @@ library LibPublishSContentTokenSearchBatch {
                 );
             }
             if (_sCollaborator.length > 0) {
-                //uint256 _royaltyMap = _royaltyMapBatch[i];
                 SCollaboratorStructStorage.SCollaborator
                     calldata _sCollab = _sCollaborator[i];
 
@@ -114,7 +113,6 @@ library LibPublishSContentTokenSearchBatch {
                 );
             }
             if (_sCollaborator.length > 0) {
-                //uint256 _royaltyMap = _royaltyMapBatch[i];
                 SCollaboratorStructStorage.SCollaborator
                     calldata _sCollab = _sCollaborator[i];
 

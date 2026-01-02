@@ -2,10 +2,10 @@
 pragma solidity ^0.8.24;
 import {
     CollaboratorMapStorage
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";
 import {
     CollaboratorStructStorage
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
+} from "../../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
 
 library LibPublishContentTokenCollaboratorMap {
     error PublishContentTokenCollaborator__LengthMismatch();
