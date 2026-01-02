@@ -29,7 +29,6 @@ library ValidateWavSaleBatch {
     /**
      * @notice Validates dynamic quantity of price properties, converts to wei, and debits supply.
      * @dev Authenticates Content Token WavStore supply and pricing data batch prior to sale.
-     *      Function Selector:
      * @param _wavSaleToken User-defined batch of WavSaleToken structs.
      */
     function _validateDebitWavStoreBatch(

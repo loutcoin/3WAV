@@ -28,7 +28,6 @@ library ValidateWavSale {
     /**
      * @notice Validates price property, converts to wei, and debits supply.
      * @dev Authenticates Content Token WavStore supply and pricing data prior to sale.
-     *      Function Selector:
      * @param _wavSaleToken User-defined WavSale struct.
      */
     function _validateDebitWavStore(

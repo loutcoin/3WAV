@@ -93,7 +93,6 @@ contract WavSale {
             _singleSaleReleaseValidation(_wavSaleToken.hashId);
         }
 
-        // Here is the issue, it must be specifically the 3rd branch:
         uint256 _hashPrice = ValidateWavSale._validateDebitWavStore(
             _wavSaleToken
         );

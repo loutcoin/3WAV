@@ -83,8 +83,8 @@ contract PreReleaseSale {
         ReturnValidation.returnIsAuthorized();
 
         _preReleaseValidation(_wavSaleToken.hashId);
-        // Determines value of gets stored property value, decodes numToken price, returns
 
+        // Determines value of gets stored property value, decodes numToken price, returns
         uint256 _hashPrice = ValidatePreReleaseSale._validateDebitPreRelease(
             _wavSaleToken
         );

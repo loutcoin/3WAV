@@ -10,17 +10,14 @@ library NumericalConstants {
 
     uint80 internal constant PRE_SUPPLY_MAX__80 = 400000;
 
-    /// Used in cPriceUsdValEncoder
     uint32 internal constant LEADING_TEN__THIRTY_TWO_BIT = 1000000000;
 
-    /// Used in cPriceUsdValDecoder
     uint32 internal constant MIN_ENCODED_CPRICE_USD_VAL = 1000000001;
 
     uint32 internal constant MAX_ENCODED_CPRICE_USD_VAL = 1999999999;
 
     uint32 internal constant MIN_ENCODED_CROYALTY = 1000001;
 
-    /// Used in sPriceUsdValDecoder
     uint112 internal constant MIN_ENCODED_SPRICE_USD_VAL =
         100000000001000000000000000000;
 
@@ -39,14 +36,12 @@ library NumericalConstants {
     uint128 internal constant MIN_ENCODED_ROYALTY =
         100000001000000000000000000000000000000;
 
-    // 100_999999_999999_999999_000001_000001_000001
     uint160 internal constant MAX_SRESERVE_VAL =
         100999999999999999999000001000001000001;
 
     uint224 internal constant MIN_SSUPPLY =
         100000000000100000000000000000000000000000000000000000000000000;
 
-    //100_9999999999_9999999999_9999999999_9999999999_9999999999_9999999999
     uint224 internal constant MAX_SSUPPLY =
         100999999999999999999999999999999999999999999999999999999999999;
 
@@ -78,7 +73,6 @@ library NumericalConstants {
 
     uint160 internal constant SHIFT_13__160 = 10 ** 12;
 
-    // ******* ******
     uint96 internal constant SHIFT_14__96 = 10 ** 13;
 
     uint80 internal constant SHIFT_19__80 = 10 ** 18;
@@ -113,8 +107,6 @@ library NumericalConstants {
 
     uint112 internal constant SHIFT_33 = 10 ** 32;
 
-    //uint112 internal constant SHIFT_34 = 10 ** 33;
-
     uint160 internal constant SHIFT_37__160 = 10 ** 36;
 
     uint160 internal constant SHIFT_39__160 = 10 ** 38;
@@ -126,6 +118,4 @@ library NumericalConstants {
     uint224 internal constant SHIFT_61__224 = 10 ** 60;
 
     uint224 internal constant SHIFT_63__224 = 10 ** 62;
-
-    //uint224 internal constant SHIFT_64__224 = 10 ** 63;
 }

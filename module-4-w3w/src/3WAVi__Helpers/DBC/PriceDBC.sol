@@ -103,20 +103,20 @@ library PriceDBC {
         if (_sPriceUsdVal < NumericalConstants.MIN_ENCODED_SPRICE_USD_VAL) {
             revert ReleaseDBC__MinEncodedValueInvalid();
         }
-        // Extract 'X'
+        // Extract 'zeroVal'
         _zeroVal = uint8((_sPriceUsdVal / NumericalConstants.SHIFT_28) % 10);
         if (_zeroVal > 1) {
             revert ReleaseDBC__MinEncodedValueInvalid();
         }
-        // Extract 'Y'
+        // Extract '_standardPriceVal'
         _standardPriceVal =
             (_sPriceUsdVal / NumericalConstants.SHIFT_19) %
             NumericalConstants.SHIFT_10;
-        // Extract 'N'
+        // Extract '_accessiblePriceVal'
         _accessiblePriceVal =
             (_sPriceUsdVal / NumericalConstants.SHIFT_10) %
             NumericalConstants.SHIFT_10;
-        // Extract 'J'
+        // Extract '_exclusivePriceVal'
         _exclusivePriceVal = _sPriceUsdVal % NumericalConstants.SHIFT_10;
         return (
             _zeroVal,

@@ -295,9 +295,11 @@ contract ReserveExchangeTokenTest is Test {
             );
         }
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer_01, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer_01,
+            0
+        );
     }
 
     function testReserveExchangeCVariantHappyPath() public {
@@ -423,9 +425,11 @@ contract ReserveExchangeTokenTest is Test {
             );
         }
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer_01, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer_01,
+            0
+        );
     }
 
     function testReserveExchangeSContentTokenHappyPath() public {
@@ -486,9 +490,11 @@ contract ReserveExchangeTokenTest is Test {
             );
         }
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer_01, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer_01,
+            0
+        );
     }
 
     function testReserveExchangeSVariantHappyPath() public {
@@ -590,8 +596,10 @@ contract ReserveExchangeTokenTest is Test {
             );
         }
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer_01, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer_01,
+            0
+        );
     }
 }

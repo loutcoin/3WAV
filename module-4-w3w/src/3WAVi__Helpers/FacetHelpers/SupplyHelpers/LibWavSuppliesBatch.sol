@@ -8,6 +8,7 @@ import {SupplyDBC} from "src/3WAVi__Helpers/DBC/SupplyDBC.sol";
 library LibWavSuppliesBatch {
     error WavSuppliesBatch__LengthValIssue();
     error WavSuppliesBatch__NumInputInvalid();
+
     /**
      * @notice Deducts batch quantity of WavStore supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded WavStore supply of hashId.

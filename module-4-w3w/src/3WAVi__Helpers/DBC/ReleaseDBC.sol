@@ -29,11 +29,7 @@ library ReleaseDBC {
         uint96 _preRelease,
         uint8 _pausedAt
     ) internal pure returns (uint96 _releaseVal) {
-        //uint96 _hourStamp = ReturnValidation._returnHourStamp();
         if (
-            //_startRelease < _hourStamp ||
-            //_endRelease < _hourStamp ||
-            //_preRelease < _hourStamp ||
             _pausedAt > 1 ||
             _startRelease >= NumericalConstants.CRELEASE_6_MAX ||
             _endRelease >= NumericalConstants.CRELEASE_6_MAX ||

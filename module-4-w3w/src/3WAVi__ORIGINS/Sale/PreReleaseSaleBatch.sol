@@ -90,7 +90,7 @@ contract PreReleaseSaleBatch {
             storage CreatorProfitStructStorage = CreatorProfitStorage
                 .creatorProfitStorage();
         address _wavId = CreatorProfitStructStorage.wavId;
-        //_wavSaleToken.length;
+
         for (uint256 i = 0; i < _weiPrices.length; ) {
             uint256 _amountWei = _weiPrices[i] *
                 uint256(_wavSaleToken[i].purchaseQuantity);

@@ -25,7 +25,7 @@ import {
 library LibCollaboratorReserve {
     /**
      * @notice Partitions gross revenue into collaborator reserve.
-     * @dev Accesses Collaborator struct and debits earnings based on relevant royalty split
+     * @dev Accesses SCollaborator struct and debits earnings based on relevant royalty split
      *      Function Selector:
      * @param _hashId Identifier of Content Token being queried.
      * @param _numToken Content Token identifier used to specify the token index being queried.
@@ -37,7 +37,6 @@ library LibCollaboratorReserve {
         uint16 _numToken,
         uint32 _cRoyaltyVal,
         uint256 _grossWei
-        //uint256 _bitmap
     ) internal returns (uint256 _netWei) {
         if (_grossWei == 0) return 0;
 
@@ -84,13 +83,6 @@ library LibCollaboratorReserve {
                 .collaboratorMapStorage();
 
         uint8 _tokenState = Binary3BitDBC._decode3BitState(_bitmap, _numToken);
-
-        //_tokenState = 1;
-
-        // Collaborators undefined for numToken; **** Stuff like this if included would be best in the router function
-        /*if (CollaboratorStruct.numCollaborator == 0 || _tokenState == 0) {
-            return _grossWei;
-        }*/
 
         uint32 _selectedSlot;
 
@@ -141,6 +133,13 @@ library LibCollaboratorReserve {
         return _netWei;
     }
 
+    /**
+     * @notice Routes call appropriately depending on the stored presence of collaborator royalty data.
+     * @dev Checks s_sCollaborators and s_collaborators mappings. If no royalty data is found _grossWei input is returned.
+     * @param _hashId Identifier of Content Token being queried.
+     * @param _numToken Content Token identifier used to specify the token index being queried.
+     * @param _grossWei Total available ETH share.
+     */
     function _collaboratorReserveRouter(
         bytes32 _hashId,
         uint16 _numToken,
@@ -182,54 +181,4 @@ library LibCollaboratorReserve {
             return _grossWei;
         }
     }
-
-    /* _tokenState == 0
-    ─ emit emitTokenState(_tokenState: 0)
-    │   │   ├─ emit cSlotIs(_cSlot: 100050000100000050000100000050000100000 [1e38])
-    │   │   ├─ emit WhatIsR1(r1: 50000 [5e4], r2: 100000 [1e5], r3: 50000 [5e4], r4: 100000 [1e5], r5: 50000 [5e4], r6: 100000 [1e5])
-    │   │   ├─ emit SelectedSlotIs(_selectedSlot: 100000 [1e5])
-    │   │   ├─ emit SCollaboratorReserveDebitsEthCheck(_weiDebit: 20700000000000 [2.07e13])
-    │   │   ├─ emit CollabReserveWei(_collabReserveWei: 20700000000000 [2.07e13])
-    │   │   ├─ emit NetWeiIs(_netWei: 186300000000000 [1.863e14])
-    │   │   ├─ emit WavSaleSingle(_buyer: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, _hashId: 0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, _numToken: 8, _purchaseQuantity: 1)
-    │   │   └─ ← [Stop] 
-    │   └─ ← [Return] 
-    ├─ [6651] WavDiamond::fallback(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8)
-    │   ├─ [1718] ProfitWithdrawl::getCollaboratorReserve(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8) [delegatecall]
-    │   │   ├─ emit earningsAmount(_earnings: 20700000000000 [2.07e13])
-
-    --
-    Original sRoyalty data
-    */
-
-    /* tokenState == 0
-    ├─ emit cSlotIs(_cSlot: 100050000100000050000100000050000100000 [1e38])
-    │   │   ├─ emit WhatIsR1(r1: 50000 [5e4], r2: 100000 [1e5], r3: 50000 [5e4], r4: 100000 [1e5], r5: 50000 [5e4], r6: 100000 [1e5])
-    │   │   ├─ emit SelectedSlotIs(_selectedSlot: 50000 [5e4])
-    │   │   ├─ emit SCollaboratorReserveDebitsEthCheck(_weiDebit: 10350000000000 [1.035e13])
-    │   │   ├─ emit CollabReserveWei(_collabReserveWei: 10350000000000 [1.035e13])
-    │   │   ├─ emit NetWeiIs(_netWei: 196650000000000 [1.966e14])
-    │   │   ├─ emit WavSaleSingle(_buyer: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, _hashId: 0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, _numToken: 8, _purchaseQuantity: 1)
-    │   │   └─ ← [Stop] 
-    │   └─ ← [Return] 
-    ├─ [6651] WavDiamond::fallback(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8)
-    │   ├─ [1718] ProfitWithdrawl::getCollaboratorReserve(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8) [delegatecall]
-    │   │   ├─ emit earningsAmount(_earnings: 10350000000000 [1.035e13])
-    
-    --
-    Original sRoyalty data:
-    ├─ emit cSlotIs(_cSlot: 100050000000000000000000000000000000000 [1e38])
-    │   │   ├─ emit WhatIsR1(r1: 50000 [5e4], r2: 0, r3: 0, r4: 0, r5: 0, r6: 0)
-    │   │   ├─ emit SelectedSlotIs(_selectedSlot: 50000 [5e4])
-    │   │   ├─ emit SCollaboratorReserveDebitsEthCheck(_weiDebit: 10350000000000 [1.035e13])
-    │   │   ├─ emit CollabReserveWei(_collabReserveWei: 10350000000000 [1.035e13])
-    │   │   ├─ emit NetWeiIs(_netWei: 196650000000000 [1.966e14])
-    │   │   ├─ emit WavSaleSingle(_buyer: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720, _hashId: 0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, _numToken: 8, _purchaseQuantity: 1)
-    │   │   └─ ← [Stop] 
-    │   └─ ← [Return] 
-    ├─ [6651] WavDiamond::fallback(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8)
-    │   ├─ [1718] ProfitWithdrawl::getCollaboratorReserve(0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df, 8) [delegatecall]
-    │   │   ├─ emit earningsAmount(_earnings: 10350000000000 [1.035e13])
-    
-    */
 }

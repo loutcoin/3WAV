@@ -83,7 +83,7 @@ library LibFeed {
      * @notice Converts a batch of USD data into ETH equivalent values.
      * @dev Function Selector:
      * @param _usdValBatch Batch of USD data in 8 decimal places.
-     * @return uint256[] The equivalent values in ETH.
+     * @return _ethWeiBatch The equivalent values in ETH.
      */
     function _usdToEthBatch(
         uint256[] calldata _usdValBatch

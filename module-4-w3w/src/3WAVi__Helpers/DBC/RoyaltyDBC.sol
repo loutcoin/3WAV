@@ -8,6 +8,47 @@ library RoyaltyDBC {
     error RoyaltyDBC__NumInputInvalid();
     error RoyaltyDBC__MinEncodedValueInvalid();
 
+    /**
+     * @notice Encodes a single raw value related to the cRoyaltyVal ContentToken property.
+     * @dev Function called by script to correctly format stored cRoyaltyVal data.
+     * @param _royaltyVal Six-digit numerical collaborator royalty split value.
+     */
+    function _cRoyaltyValEncoder(
+        uint32 _royaltyVal
+    ) internal pure returns (uint32 _cRoyaltyVal) {
+        if (_royaltyVal >= NumericalConstants.SHIFT_7__32) {
+            revert RoyaltyDBC__NumInputInvalid();
+        }
+        _cRoyaltyVal = NumericalConstants.SHIFT_7__32 + _royaltyVal;
+        return _cRoyaltyVal;
+    }
+
+    /**
+     * @notice Decodes encoded input into its underlying raw value for the cRoyaltyVal ContentToken property.
+     * @dev Function called by script to decode underlying data stored within cRoyaltyVal.
+     * @param _cRoyaltyVal Unsigned interger containing raw cRoyalty definition.
+     */
+    function _cRoyaltyValDecoder(
+        uint32 _cRoyaltyVal
+    ) internal pure returns (uint32 _royaltyValRaw) {
+        if (_cRoyaltyVal < NumericalConstants.MIN_ENCODED_CROYALTY) {
+            revert RoyaltyDBC__MinEncodedValueInvalid();
+        }
+        _royaltyValRaw = _cRoyaltyVal - NumericalConstants.SHIFT_7__32;
+        return _royaltyValRaw;
+    }
+
+    /**
+     * @notice Encodes six raw values related to the sRoyaltyVal CContentToken property.
+     * @dev Function called by script to correctly format stored sRoyaltyVal data.
+     * @param _zeroVal Indicates presence of zero value.
+     * @param _royalty1 The first six-digit numerical collaborator royalty split.
+     * @param _royalty2 The second six-digit numerical collaborator royalty split.
+     * @param _royalty3 The third six-digit numerical collaborator royalty split.
+     * @param _royalty4 The fourth six-digit numerical collaborator royalty split.
+     * @param _royalty5 The fifth six-digit numerical collaborator royalty split.
+     * @param _royalty6 The sixth six-digit numerical collaborator royalty split.
+     */
     function royaltyValEncoder(
         uint8 _zeroVal,
         uint32 _royalty1,
@@ -43,6 +84,11 @@ library RoyaltyDBC {
         return _royaltyVal;
     }
 
+    /**
+     * @notice Decodes encoded input into its seven underlying raw values for the sRoyaltyVal CContentToken property.
+     * @dev Function called by script to decode underlying data stored within sRoyaltyVal.
+     * @param _royaltyVal Unsigned interger containing multiple compacted seperate sale royalty definitions.
+     */
     function _royaltyValDecoder(
         uint128 _royaltyVal
     )
@@ -71,25 +117,5 @@ library RoyaltyDBC {
         _royalty4 = uint32((_royaltyVal / 10 ** 12) % 10 ** 6);
         _royalty5 = uint32((_royaltyVal / 10 ** 6) % 10 ** 6);
         _royalty6 = uint32(_royaltyVal % 10 ** 6);
-    }
-
-    function _cRoyaltyValEncoder(
-        uint32 _royaltyVal
-    ) internal pure returns (uint32 _cRoyaltyVal) {
-        if (_royaltyVal >= NumericalConstants.SHIFT_7__32) {
-            revert RoyaltyDBC__NumInputInvalid();
-        }
-        _cRoyaltyVal = NumericalConstants.SHIFT_7__32 + _royaltyVal;
-        return _cRoyaltyVal;
-    }
-
-    function _cRoyaltyValDecoder(
-        uint32 _cRoyaltyVal
-    ) internal pure returns (uint32 _royaltyValRaw) {
-        if (_cRoyaltyVal < NumericalConstants.MIN_ENCODED_CROYALTY) {
-            revert RoyaltyDBC__MinEncodedValueInvalid();
-        }
-        _royaltyValRaw = _cRoyaltyVal - NumericalConstants.SHIFT_7__32;
-        return _royaltyValRaw;
     }
 }

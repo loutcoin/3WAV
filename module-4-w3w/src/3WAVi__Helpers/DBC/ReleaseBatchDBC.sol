@@ -11,9 +11,6 @@ import {
 } from "../../../src/3WAVi__Helpers/NumericalConstants.sol";
 
 library ReleaseBatchDBC {
-    event TestReleaseBatchDBC(uint96 indexed _releaseVal);
-    event EmitItMakesItThisFar(bool _success);
-
     error ReleaseBatchDBC__ReleaseInputIssue();
     error ReleaseBatchDBC__NumInputInvalid();
     error ReleaseBatchDBC__LengthValIssue();
@@ -34,11 +31,7 @@ library ReleaseBatchDBC {
         uint96 _preRelease,
         uint8 _pausedAt
     ) internal pure returns (uint96 _releaseVal) {
-        //uint96 _hourStamp = ReturnValidation._returnHourStamp();
         if (
-            //_startRelease < _hourStamp ||
-            //_endRelease < _hourStamp ||
-            //_preRelease < _hourStamp ||
             _pausedAt > 1 ||
             _startRelease >= NumericalConstants.CRELEASE_6_MAX ||
             _endRelease >= NumericalConstants.CRELEASE_6_MAX ||
@@ -131,7 +124,6 @@ library ReleaseBatchDBC {
             ) {
                 revert ReleaseBatchDBC__ReleaseInputIssue();
             }
-            // TEST IF PARENTHESIS ARE NEEDED FOR FUNCTIONAL SYNTAX
             _releaseValBatch[i] =
                 _str *
                 NumericalConstants.SHIFT_14__96 +
@@ -161,7 +153,7 @@ library ReleaseBatchDBC {
         uint96[] memory _endReleaseBatch,
         uint96[] memory _preReleaseBatch,
         uint8[] memory _pausedAtBatch
-    ) internal returns (uint96[] memory _releaseValBatch) {
+    ) internal pure returns (uint96[] memory _releaseValBatch) {
         uint96 _releaseLength = uint96(_startReleaseBatch.length);
 
         if (
@@ -190,7 +182,6 @@ library ReleaseBatchDBC {
             ) {
                 revert ReleaseBatchDBC__ReleaseInputIssue();
             }
-            // TEST IF PARENTHESIS ARE NEEDED FOR FUNCTIONAL SYNTAX
             _releaseValBatch = new uint96[](_releaseLength);
             _releaseValBatch[i] =
                 _str *
@@ -200,10 +191,6 @@ library ReleaseBatchDBC {
                 _pre *
                 NumericalConstants.SHIFT_1__96 +
                 uint96(_paused);
-
-            emit EmitItMakesItThisFar(true);
-
-            emit TestReleaseBatchDBC(_releaseValBatch[i]);
 
             unchecked {
                 ++i;
@@ -244,7 +231,6 @@ library ReleaseBatchDBC {
         for (uint256 i = 0; i < _releaseLength; ) {
             uint96 _packed = _releaseValBatch[i];
 
-            // mirror your single-instance validation
             if (
                 _packed <= NumericalConstants.SHIFT_19__96 ||
                 _packed >= NumericalConstants.SHIFT_20__96

@@ -9,6 +9,7 @@ library LibPublishSWavSuppliesHelper {
         uint160 _sReserveVal
     )
         internal
+        pure
         returns (
             uint112 _sWavSuppliesTier1,
             uint112 _sWavSuppliesTier2,

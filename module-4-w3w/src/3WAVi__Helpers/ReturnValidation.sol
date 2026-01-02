@@ -34,8 +34,6 @@ library ReturnValidation {
     function _returnHourStamp() internal view returns (uint96 _hourStamp) {
         uint256 _timeStamp = block.timestamp;
         _hourStamp = uint96(_timeStamp / SECOND_TO_HOUR_PRECISION);
-        //uint96 _timeStamp = uint96(block.timestamp);
-        //_hourStamp = _timeStamp / SECOND_TO_HOUR_PRECISION;
         return _hourStamp;
     }
 }

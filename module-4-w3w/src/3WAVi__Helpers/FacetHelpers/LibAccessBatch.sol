@@ -48,9 +48,7 @@ library LibAccessBatch {
             uint256 _ownershipIndex = CreatorTokenMapStruct.s_ownershipIndex[
                 _buyer
             ];
-            /*CreatorTokenMapStruct.s_ownershipMap[_buyer][_ownershipIndex][
-                _hashId
-            ] = _numToken;*/
+
             CreatorTokenMapStruct.s_ownershipMap[_buyer][
                 _ownershipIndex
             ] = _hashId;

@@ -5,10 +5,6 @@ import {
     CollaboratorStructStorage
 } from "../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorStructStorage.sol";
 
-/*import {
-    CollaboratorMapStorage
-} from "../../../src/Diamond__Storage/ContentToken/Optionals/CollaboratorMapStorage.sol";*/
-
 import {
     CContentTokenStorage
 } from "../../../src/Diamond__Storage/ContentToken/CContentTokenStorage.sol";

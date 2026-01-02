@@ -67,12 +67,6 @@ library ValidatePreReleaseSale {
             .returnCContentTokenSPriceUsdVal(_wavSaleToken.hashId);
 
         if (_sPriceUsdVal != 0 && _wavSaleToken.numToken != 0) {
-            //if (!tokenEnabledState(_hashId, _numToken)) ***tokenEnabledState currently deprecated
-            //revert WavDBC__BitValIssue();
-            // resolve tier and compute price from state map
-            /*uint256 _priceMap = ReturnContentToken.returnCContentTokenPriceMap(
-                _hashId
-            );*/
             uint16 _pages = uint16((uint256(_wavSaleToken.numToken) + 63) >> 6);
 
             uint256 _priceMap = ReturnMapMapping.returnSPriceMap(
@@ -93,7 +87,6 @@ library ValidatePreReleaseSale {
                     .contentTokenSupplyMapStorage();
 
             // debit tier pre-release supply
-            //uint8 _tierId = _getTier(_hashId, _numToken);
             uint16 _wordIndex = _wavSaleToken.numToken >> 6;
             uint8 _within = uint8(_wavSaleToken.numToken & 63);
 
@@ -109,6 +102,6 @@ library ValidatePreReleaseSale {
 
             return LibFeed._usdToWei(_usdPrice);
         }
-        //revert ValidatePreReleaseSale__InputError404();
+        revert ValidatePreReleaseSale__InputError404();
     }
 }

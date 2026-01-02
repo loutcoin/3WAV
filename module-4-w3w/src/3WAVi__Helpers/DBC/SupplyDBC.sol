@@ -10,7 +10,7 @@ library SupplyDBC {
     error SupplyDBC__NumInputInvalid();
 
     /**
-     * @notice Encodes four raw values related to the 33-digit cSupplyVal CContentToken property.
+     * @notice Encodes four raw values related to the 33-digit cSupplyVal ContentToken property.
      * @dev Function called by script to correctly format stored cSupplyVal data.
      *      Function Selector: 0x35a93e5a
      * @param _totalSupply Maximum supply value defined for a CContentToken.
@@ -51,7 +51,11 @@ library SupplyDBC {
         return _cSupplyVal;
     }
 
-    // ****NATSPEC NEEDED****
+    /**
+     * @notice Decodes encoded input into its underlying raw values for the cSupplyVal ContentToken property.
+     * @dev Function called by script to decode underlying data stored within cSupplyVal data.
+     * @param _cSupplyVal Encoded cSupplyVal ContentToken property.
+     */
     function _cSupplyValDecoder(
         uint112 _cSupplyVal
     )
@@ -87,7 +91,17 @@ library SupplyDBC {
         return (_totalSupply, _initialSupply, _wavReserve, _preSupply);
     }
 
-    // 63 digits
+    /**
+     * @notice Encodes seven raw values related to the 63-digit cSupplyVal ContentToken property.
+     * @dev Function called by script to correctly format stored sSupplyVal data.
+     * @param _zeroVal Indicates presence of zero value.
+     * @param _seperateTSupply1 The first maximum seperate sale supply value defined of a CContentToken.
+     * @param _seperateTSupply2 The second maximum seperate sale supply value defined of a CContentToken.
+     * @param _seperateTSupply3 The third maximum seperate sale supply value defined of a CContentToken.
+     * @param _seperateISupply1 The first seperate sale initial supply value defined of a CContentToken.
+     * @param _seperateISupply2 The second seperate sale initial supply value defined of a CContentToken.
+     * @param _seperateISupply3 The third seperate sale initial supply value defined of a CContentToken.
+     */
     function _sSupplyValEncoder(
         uint8 _zeroVal,
         uint112 _seperateTSupply1,
@@ -135,6 +149,11 @@ library SupplyDBC {
         return _sSupplyVal;
     }
 
+    /**
+     * @notice Decodes encoded input into its seven underlying raw values for the sSupplyVal CContentToken property.
+     * @dev Function called by script to decode underlying data stored within sSupplyVal.
+     * @param _sSupplyVal Unsigned interger containing multiple compacted seperate sale supply definitions.
+     */
     function _sSupplyValDecoder(
         uint224 _sSupplyVal
     )
@@ -195,7 +214,17 @@ library SupplyDBC {
         );
     }
 
-    // 39 digits
+    /**
+     * @notice Encodes four raw values related to the 39-digit cSupplyVal ContentToken property.
+     * @dev Function called by script to correctly format stored sSupplyVal data.
+     * @param _zeroVal Indicates presence of zero value.
+     * @param _sWavReserve1 The first seperate sale WavReserve value defined for a CContentToken.
+     * @param _sWavReserve2 The second seperate sale WavReserve value defined for a CContentToken.
+     * @param _sWavReserve3 The third seperate sale WavReserve value defined for a CContentToken.
+     * @param _sPreRelease1 The first seperate sale PreRelease allocation value defined for a CContentToken.
+     * @param _sPreRelease2 The second seperate sale PreRelease allocation value defined for a CContentToken.
+     * @param _sPreRelease3 The third seperate sale PreRelease allocation value defined for a CContentToken.
+     */
     function _sReserveValEncoder(
         uint8 _zeroVal,
         uint80 _sWavReserve1,
@@ -233,6 +262,11 @@ library SupplyDBC {
         return _sReserveVal;
     }
 
+    /**
+     * @notice Decodes encoded input into its seven underlying raw values for the sReserveVal CContentToken property.
+     * @dev Function called by script to decode underlying data stored within sReserveVal.
+     * @param _sReserveVal Unsigned interger containing multiple compacted seperate sale reserve definitions.
+     */
     function _sReserveValDecoder(
         uint160 _sReserveVal
     )
@@ -292,9 +326,9 @@ library SupplyDBC {
         );
     }
 
-    /** 31 digits
+    /**
      * @notice Encodes three raw values related to active supply locations of the service.
-     * @dev Function called by script to efficiently store remaining supply data.
+     * @dev Function called by script to efficiently store 31-digit remaining supply data.
      *      Function Selector: 0x209bb4af
      * @param _wavStoreSupplies First user-defined WavStore supply input.
      * @param _wavReserveSupplies Second user-defined WavReserve supply input.

@@ -285,9 +285,11 @@ contract WavSaleTokenTest is Test {
             _wavSale
         );
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
 
         //WavAccess(address(wavDiamond)).returnOwnership(buyer);
         //console.log("returnOwnership length:", _owned.length);
@@ -418,9 +420,11 @@ contract WavSaleTokenTest is Test {
             _wavSale
         );
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
     }
 
     function testWavSaleSContentTokenHappyPath() public {
@@ -477,9 +481,11 @@ contract WavSaleTokenTest is Test {
             _wavSale
         );
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
     }
 
     function testWavSaleSVariantHappyPath() public {
@@ -579,19 +585,12 @@ contract WavSaleTokenTest is Test {
             _wavSale
         );
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
     }
-
-    // EVERYTHING WORKS! HOWEVER _contentId WAS returning '0' then I updated it to return it from storage and it returned '2' this time
-    // I believe it is to do with this line:
-    /* uint256 _contentId = ++CreatorTokenMapStruct.s_ownershipIndex[
-            _creatorId
-        ];
-        from LibPublishCreatorToken. It can be modified slightly to resolve the issue but other than that,
-        everything seems to be working under ideal conditions :)
-    */
 
     //uint256 remainingBalance = buyer.balance;
 

@@ -8,6 +8,7 @@ import {SupplyDBC} from "src/3WAVi__Helpers/DBC/SupplyDBC.sol";
 library LibPreReleaseSuppliesBatch {
     error PreReleaseSuppliesBatch__LengthValIssue();
     error PreReleaseSuppliesBatch__NumInputInvalid();
+
     /**
      * @notice Deducts batch quantity of PreRelease supply and updates the encoded value.
      * @dev Reads c_cWavSupplies and updates active encoded PreRelease supply of hashId.

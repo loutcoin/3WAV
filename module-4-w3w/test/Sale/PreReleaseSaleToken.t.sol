@@ -279,9 +279,11 @@ contract PreReleaseSaleToken is Test {
             value: expectedWei
         }(buyer, _wavSale);
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
     }
 
     function testPreReleaseSaleCVariantHappyPath() public {
@@ -405,9 +407,11 @@ contract PreReleaseSaleToken is Test {
             value: expectedWei
         }(buyer, _wavSale);
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
     }
 
     function testPreReleaseSaleSContentTokenHappyPath() public {
@@ -463,9 +467,11 @@ contract PreReleaseSaleToken is Test {
             value: expectedWei
         }(buyer, _wavSale);
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
     }
 
     function testPreReleaseSaleSVariantHappyPath() public {
@@ -564,8 +570,10 @@ contract PreReleaseSaleToken is Test {
             value: expectedWei
         }(buyer, _wavSale);
 
-        (bytes32 _hash, uint16 _num, uint256 _bal) = WavAccess(
-            address(wavDiamond)
-        ).returnOwnershipIndex(buyer, 0);
+        bytes memory _payload = abi.encodeWithSelector(
+            WavAccess(address(wavDiamond)).returnOwnershipIndex.selector,
+            buyer,
+            0
+        );
     }
 }

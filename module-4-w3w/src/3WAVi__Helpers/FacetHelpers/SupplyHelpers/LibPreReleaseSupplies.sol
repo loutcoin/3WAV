@@ -11,6 +11,7 @@ import {
 
 library LibPreReleaseSupplies {
     error PreReleaseSupplies__NumInputInvalid();
+
     /**
      * @notice Deducts quantity of PreRelease supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded PreRelease supply of hashId.

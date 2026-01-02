@@ -798,19 +798,4 @@ contract WavExchangeToken is Test {
             0
         );
     }
-
-    /*
-    WavResaleToken.WavResale memory _wavResale = WavResaleToken.WavResale({
-            seller:
-        })
-
-    */
-
-    // forge test --match-test testDebugSetup -vvvv
-
-    /*function testDebugSetup() public {
-        uint256 a = 0;
-        uint256 b = 2;
-        uint256 c = a + b;
-    }*/
 }
