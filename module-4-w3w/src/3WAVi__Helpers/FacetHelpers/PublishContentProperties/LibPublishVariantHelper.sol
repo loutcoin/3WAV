@@ -12,13 +12,6 @@ import {
 library LibPublishVariantHelper {
     error LibPublishVariantHelper__IndexIssue();
 
-    event SVariantPublished(
-        address indexed creatorId,
-        bytes32 indexed parentHashId,
-        bytes32 indexed variantHashId,
-        uint16 variantIndex
-    );
-
     function _publishVariantHelper(
         CreatorTokenVariantStorage.CreatorTokenVariant calldata _creatorTokenVariant
     ) internal {
@@ -34,12 +27,5 @@ library LibPublishVariantHelper {
         AssociatedContentStruct.s_variantSearch[
             _creatorTokenVariant.creatorToken.hashId
         ] = _baseHashId;
-
-        emit SVariantPublished(
-            _creatorTokenVariant.creatorToken.creatorId,
-            _creatorTokenVariant.creatorToken.hashId,
-            _baseHashId,
-            _variantIndex
-        );
     }
 }

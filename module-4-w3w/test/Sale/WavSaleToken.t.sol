@@ -290,9 +290,6 @@ contract WavSaleTokenTest is Test {
             buyer,
             0
         );
-
-        //WavAccess(address(wavDiamond)).returnOwnership(buyer);
-        //console.log("returnOwnership length:", _owned.length);
     }
 
     function testWavSaleCVariantHappyPath() public {
@@ -410,8 +407,6 @@ contract WavSaleTokenTest is Test {
         uint256 expectedWei = (usd8 * 1e18) / feedAnswer;
 
         vm.deal(buyer, 10 ether);
-
-        //uint256 initialBalance = buyer.balance;
 
         vm.prank(owner);
         vm.warp(EX_PURCHASE_STAMP);
@@ -592,13 +587,6 @@ contract WavSaleTokenTest is Test {
         );
     }
 
-    //uint256 remainingBalance = buyer.balance;
-
-    /*assertTrue(
-            initialBalance - remainingBalance >= expectedWei,
-            "Buyer did not pay amount expected"
-        );*/
-
     /*function testPrintHashId() public {
         uint256 contentId = 0;
         uint16 variantId = 0;
@@ -622,12 +610,12 @@ contract WavSaleTokenTest is Test {
         console.logBytes32(hashId);
     }*/
 
-    function testPrintHashId() public view {
+    /*function testPrintHashId() public view {
         uint256 contentId = 1;
         uint16 variantId = 1;
         bytes32 hashId = keccak256(abi.encode(publisher, contentId, variantId));
         console.logBytes32(hashId);
-    }
+    }*/
 
     /*function testPrintHourStamp() public {
         uint96 _timeStamp = uint96(block.timestamp);
