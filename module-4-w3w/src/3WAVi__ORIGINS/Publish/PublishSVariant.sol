@@ -31,8 +31,8 @@ import {
 contract PublishSVariant {
     event SVariantPublished(
         address indexed creatorId,
-        bytes32 indexed parentHashId,
         bytes32 indexed variantHashId,
+        bytes32 indexed parentHashId,
         uint16 variantIndex
     );
 
@@ -60,24 +60,27 @@ contract PublishSVariant {
             revert PublishSContentToken__NumInputInvalid();
         }
 
+        // Publishes supply data
         LibPublishSContentTokenWavSupplies
             ._publishSContentTokenVariantWavSupplies(
                 _creatorTokenVariant,
                 _sContentToken
             );
 
+        // Publishes SContentToken properties
         LibPublishSContentTokenSearch._publishSContentTokenVariantSearch(
             _creatorTokenVariant,
             _sContentToken,
             _sCollaborator
         );
 
+        // Publishes Variant data
         LibPublishVariantHelper._publishVariantHelper(_creatorTokenVariant);
 
         emit SVariantPublished(
             _creatorTokenVariant.creatorToken.creatorId,
-            _creatorTokenVariant.baseHashId,
             _creatorTokenVariant.creatorToken.hashId,
+            _creatorTokenVariant.baseHashId,
             _creatorTokenVariant.variantIndex
         );
     }

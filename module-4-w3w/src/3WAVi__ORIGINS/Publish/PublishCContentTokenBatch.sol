@@ -26,6 +26,8 @@ import {
 } from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearchBatch.sol";
 
 contract PublishCContentTokenBatch {
+    event CContentTokenBatchPublishedCount(uint256 indexed publicationCount);
+
     /**
      * @notice Publishes a batch of two or more user-defined CContentTokens.
      * @dev Writes and stores the data of multiple CContentTokens on the blockchain.
@@ -44,6 +46,7 @@ contract PublishCContentTokenBatch {
     ) external {
         ReturnValidation.returnIsAuthorized();
 
+        // Publishes supply data
         LibPublishCContentTokenWavSuppliesBatch
             ._publishCContentTokenWavSuppliesBatch(
                 _creatorToken,
@@ -51,10 +54,13 @@ contract PublishCContentTokenBatch {
                 _tierMapPages,
                 _priceMapPages
             );
+        // Publishes CContentToken properties, emits event for individual indexes
         LibPublishCContentTokenSearchBatch._publishCContentTokenSearchBatch(
             _creatorToken,
             _cContentToken,
             _collaborator
         );
+
+        emit CContentTokenBatchPublishedCount(_cContentToken.length);
     }
 }

@@ -6,8 +6,8 @@ import {
 } from "../../src/Diamond__Storage/ActiveAddresses/AuthorizedAddrStorage.sol";
 
 library ReturnValidation {
-    // <~ Wav Access ~> \\
     error ReturnValidation__AccessProhibited();
+
     uint96 internal constant SECOND_TO_HOUR_PRECISION = 3600;
 
     /**

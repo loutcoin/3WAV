@@ -33,6 +33,18 @@ import {
 } from "../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearch.sol";
 
 contract PublishCVariantBatch {
+    event CVariantBatchPublishedCount(uint256 indexed publicationCount);
+
+    event CContentTokenVariantBatch(
+        address indexed _creatorId,
+        bytes32 indexed _hashId,
+        uint16 indexed _numToken
+    );
+
+    event CContentTokenVariantBatchPublishedCount(
+        uint256 indexed publicationCount
+    );
+
     /**
      * @notice Publishes two or more CContentToken Variants.
      * @dev Writes and stores the data of two or more CContentToken Variants on the blockchain.
@@ -52,6 +64,7 @@ contract PublishCVariantBatch {
         ReturnValidation.returnIsAuthorized();
 
         {
+            // Publishes supply data
             LibPublishCContentTokenWavSuppliesBatch
                 ._publishCContentTokenVariantWavSuppliesBatch(
                     _creatorTokenVariant,
@@ -62,6 +75,7 @@ contract PublishCVariantBatch {
         }
 
         {
+            // Publishes CContentToken properties, emits event for individual indexes
             LibPublishCContentTokenSearchBatch
                 ._publishCContentTokenVariantSearchBatch(
                     _creatorTokenVariant,
@@ -78,6 +92,7 @@ contract PublishCVariantBatch {
                 ++i;
             }
         }
+        emit CVariantBatchPublishedCount(_cContentToken.length);
     }
 
     /**
@@ -118,13 +133,22 @@ contract PublishCVariantBatch {
                 calldata _collab = _collaborator[i];
 
             {
+                // Publishes index-specific CContentToken properties
                 LibPublishCContentTokenSearch
                     ._publishCContentTokenVariantSearch(_cTV, _cCTKN, _collab);
             }
 
             if (i > 0) {
+                // Publishes index-specific Variant data
                 LibPublishVariantHelper._publishVariantHelper(_cTV);
             }
+
+            emit CContentTokenVariantBatch(
+                _cTV.creatorToken.creatorId,
+                _cTV.creatorToken.hashId,
+                _cCTKN.numToken
+            );
         }
+        emit CContentTokenVariantBatchPublishedCount(_cContentToken.length);
     }
 }

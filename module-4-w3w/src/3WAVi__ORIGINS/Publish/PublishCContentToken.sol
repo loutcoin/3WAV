@@ -49,6 +49,7 @@ contract PublishCContentToken {
     ) external {
         ReturnValidation.returnIsAuthorized();
 
+        // Publishes supply data
         LibPublishCContentTokenWavSupplies._publishCContentTokenWavSupplies(
             _creatorToken,
             _cContentToken,
@@ -56,10 +57,17 @@ contract PublishCContentToken {
             _priceMapPages
         );
 
+        // Publishes CContentToken properties
         LibPublishCContentTokenSearch._publishCContentTokenSearch(
             _creatorToken,
             _cContentToken,
             _collaborator
+        );
+
+        emit CContentTokenPublished(
+            _creatorToken.creatorId,
+            _creatorToken.hashId,
+            _cContentToken.numToken
         );
     }
 }

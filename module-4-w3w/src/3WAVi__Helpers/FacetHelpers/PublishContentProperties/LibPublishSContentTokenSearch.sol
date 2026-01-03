@@ -60,11 +60,6 @@ library LibPublishSContentTokenSearch {
             LibPublishSContentTokenCollaboratorMap
                 ._publishSContentTokenCollaboratorMap(_hashId, _sCollaborator);
         }
-        emit SContentTokenPublished(
-            _creatorId,
-            _hashId,
-            _sContentToken.numToken
-        );
     }
 
     function _publishSContentTokenSearch(
@@ -91,10 +86,5 @@ library LibPublishSContentTokenSearch {
             LibPublishSContentTokenCollaboratorMap
                 ._publishSContentTokenCollaboratorMap(_hashId, _sCollaborator);
         }
-        emit SContentTokenPublished(
-            _creatorId,
-            _hashId,
-            _sContentToken.numToken
-        );
     }
 }

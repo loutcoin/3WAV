@@ -30,7 +30,6 @@ library LibPublishContentTokenCollaboratorMap {
             });
             CollaboratorMapStruct.s_collaboratorReserve[_hashId][0] = 0;
         } else {
-            // was >
             if (_collab.royaltyMap.length == 0)
                 revert PublishContentTokenCollaborator__LengthMismatch();
         }

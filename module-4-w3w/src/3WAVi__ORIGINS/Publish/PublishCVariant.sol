@@ -65,6 +65,7 @@ contract PublishCVariant {
             revert PublishCContentToken__NumInputInvalid();
         }
 
+        // Publishes supply data
         LibPublishCContentTokenWavSupplies
             ._publishCContentTokenVariantWavSupplies(
                 _creatorTokenVariant,
@@ -73,12 +74,14 @@ contract PublishCVariant {
                 _priceMapPages
             );
 
+        // Publishes SContentToken properties
         LibPublishCContentTokenSearch._publishCContentTokenVariantSearch(
             _creatorTokenVariant,
             _cContentToken,
             _collaborator
         );
 
+        // Publishes Variant data
         LibPublishVariantHelper._publishVariantHelper(_creatorTokenVariant);
 
         emit CVariantPublished(

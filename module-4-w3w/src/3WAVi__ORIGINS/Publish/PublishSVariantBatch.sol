@@ -33,30 +33,16 @@ import {
 } from "../../../src/Diamond__Storage/CreatorToken/CreatorTokenVariantStorage.sol";
 
 contract PublishSVariantBatch {
-    event SContentTokenPublished(
-        address indexed creatorId,
-        bytes32 indexed hashId,
-        uint16 indexed numToken,
-        uint32 priceUsdVal,
-        uint112 supplyVal,
-        uint96 releaseVal
+    event SVariantBatchPublishedCount(uint256 indexed publicationCount);
+
+    event SContentTokenVariantBatch(
+        address indexed _creatorId,
+        bytes32 indexed _hashId,
+        uint16 indexed _numToken
     );
 
-    event SVariantPublished(
-        address indexed creatorId,
-        bytes32 indexed parentHashId,
-        bytes32 indexed variantHashId,
-        uint16 variantIndex
-    );
-
-    event SContentTokenBatchPublishedCount(
-        address indexed creatorId,
-        uint16 indexed publicationCount
-    );
-
-    event SVariantBatchPublishedCount(
-        address indexed creatorId,
-        uint16 indexed publicationCount
+    event SContentTokenVariantBatchPublishedCount(
+        uint256 indexed publicationCount
     );
 
     error PublishSVariantBatch__LengthMismatch();
@@ -77,6 +63,7 @@ contract PublishSVariantBatch {
     ) external {
         ReturnValidation.returnIsAuthorized();
         {
+            // Publishes supply data
             LibPublishSContentTokenWavSuppliesBatch
                 ._publishSContentTokenVariantWavSuppliesBatch(
                     _creatorTokenVariant,
@@ -84,6 +71,7 @@ contract PublishSVariantBatch {
                 );
         }
         {
+            // Publishes SContentToken properties, emits event for individual indexes
             LibPublishSContentTokenSearchBatch
                 ._publishSContentTokenVariantSearchBatch(
                     _creatorTokenVariant,
@@ -97,6 +85,7 @@ contract PublishSVariantBatch {
                 calldata _cTV = _creatorTokenVariant[i];
             LibPublishVariantHelper._publishVariantHelper(_cTV);
         }
+        emit SVariantBatchPublishedCount(_sContentToken.length);
     }
 
     /**
@@ -113,6 +102,7 @@ contract PublishSVariantBatch {
     ) external {
         ReturnValidation.returnIsAuthorized();
         {
+            // Publishes supply data
             LibPublishSContentTokenWavSuppliesBatch
                 ._publishSContentTokenVariantWavSuppliesBatch(
                     _creatorTokenVariant,
@@ -129,14 +119,24 @@ contract PublishSVariantBatch {
             SCollaboratorStructStorage.SCollaborator
                 calldata _sCollab = _sCollaborator[i];
 
+            // Publishes index-specific SContentToken properties
             LibPublishSContentTokenSearch._publishSContentTokenVariantSearch(
                 _cTV,
                 _sCTKN,
                 _sCollab
             );
+
             if (i > 0) {
+                // Publishes index-specific Variant data
                 LibPublishVariantHelper._publishVariantHelper(_cTV);
             }
+
+            emit SContentTokenVariantBatch(
+                _cTV.creatorToken.creatorId,
+                _cTV.creatorToken.hashId,
+                _sCTKN.numToken
+            );
         }
+        emit SContentTokenVariantBatchPublishedCount(_sContentToken.length);
     }
 }

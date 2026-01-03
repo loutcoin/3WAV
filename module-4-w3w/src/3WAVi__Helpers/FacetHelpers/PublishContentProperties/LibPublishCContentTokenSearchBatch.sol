@@ -66,7 +66,6 @@ library LibPublishCContentTokenSearchBatch {
             }
 
             if (_collaborator.length > 0) {
-                //uint256 _royaltyMap = _royaltyMapBatch[i];
                 CollaboratorStructStorage.Collaborator
                     calldata _collab = _collaborator[i];
 

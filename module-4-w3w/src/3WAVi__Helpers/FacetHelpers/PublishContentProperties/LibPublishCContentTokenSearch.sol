@@ -30,12 +30,6 @@ import {
 } from "../../../../src/3WAVi__Helpers/FacetHelpers/PublishContentProperties/LibPublishCContentTokenSearchHelper.sol";
 
 library LibPublishCContentTokenSearch {
-    event CContentTokenPublished(
-        address indexed creatorId,
-        bytes32 indexed hashId,
-        uint16 indexed numToken
-    );
-
     function _publishCContentTokenVariantSearch(
         CreatorTokenVariantStorage.CreatorTokenVariant calldata _creatorTokenVariant,
         CContentTokenStorage.CContentToken calldata _cContentToken,
@@ -63,11 +57,6 @@ library LibPublishCContentTokenSearch {
                     _collaborator
                 );
         }
-        emit CContentTokenPublished(
-            _creatorTokenVariant.creatorToken.creatorId,
-            _creatorTokenVariant.creatorToken.hashId,
-            _cContentToken.numToken
-        );
     }
 
     function _publishCContentTokenSearch(
@@ -97,10 +86,5 @@ library LibPublishCContentTokenSearch {
                     _collaborator
                 );
         }
-        emit CContentTokenPublished(
-            _creatorToken.creatorId,
-            _creatorToken.hashId,
-            _cContentToken.numToken
-        );
     }
 }

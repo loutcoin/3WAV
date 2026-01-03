@@ -29,10 +29,7 @@ contract PublishSContentToken {
     event SContentTokenPublished(
         address indexed creatorId,
         bytes32 indexed hashId,
-        uint16 indexed numToken,
-        uint32 priceUsdVal,
-        uint112 supplyVal,
-        uint96 releaseVal
+        uint16 indexed numToken
     );
 
     error PublishSContentToken__NumInputInvalid();
@@ -51,15 +48,23 @@ contract PublishSContentToken {
     ) external {
         ReturnValidation.returnIsAuthorized();
 
+        // Publishes supply data
         LibPublishSContentTokenWavSupplies._publishSContentTokenWavSupplies(
             _creatorToken,
             _sContentToken
         );
 
+        // Publishes SContentToken properties
         LibPublishSContentTokenSearch._publishSContentTokenSearch(
             _creatorToken,
             _sContentToken,
             _sCollaborator
+        );
+
+        emit SContentTokenPublished(
+            _creatorToken.creatorId,
+            _creatorToken.hashId,
+            _sContentToken.numToken
         );
     }
 }

@@ -29,7 +29,6 @@ library LibCollaboratorReserve {
     /**
      * @notice Partitions gross revenue into collaborator reserve.
      * @dev Accesses SCollaborator struct and debits earnings based on relevant royalty split
-     *      Function Selector:
      * @param _hashId Identifier of Content Token being queried.
      * @param _numToken Content Token identifier used to specify the token index being queried.
      * @param _cRoyaltyVal Encoded cRoyaltyVal SContentToken data.

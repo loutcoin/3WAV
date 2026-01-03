@@ -25,22 +25,7 @@ import {
 } from "../../../src/3WAVi__Helpers/FacetHelpers/SupplyHelpers/PublishSupply/LibPublishSContentTokenWavSuppliesBatch.sol";
 
 contract PublishSContentTokenBatch {
-    event SContentTokenPublished(
-        address indexed creatorId,
-        bytes32 indexed hashId,
-        uint16 indexed numToken,
-        uint32 priceUsdVal,
-        uint112 supplyVal,
-        uint96 releaseVal
-    );
-
-    event SContentTokenBatchPublishedCount(
-        address indexed creatorId,
-        uint16 indexed publicationCount
-    );
-
-    error PublishSContentTokenBatch__NumInputInvalid();
-    error PublishSContentTokenBatch__LengthMismatch();
+    event SContentTokenBatchPublishedCount(uint256 indexed publicationCount);
 
     /**
      * @notice Publishes a batch of two or more user-defined SContentTokens.
@@ -55,16 +40,23 @@ contract PublishSContentTokenBatch {
         SCollaboratorStructStorage.SCollaborator[] calldata _sCollaborator
     ) external {
         ReturnValidation.returnIsAuthorized();
+
+        // Publishes supply data
         LibPublishSContentTokenWavSuppliesBatch
             ._publishSContentTokenWavSuppliesBatch(
                 _creatorToken,
                 _sContentToken
             );
 
-        LibPublishSContentTokenSearchBatch._publishSContentTokenSearchBatch(
-            _creatorToken,
-            _sContentToken,
-            _sCollaborator
-        );
+        {
+            // Publishes SContentToken properties, emits event for individual indexes
+            LibPublishSContentTokenSearchBatch._publishSContentTokenSearchBatch(
+                _creatorToken,
+                _sContentToken,
+                _sCollaborator
+            );
+        }
+
+        emit SContentTokenBatchPublishedCount(_sContentToken.length);
     }
 }

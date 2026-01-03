@@ -77,15 +77,10 @@ library ValidateWavSale {
         uint112 _sPriceUsdVal = ReturnContentToken
             .returnCContentTokenSPriceUsdVal(_wavSaleToken.hashId);
 
-        // _priceMap: 21860
-
         if (_sPriceUsdVal != 0 && _wavSaleToken.numToken != 0) {
-            // resolve tier and compute price from state map
-            //uint16 _pages = uint16((uint256(_wavSaleToken.numToken) + 63) >> 6);
+            // Resolve tier and compute price from state map
+            // Pages based on zero index
             uint16 _pages = uint16(((_wavSaleToken.numToken - 1) >> 6));
-
-            // ATTENTION Should possibly change at source to write first page at page[0],
-            // OR change the above logic to possibly start at 'page[0]', page[0] is what is expected.
 
             uint256 _priceMap = ReturnMapMapping.returnSPriceMap(
                 _wavSaleToken.hashId,
@@ -96,8 +91,6 @@ library ValidateWavSale {
                 _priceMap,
                 _wavSaleToken.numToken
             );
-
-            //_priceState = 1;
 
             uint256 _usdPrice = PriceDBC._sPriceUsdValState(
                 _priceState,
@@ -119,7 +112,6 @@ library ValidateWavSale {
                 uint256 _shift = uint256(_within) * 4;
                 uint8 _tierId = uint8((_packed >> _shift) & 0xF);
 
-                // sTier values currently start on page[1]
                 _tierId++;
 
                 LibWavSupplies.sDebitWavStoreSupplySale(_wavSaleToken, _tierId);
