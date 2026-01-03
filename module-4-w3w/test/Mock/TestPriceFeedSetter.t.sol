@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {
-    FacetAddrStorage
-} from "../../src/Diamond__Storage/ActiveAddresses/FacetAddrStorage.sol";
+    PriceFeedAddrStorage
+} from "../../src/Diamond__Storage/ActiveAddresses/PriceFeedAddrStorage.sol";
 
 import {
     AggregatorV3Interface
@@ -11,9 +11,9 @@ import {
 
 contract TestPriceFeedSetter {
     function setPriceFeed(address _feed) external {
-        FacetAddrStorage.FacetAddrStruct
-            storage FacetAddrStructStorage = FacetAddrStorage
-                .facetAddrStorage();
-        FacetAddrStructStorage.s_priceFeed = AggregatorV3Interface(_feed);
+        PriceFeedAddrStorage.PriceFeedAddrStruct
+            storage PriceFeedAddrStructStorage = PriceFeedAddrStorage
+                .priceFeedAddrStorage();
+        PriceFeedAddrStructStorage.s_priceFeed = AggregatorV3Interface(_feed);
     }
 }

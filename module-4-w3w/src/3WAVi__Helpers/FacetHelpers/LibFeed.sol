@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {
-    FacetAddrStorage
-} from "../../../src/Diamond__Storage/ActiveAddresses/FacetAddrStorage.sol";
+    PriceFeedAddrStorage
+} from "../../../src/Diamond__Storage/ActiveAddresses/PriceFeedAddrStorage.sol";
 
 import {
     AggregatorV3Interface
@@ -19,12 +19,14 @@ library LibFeed {
      * @param _priceFeed value being defined as the new active address.
      */
     function _setPriceFeed(address _priceFeed) internal {
-        FacetAddrStorage.FacetAddrStruct
-            storage FacetAddrStructStorage = FacetAddrStorage
-                .facetAddrStorage();
+        PriceFeedAddrStorage.PriceFeedAddrStruct
+            storage PriceFeedAddrStructStorage = PriceFeedAddrStorage
+                .priceFeedAddrStorage();
         if (_priceFeed == address(0)) revert LibFeed__InvalidInput();
         // Or 'FacetAddrStructStorage.s_priceFeed(_priceFeed);
-        FacetAddrStructStorage.s_priceFeed = AggregatorV3Interface(_priceFeed);
+        PriceFeedAddrStructStorage.s_priceFeed = AggregatorV3Interface(
+            _priceFeed
+        );
     }
 
     /**
@@ -33,10 +35,10 @@ library LibFeed {
      * @return address The address value of the active price feed.
      */
     function _returnPriceFeedAddress() internal view returns (address) {
-        FacetAddrStorage.FacetAddrStruct
-            storage FacetAddrStructStorage = FacetAddrStorage
-                .facetAddrStorage();
-        return address(FacetAddrStructStorage.s_priceFeed);
+        PriceFeedAddrStorage.PriceFeedAddrStruct
+            storage PriceFeedAddrStructStorage = PriceFeedAddrStorage
+                .priceFeedAddrStorage();
+        return address(PriceFeedAddrStructStorage.s_priceFeed);
     }
 
     /**
@@ -45,10 +47,10 @@ library LibFeed {
      * @return int256 The latest price.
      */
     function _getLatestPrice() internal view returns (int256) {
-        FacetAddrStorage.FacetAddrStruct
-            storage FacetAddrStructStorage = FacetAddrStorage
-                .facetAddrStorage();
-        (, int256 price, , , ) = FacetAddrStructStorage
+        PriceFeedAddrStorage.PriceFeedAddrStruct
+            storage PriceFeedAddrStructStorage = PriceFeedAddrStorage
+                .priceFeedAddrStorage();
+        (, int256 price, , , ) = PriceFeedAddrStructStorage
             .s_priceFeed
             .latestRoundData();
         return price;
@@ -61,10 +63,10 @@ library LibFeed {
      * @return uint256 The equivalent amount in ETH.
      */
     function _usdToWei(uint256 _usdVal) internal view returns (uint256) {
-        FacetAddrStorage.FacetAddrStruct
-            storage FacetAddrStructStorage = FacetAddrStorage
-                .facetAddrStorage();
-        (, int256 _priceInt, , , ) = FacetAddrStructStorage
+        PriceFeedAddrStorage.PriceFeedAddrStruct
+            storage PriceFeedAddrStructStorage = PriceFeedAddrStorage
+                .priceFeedAddrStorage();
+        (, int256 _priceInt, , , ) = PriceFeedAddrStructStorage
             .s_priceFeed
             .latestRoundData();
 
@@ -91,10 +93,10 @@ library LibFeed {
         uint256[] calldata _usdValBatch
     ) internal view returns (uint256[] memory _ethWeiBatch) {
         // priceFeed call for all items:
-        FacetAddrStorage.FacetAddrStruct
-            storage FacetAddrStructStorage = FacetAddrStorage
-                .facetAddrStorage();
-        (, int256 _priceInt, , , ) = FacetAddrStructStorage
+        PriceFeedAddrStorage.PriceFeedAddrStruct
+            storage PriceFeedAddrStructStorage = PriceFeedAddrStorage
+                .priceFeedAddrStorage();
+        (, int256 _priceInt, , , ) = PriceFeedAddrStructStorage
             .s_priceFeed
             .latestRoundData();
         if (_priceInt == 0) {
