@@ -113,7 +113,7 @@ contract MasterDeployScript is Script {
         // possibly just replace if stack is problematic
         uint256 _index = 0;
 
-        LibDiamond.FacetCut[] memory _cut = new LibDiamond.FacetCut[](23);
+        LibDiamond.FacetCut[] memory _cut = new LibDiamond.FacetCut[](22);
 
         // Diamond
 
@@ -319,7 +319,7 @@ contract MasterDeployScript is Script {
             });
             _index++;
 
-            bytes4[] memory _reserveExchangeBatchSelectors = new bytes4[](2);
+            bytes4[] memory _reserveExchangeBatchSelectors = new bytes4[](1);
             _reserveExchangeBatchSelectors[0] = ReserveExchangeBatch
                 .reserveExchangeBatch
                 .selector;
@@ -329,6 +329,7 @@ contract MasterDeployScript is Script {
                 action: LibDiamond.FacetCutAction.Add,
                 functionSelectors: _reserveExchangeBatchSelectors
             });
+            _index++;
 
             bytes4[] memory _wavExchangeSelectors = new bytes4[](2);
             _wavExchangeSelectors[0] = WavExchange.wavResaleSingle.selector;
@@ -419,10 +420,11 @@ contract MasterDeployScript is Script {
         _cut[_index] = LibDiamond.FacetCut({
             facetAddress: address(wavFortress),
             action: LibDiamond.FacetCutAction.Add,
-            functionSelectors: _wavFeedSelectors
+            functionSelectors: _wavFortressSelectors
         });
         _index++;
 
+        require(_index == _cut.length, "Facet cut mismatch");
         IDiamondCut(address(wavDiamond)).diamondCut(_cut, address(0), "");
 
         WavAccess(address(wavDiamond)).addOwnerAddr(_owner);
