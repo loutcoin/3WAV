@@ -67,8 +67,6 @@ import {WavFeed} from "../src/3WAVi__ORIGINS/WavFeed.sol";
 import {WavFortress} from "../src/3WAVi__ORIGINS/WavFortress.sol";
 
 contract MasterDeployScript is Script {
-    address feed = address(0);
-
     WavDiamond public wavDiamond;
     DiamondCutFacet public diamondCutFacet;
     DiamondLoupeFacet public diamondLoupeFacet;
@@ -97,6 +95,13 @@ contract MasterDeployScript is Script {
         vm.startBroadcast();
 
         address _owner = msg.sender;
+
+        address feed = vm.envAddress("PRICE_FEED");
+        if (feed == address(0)) {
+            if (block.chainid == 11155111) {
+                feed = 0x694AA1769357215DE4FAC081bf1f309aDC325306;
+            }
+        }
 
         DiamondCutFacet diamondCutFacet = new DiamondCutFacet();
         WavDiamond wavDiamond = new WavDiamond(
@@ -422,6 +427,7 @@ contract MasterDeployScript is Script {
 
         WavAccess(address(wavDiamond)).addOwnerAddr(_owner);
 
+        require(feed != address(0), "PRICE_FEED not set");
         WavFeed(address(wavDiamond)).setPriceFeed(feed);
 
         vm.stopBroadcast();
