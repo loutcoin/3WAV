@@ -110,7 +110,6 @@ contract MasterDeployScript is Script {
         );
         diamondLoupeFacet = new DiamondLoupeFacet();
 
-        // possibly just replace if stack is problematic
         uint256 _index = 0;
 
         LibDiamond.FacetCut[] memory _cut = new LibDiamond.FacetCut[](22);
