@@ -112,19 +112,9 @@ contract MasterDeployScript is Script {
 
         uint256 _index = 0;
 
-        LibDiamond.FacetCut[] memory _cut = new LibDiamond.FacetCut[](22);
+        LibDiamond.FacetCut[] memory _cut = new LibDiamond.FacetCut[](21);
 
         // Diamond
-
-        bytes4[] memory _diamondCutFacetSelectors = new bytes4[](1);
-        _diamondCutFacetSelectors[0] = DiamondCutFacet.diamondCut.selector;
-
-        _cut[_index] = LibDiamond.FacetCut({
-            facetAddress: address(diamondCutFacet),
-            action: LibDiamond.FacetCutAction.Add,
-            functionSelectors: _diamondCutFacetSelectors
-        });
-        _index++;
 
         bytes4[] memory _loupeSelectors = new bytes4[](3);
         _loupeSelectors[0] = DiamondLoupeFacet.facets.selector;
