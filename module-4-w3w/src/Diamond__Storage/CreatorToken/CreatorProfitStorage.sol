@@ -1,6 +1,5 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
-// 7
 
 library CreatorProfitStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Creator.Profit.Struct.Storage");
@@ -11,7 +10,6 @@ library CreatorProfitStorage {
         address wavId;
     }
 
-    // check syntax in next update
     function creatorProfitStorage()
         internal
         pure

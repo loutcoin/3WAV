@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
 library SpecialLimitedSalesMap {
@@ -12,7 +12,7 @@ library SpecialLimitedSalesMap {
         mapping(bytes32 => uint256 limitedTimeMap) s_limitedTimeSale;
     }
 
-    function inAssociationStorage()
+    function specialLimitedSalesMap()
         internal
         pure
         returns (SpecialLimitedSales storage SpecialLimitedSalesStruct)

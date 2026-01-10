@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
 import {Test} from "lib/forge-std/src/Test.sol";
@@ -11,8 +11,6 @@ import {
     DiamondLoupeFacet
 } from "../../../src/Diamond__ProxyFacets/DiamondLoupeFacet.sol";
 import {LibDiamond} from "../../../src/Diamond__Libraries/LibDiamond.sol";
-
-//import {StdCheats} from "../lib/forge-std/src/StdCheats.sol";
 
 import {
     PublishCContentTokenBatch

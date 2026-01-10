@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
 library SCollaboratorStructStorage {
@@ -12,7 +12,6 @@ library SCollaboratorStructStorage {
         uint8 numCollaborator;
         uint32 cRoyaltyVal;
     }
-    //uint256 royaltyMap;
 
     function sCollaboratorStructStorage()
         internal

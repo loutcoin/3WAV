@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
 import {IDiamondCut} from "../Interfaces/IDiamondCut.sol";
@@ -15,4 +15,3 @@ contract DiamondCutFacet is IDiamondCut {
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
 }
-// cast sig "diamondCut((address,uint8,bytes4[])[],address,bytes)"

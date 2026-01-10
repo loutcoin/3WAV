@@ -3,6 +3,11 @@
 ## Overview
 3Wav is a blockchain-based service built to revolutionize the tokenization of digital content. Through an interconnected series of upgradable smart contracts, 3Wav enables the customization, publication, distribution, and sale of "Content Tokens."
 
+## Sepolia Deployment
+This system is fully deployed and verified on the Sepolia testnet. All interactions route through the diamond proxy:
+- **WavDiamond (Diamond Proxy)** `0x3F0602E724eAe035a3BaC1FE3853Bcdb3B608aF7`
+- Complete publish -> purchase -> ownership workflows have been executed successfully on-chain.
+
 ## Content Tokens
 
 ### SContentToken 

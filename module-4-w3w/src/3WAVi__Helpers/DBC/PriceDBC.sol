@@ -1,12 +1,12 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 import {
     NumericalConstants
 } from "../../../src/3WAVi__Helpers/NumericalConstants.sol";
 
 library PriceDBC {
-    error ReleaseDBC__NumInputInvalid();
-    error ReleaseDBC__MinEncodedValueInvalid();
+    error PriceDBC__NumInputInvalid();
+    error PriceDBC__MinEncodedValueInvalid();
     /**
      * @notice Standardizes the digit count of cPriceUsdVal.
      * @dev Function called by script to standardize digit count of cPriceUsdVal.
@@ -17,7 +17,7 @@ library PriceDBC {
         uint32 _cPriceUsdInput
     ) internal pure returns (uint32 _cPriceUsdVal) {
         if (_cPriceUsdInput > 1999999999) {
-            revert ReleaseDBC__NumInputInvalid();
+            revert PriceDBC__NumInputInvalid();
         }
         _cPriceUsdVal =
             NumericalConstants.LEADING_TEN__THIRTY_TWO_BIT +
@@ -35,7 +35,7 @@ library PriceDBC {
         uint32 _cPriceUsdVal
     ) internal pure returns (uint32 _cPriceUsdRaw) {
         if (_cPriceUsdVal < NumericalConstants.MIN_ENCODED_CPRICE_USD_VAL) {
-            revert ReleaseDBC__MinEncodedValueInvalid();
+            revert PriceDBC__MinEncodedValueInvalid();
         }
         _cPriceUsdRaw =
             _cPriceUsdVal -
@@ -66,7 +66,7 @@ library PriceDBC {
             _zeroVal > 1 ||
             _standardPriceVal == 0
         ) {
-            revert ReleaseDBC__NumInputInvalid();
+            revert PriceDBC__NumInputInvalid();
         }
         // (if no _zeroVal '101...') else '100...')
         if (_zeroVal == 1) {
@@ -101,12 +101,12 @@ library PriceDBC {
         )
     {
         if (_sPriceUsdVal < NumericalConstants.MIN_ENCODED_SPRICE_USD_VAL) {
-            revert ReleaseDBC__MinEncodedValueInvalid();
+            revert PriceDBC__MinEncodedValueInvalid();
         }
         // Extract 'zeroVal'
         _zeroVal = uint8((_sPriceUsdVal / NumericalConstants.SHIFT_28) % 10);
         if (_zeroVal > 1) {
-            revert ReleaseDBC__MinEncodedValueInvalid();
+            revert PriceDBC__MinEncodedValueInvalid();
         }
         // Extract '_standardPriceVal'
         _standardPriceVal =

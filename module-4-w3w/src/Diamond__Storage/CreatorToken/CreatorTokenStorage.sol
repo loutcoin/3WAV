@@ -1,6 +1,5 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
-// 1
 
 library CreatorTokenStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Creator.Token.Struct.Storage");

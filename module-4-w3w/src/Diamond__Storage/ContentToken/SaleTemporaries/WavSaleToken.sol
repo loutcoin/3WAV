@@ -1,10 +1,9 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
 library WavSaleToken {
     bytes32 constant STORAGE_SLOT = keccak256("Wav.Sale.Token.Storage");
 
-    // compaction refactors // ContentToken AutoRelease
     struct WavSale {
         address creatorId;
         bytes32 hashId;

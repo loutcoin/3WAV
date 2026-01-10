@@ -1,11 +1,5 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
-
-// OG:
-// InAssociationStorage.InAssociation storage InAssociationStruct = InAssociationStorage.inAssociationStorage();
-
-// Refactored:
-// AssociatedContentMap.AssociatedContent storage AssociatedContentStruct = AssociatedContentMap.associatedContentMap();
 
 library AssociatedContentMap {
     bytes32 constant STORAGE_SLOT =

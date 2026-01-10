@@ -1,8 +1,9 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
+
 import {CContentTokenStorage} from "../ContentToken/CContentTokenStorage.sol";
 import {SContentTokenStorage} from "../ContentToken/SContentTokenStorage.sol";
-//3
+
 library ContentTokenSearchStorage {
     bytes32 constant STORAGE_SLOT = keccak256("Content.Token.Search.Storage");
 

@@ -1,9 +1,7 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
 interface IDiamondLoupe {
-    // these functions are expected to be called frequently by tools
-
     struct Facet {
         address facetAddress;
         bytes4[] functionSelectors;
