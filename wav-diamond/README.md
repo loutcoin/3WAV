@@ -8,6 +8,10 @@ This system is fully deployed and verified on the Sepolia testnet. All interacti
 - **WavDiamond (Diamond Proxy)** `0x3F0602E724eAe035a3BaC1FE3853Bcdb3B608aF7`
 - Complete publish -> purchase -> ownership workflows have been executed successfully on-chain.
 
+## What's New
+v0.1.1 - Pending
+Patch enhancing data validation of publication properties. Will include an additional test file verifying quality implementation.
+
 ## Content Tokens
 
 ### SContentToken 
