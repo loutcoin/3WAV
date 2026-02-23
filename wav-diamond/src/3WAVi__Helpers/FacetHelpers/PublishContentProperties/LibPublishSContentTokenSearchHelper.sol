@@ -33,7 +33,9 @@ library LibPublishSContentTokenSearchHelper {
             _sCTKN.priceUsdVal >
             NumericalConstants.MAX_ENCODED_CPRICE_USD_VAL ||
             _sCTKN.supplyVal < NumericalConstants.MIN_CSUPPLY ||
-            _sCTKN.supplyVal > NumericalConstants.MAX_CSUPPLY
+            _sCTKN.supplyVal > NumericalConstants.MAX_CSUPPLY ||
+            _sCTKN.releaseVal < NumericalConstants.SHIFT_19__96 ||
+            _sCTKN.releaseVal > NumericalConstants.SHIFT_20__96
         ) {
             revert LibPublishSContentTokenSearchHelper__InputInvalid();
         }

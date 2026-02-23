@@ -41,7 +41,9 @@ library LibPublishCContentTokenSearchHelper {
             _cCTKN.sSupplyVal < NumericalConstants.MIN_SSUPPLY ||
             _cCTKN.sSupplyVal > NumericalConstants.MAX_SSUPPLY ||
             _cCTKN.sReserveVal < NumericalConstants.SHIFT_39__160 ||
-            _cCTKN.sReserveVal > NumericalConstants.MAX_SRESERVE_VAL
+            _cCTKN.sReserveVal > NumericalConstants.MAX_SRESERVE_VAL ||
+            _cCTKN.cReleaseVal < NumericalConstants.SHIFT_19__96 ||
+            _cCTKN.cReleaseVal > NumericalConstants.SHIFT_20__96
         ) {
             revert LibPublishCContentTokenSearchHelper__InputInvalid();
         }

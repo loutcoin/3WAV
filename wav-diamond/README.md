@@ -9,8 +9,9 @@ This system is fully deployed and verified on the Sepolia testnet. All interacti
 - Complete publish -> purchase -> ownership workflows have been executed successfully on-chain.
 
 ## What's New
-v0.1.1 - Pending
-Patch enhancing data validation of publication properties. Will include an additional test file verifying quality implementation.
+- **v0.1.1**
+-   Updated publication pipeline to enforce 'cReleaseVal' encode format. 
+-   Created 'PublicationDataAssertions.t.sol' to ensure any property input passed in an invalid numerical format reverts during publication.
 
 ## Content Tokens
 
@@ -142,6 +143,7 @@ Foundry test suite
 - **Sale/** - tests for publication, sale flows, ownership of sales, and expected system behavior
     - **State/** - tests and assertions related to a wide-range of specialized sale states
 - **CollaboratorAssertions.t.sol** - collaborator-related tests
+- **PublicationDataAssertions.t.sol** - publication input format assertions
 
 ## Future Plans
 - **Front-End UI** 

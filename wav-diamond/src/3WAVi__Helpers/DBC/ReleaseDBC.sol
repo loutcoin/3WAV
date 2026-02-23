@@ -38,7 +38,7 @@ library ReleaseDBC {
             revert ReleaseDBC__ReleaseInputIssue();
         }
         _releaseVal += _startRelease * NumericalConstants.SHIFT_14__96;
-        _releaseVal += _endRelease * NumericalConstants.SHIFT_8__96; // SHIFT_7__96
+        _releaseVal += _endRelease * NumericalConstants.SHIFT_8__96;
         _releaseVal += _preRelease * NumericalConstants.SHIFT_1__96;
         _releaseVal += _pausedAt;
         return _releaseVal;
