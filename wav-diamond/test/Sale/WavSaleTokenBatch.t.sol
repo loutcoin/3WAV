@@ -85,10 +85,7 @@ contract WavSaleTokenBatchTest is Test {
         100000000099900000008880000000000000000033300000002960000000000; // TS1: 999 | TS2: 888 | IS1: 333 | IS2: 296
     uint160 constant EX_SRESERVE_01 = 100050000000000000000000000000000000000; // WR1: 5%
     uint96 constant EX_CRELEASE_01 = 4900560000000000000; // get UNIX stamp, / 3600, use vm.warp // is returning 7 digit integer,
-    // 4900560 INSTEAD OF 490056
     uint96 constant EX_PURCHASE_STAMP_01 = 4900570000000000000;
-    // 4900570000000000000
-    // 4900560000000000000
 
     address public owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address public publisher =

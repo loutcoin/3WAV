@@ -389,4 +389,31 @@ library SupplyDBC {
         _preReleaseSupplies = _remainingSupply % NumericalConstants.SHIFT_11;
         return (_wavStoreSupplies, _wavReserveSupplies, _preReleaseSupplies);
     }
+
+    function _sSupplyValState(
+        uint16 _tierId,
+        uint224 _sSupplyVal
+    ) internal pure returns (uint112 _tierTotalSupply) {
+        // decode sSupplyVal
+        (
+            ,
+            uint112 tSupply1,
+            uint112 tSupply2,
+            uint112 tSupply3,
+            ,
+            ,
+
+        ) = _sSupplyValDecoder(_sSupplyVal);
+
+        // select correct tier total supply
+        if (_tierId == 1) {
+            return tSupply1;
+        }
+        if (_tierId == 2) {
+            return tSupply2;
+        }
+        if (_tierId == 3) {
+            return tSupply3;
+        }
+    }
 }

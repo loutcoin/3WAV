@@ -8,10 +8,10 @@ This system is fully deployed and verified on the Sepolia testnet. All interacti
 - **WavDiamond (Diamond Proxy)** `0x3F0602E724eAe035a3BaC1FE3853Bcdb3B608aF7`
 - Complete publish -> purchase -> ownership workflows have been executed successfully on-chain.
 
-## What's New
-- **v0.1.1**
--   Updated publication pipeline to enforce 'cReleaseVal' encode format. 
--   Created 'PublicationDataAssertions.t.sol' to ensure any property input passed in an invalid numerical format reverts during publication.
+## What's New (v0.2.0)
+- Added functionality enhancing post-publication supply management. Including the internal 'AllocateSupply' and external 'Allocate' function families. 
+- Created 'AllocateUnallocatedSupply.t.sol' to ensure the new single-instance functions are properly integrated.
+- Created 'AllocateUnallocatedSupplyBatch.t.sol' to ensure the new batch functions are properly integrated.
 
 ## Content Tokens
 
@@ -118,11 +118,13 @@ Core smart contract source code
     - **FacetHelpers/** - library helper logic for facets
         - **PublishContentProperties/** - library logic handling the publication of content property data
         - **SupplyHelpers/** - supply helper logic for facets
+            - **AllocateSupply/** - handles allocations of unallocated supplies post-publication
             - **DebitSupply/** - handles supply deductions during sale and exchange processes
             - **PublishSupply/** - handles the writing of supply data during the publication process
             - **ValidateSupply/** - handles supply and sale-related validation processes
     - **ReturnMapping/** - library storage getter logic
 - **3WAVi__ORIGINS/** - the first generation of 3Wav facet implementation
+    - **Allocate/** - supply management facets
     - **Publish/** - content publication facets
     - **Sale/** - facets related to the sale of content
         - **State/** - facets related to the modification of content sale states
@@ -144,6 +146,9 @@ Foundry test suite
     - **State/** - tests and assertions related to a wide-range of specialized sale states
 - **CollaboratorAssertions.t.sol** - collaborator-related tests
 - **PublicationDataAssertions.t.sol** - publication input format assertions
+- **AllocateUnallocatedSupply.t.sol** - single-instance supply management tests
+- **AllocateUnallocatedSupplyBatch.t.sol** - batch based supply management tests
+
 
 ## Future Plans
 - **Front-End UI** 
