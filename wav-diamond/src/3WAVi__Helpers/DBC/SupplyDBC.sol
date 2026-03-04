@@ -393,26 +393,18 @@ library SupplyDBC {
     function _sSupplyValState(
         uint16 _tierId,
         uint224 _sSupplyVal
-    ) internal pure returns (uint112 _tierTotalSupply) {
+    ) internal pure returns (uint112) {
         // decode sSupplyVal
-        (
-            ,
-            uint112 tSupply1,
-            uint112 tSupply2,
-            uint112 tSupply3,
-            ,
-            ,
-
-        ) = _sSupplyValDecoder(_sSupplyVal);
-
-        // select correct tier total supply
         if (_tierId == 1) {
+            (, uint112 tSupply1, , , , , ) = _sSupplyValDecoder(_sSupplyVal);
             return tSupply1;
         }
         if (_tierId == 2) {
+            (, , uint112 tSupply2, , , , ) = _sSupplyValDecoder(_sSupplyVal);
             return tSupply2;
         }
         if (_tierId == 3) {
+            (, , , uint112 tSupply3, , , ) = _sSupplyValDecoder(_sSupplyVal);
             return tSupply3;
         }
     }

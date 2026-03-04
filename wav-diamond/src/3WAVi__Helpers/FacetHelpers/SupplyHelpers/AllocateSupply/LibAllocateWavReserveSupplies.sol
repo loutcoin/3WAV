@@ -26,6 +26,7 @@ import {SupplyDBC} from "src/3WAVi__Helpers/DBC/SupplyDBC.sol";
 library LibAllocateWavReserveSupplies {
     error AllocateWavReserve__NumInputInvalid();
     error AllocateWavReserve__InsufficientUnallocated();
+    error AllocateWavReserve__BranchError404();
 
     /**
      * @notice Allocates unallocated supply to the WavReserve.
@@ -59,55 +60,51 @@ library LibAllocateWavReserveSupplies {
             SContentTokenStorage.SContentToken storage _sCTKN = Search
                 .s_sContentTokenSearch[_wST.hashId];
 
-            if (_sCTKN.supplyVal != 0) {
-                // Branch 1: SContentToken (numToken == 0)
-                if (_wST.numToken == 0) {
-                    (uint112 _totalSupply, , , ) = SupplyDBC._cSupplyValDecoder(
-                        _sCTKN.supplyVal
-                    );
+            // Branch 1: SContentToken (numToken == 0)
+            if (_sCTKN.supplyVal != 0 && _wST.numToken == 0) {
+                (uint112 _totalSupply, , , ) = SupplyDBC._cSupplyValDecoder(
+                    _sCTKN.supplyVal
+                );
 
-                    uint112 _remainingSupply = SupplyMap.s_cWavSupplies[
-                        _wST.hashId
-                    ];
+                uint112 _remainingSupply = SupplyMap.s_cWavSupplies[
+                    _wST.hashId
+                ];
 
-                    (
-                        uint112 _wavStore,
-                        uint112 _wavReserve,
-                        uint112 _preRelease
-                    ) = SupplyDBC._remainingSupplyDecoder(_remainingSupply);
+                (
+                    uint112 _wavStore,
+                    uint112 _wavReserve,
+                    uint112 _preRelease
+                ) = SupplyDBC._remainingSupplyDecoder(_remainingSupply);
 
-                    {
-                        uint112 _allocated = _wavStore +
-                            _wavReserve +
-                            _preRelease;
-                        if (_allocated > _totalSupply) {
-                            revert AllocateWavReserve__NumInputInvalid();
-                        }
-
-                        uint112 _unallocated = _totalSupply - _allocated;
-                        if (_wST.purchaseQuantity > _unallocated) {
-                            revert AllocateWavReserve__InsufficientUnallocated();
-                        }
+                {
+                    uint112 _allocated = _wavStore + _wavReserve + _preRelease;
+                    if (_allocated > _totalSupply) {
+                        revert AllocateWavReserve__NumInputInvalid();
                     }
 
-                    _wavReserve += _wST.purchaseQuantity;
-
-                    uint112 _updated = SupplyDBC._remainingSupplyEncoder(
-                        _wavStore,
-                        _wavReserve,
-                        _preRelease
-                    );
-
-                    SupplyMap.s_cWavSupplies[_wST.hashId] = _updated;
-                    return;
+                    uint112 _unallocated = _totalSupply - _allocated;
+                    if (_wST.purchaseQuantity > _unallocated) {
+                        revert AllocateWavReserve__InsufficientUnallocated();
+                    }
                 }
+
+                _wavReserve += _wST.purchaseQuantity;
+
+                uint112 _updated = SupplyDBC._remainingSupplyEncoder(
+                    _wavStore,
+                    _wavReserve,
+                    _preRelease
+                );
+
+                SupplyMap.s_cWavSupplies[_wST.hashId] = _updated;
+                return;
             }
         }
 
         CContentTokenStorage.CContentToken storage _cCTKN = Search
             .s_cContentTokenSearch[_wavSaleToken.hashId];
         // Branch 2: CContentToken (numToken == 0)
-        if (_wST.numToken == 0) {
+        if (_cCTKN.cSupplyVal != 0 && _wST.numToken == 0) {
             uint112 _remainingSupply = SupplyMap.s_cWavSupplies[_wST.hashId];
 
             (
@@ -144,7 +141,7 @@ library LibAllocateWavReserveSupplies {
             return;
         }
         // Branch 3: CContentToken (numToken != 0)
-        {
+        if (_cCTKN.sSupplyVal != 0 && _wST.numToken != 0) {
             // Resolve tierId
             uint16 _wordIndex = _wST.numToken >> 6;
             uint8 _within = uint8(_wST.numToken & 63);
@@ -152,6 +149,8 @@ library LibAllocateWavReserveSupplies {
             uint256 _packed = SupplyMap.s_tierMap[_wST.hashId][_wordIndex];
             uint256 _shift = uint256(_within) * 4;
             uint8 _tierId = uint8((_packed >> _shift) & 0xF);
+
+            _tierId++;
 
             uint112 _remainingSupply = SupplyMap.s_sWavSupplies[_wST.hashId][
                 _tierId
@@ -190,6 +189,8 @@ library LibAllocateWavReserveSupplies {
 
             SupplyMap.s_sWavSupplies[_wST.hashId][_tierId] = _updated;
             return;
+        } else {
+            revert AllocateWavReserve__BranchError404();
         }
     }
 }

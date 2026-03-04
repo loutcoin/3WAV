@@ -9,6 +9,7 @@ import {SupplyDBC} from "src/3WAVi__Helpers/DBC/SupplyDBC.sol";
 
 library LibWavReserveSupplies {
     error WavReserveSupplies__NumInputInvalid();
+
     /**
      * @notice Deducts quantity of WavReserve supply and updates the encoded value.
      * @dev Reads s_cWavSupplies and updates active encoded WavReserve supply of hashId.

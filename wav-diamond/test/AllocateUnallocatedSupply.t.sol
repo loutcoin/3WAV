@@ -94,9 +94,6 @@ contract AllocateUnallocatedSupplyTest is Test {
     WavAccess public wavAccess;
     TestPriceFeedSetter public priceSetterFacet;
 
-    // 100000000030000000001000000000000
-    // 100000000100000000001100000000000
-
     address public owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address public publisher =
         address(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC);
@@ -108,7 +105,13 @@ contract AllocateUnallocatedSupplyTest is Test {
     uint32 constant EX_CPRICE_USD = 1000000349; // 3.49$
     uint224 constant EX_SSUPPLY =
         100000000099900000008880000000000000000033300000002960000000000; // TS1: 999 | TS2: 888 | IS1: 333 | IS2: 296
-    uint160 constant EX_SRESERVE = 100050000000000000000000000000000000000; // WR1: 5%
+    uint224 constant EX_SSUPPLY_02 =
+        100000000000300000000040000000000000000000100000000010000000000; // TS1: 3 | TS2: 4 | IS1: 1 | IS2: 1
+    uint224 constant EX_SSUPPLY_03 =
+        100000000000500000000040000000000000000000100000000010000000000; // TS1: 5 | TS2: 4 | IS1: 1 | IS2: 1
+
+    uint160 constant EX_SRESERVE = 100000000000000000000000000000000000000; // WR1: 0%
+    uint160 constant EX_SRESERVE_03 = 100000001000000000000000000000000000000; // WR1: 0.0001%
     uint96 constant EX_CRELEASE = 4900560000000000000; // get UNIX stamp, / 3600, use vm.warp
     uint96 constant EX_PURCHASE_STAMP = 4900570000000000000;
     uint96 constant EX_RESERVE_STAMP = 1764205200;
@@ -423,6 +426,101 @@ contract AllocateUnallocatedSupplyTest is Test {
         );
     }
 
+    // forge test --match-test testAllocateUnallocatedCContentTokenSeparateSupplyToWavStore -vvvv
+
+    function testAllocateUnallocatedCContentTokenSeparateSupplyToWavStore()
+        public
+    {
+        CreatorTokenStorage.CreatorToken
+            memory _creatorToken = CreatorTokenStorage.CreatorToken({
+                creatorId: publisher,
+                contentId: uint256(0),
+                hashId: bytes32(
+                    0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+                )
+            });
+
+        CContentTokenStorage.CContentToken
+            memory _cContentToken = CContentTokenStorage.CContentToken({
+                numToken: uint16(8),
+                cSupplyVal: EX_CSUPPLY,
+                sPriceUsdVal: EX_SPRICE_USD,
+                cPriceUsdVal: EX_CPRICE_USD,
+                sSupplyVal: EX_SSUPPLY_02,
+                sReserveVal: EX_SRESERVE,
+                cReleaseVal: EX_CRELEASE
+            });
+
+        uint256[] memory _royaltyMap = new uint256[](1);
+        _royaltyMap[0] = uint256(0);
+
+        CollaboratorStructStorage.Collaborator
+            memory _collaborator = CollaboratorStructStorage.Collaborator({
+                numCollaborator: uint8(0),
+                cRoyaltyVal: uint32(0),
+                sRoyaltyVal: uint128(0),
+                royaltyMap: _royaltyMap
+            });
+
+        uint256[] memory _tierMapPages = new uint256[](1);
+        _tierMapPages[0] = uint256(0x058885580); //01011000100010000101010110000000;
+
+        uint256[] memory _priceMapPages = new uint256[](1);
+        _priceMapPages[0] = uint256(0x5564); //0101010101100100;
+
+        // Publish CContentToken with initialSupply of '1'
+        vm.prank(owner);
+        PublishCContentToken(address(wavDiamond)).publishCContentToken(
+            _creatorToken,
+            _cContentToken,
+            _collaborator,
+            _tierMapPages,
+            _priceMapPages
+        );
+
+        WavSaleToken.WavSale memory _wavSale = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken.hashId,
+            numToken: uint16(8),
+            purchaseQuantity: uint112(1)
+        });
+
+        uint256 feedAnswer = uint256(3000 * 10 ** 8);
+        uint256 usdVal = 349; // 3.49$
+        uint256 usd8 = usdVal * 1e6;
+        uint256 expectedWei = (usd8 * 1e18) / feedAnswer;
+
+        // Buyer purchases '1' instance of the SContentToken
+        vm.deal(buyer, 10 ether);
+        vm.prank(owner);
+        vm.warp(EX_PURCHASE_STAMP);
+        WavSale(address(wavDiamond)).wavSaleSingle{value: expectedWei}(
+            buyer,
+            _wavSale
+        );
+
+        // Publisher allocates '1' additional copy into circulating supply
+        vm.prank(owner);
+        AllocateWavStore(address(wavDiamond)).allocateUnallocatedToWavStore(
+            _wavSale
+        );
+
+        // Buyer purchases '1' additional instance of CContentToken
+        vm.prank(owner);
+        WavSale(address(wavDiamond)).wavSaleSingle{value: expectedWei}(
+            buyer,
+            _wavSale
+        );
+
+        // Buyer attempts to purchase another instance when remaining supply == '0'
+        vm.prank(owner);
+        vm.expectRevert();
+        WavSale(address(wavDiamond)).wavSaleSingle{value: expectedWei}(
+            buyer,
+            _wavSale
+        );
+    }
+
     // forge test --match-test testAllocateUnallocatedSContentTokenSupplyToWavReserve -vvvv
 
     function testAllocateUnallocatedSContentTokenSupplyToWavReserve() public {
@@ -570,6 +668,105 @@ contract AllocateUnallocatedSupplyTest is Test {
                     recipient: buyer,
                     hashId: _creatorToken.hashId,
                     numToken: uint16(0),
+                    purchaseQuantity: uint112(1)
+                });
+
+        // Publisher exchanges '1' instance of the SContentToken from WavReserve to recipient
+        vm.prank(owner);
+        vm.warp(EX_RESERVE_STAMP);
+        ReserveExchange(address(wavDiamond)).reserveExchangeSingle(
+            publisher,
+            _reserveExchangeToken
+        );
+
+        // Publisher allocates '1' additional copy into circulating supply
+        vm.prank(owner);
+        AllocateWavReserve(address(wavDiamond)).allocateUnallocatedToWavReserve(
+            _wavSale
+        );
+
+        // Publisher exchanges '1' additional instance of the SContentToken from WavReserve to recipient
+        vm.prank(owner);
+        vm.warp(EX_RESERVE_STAMP);
+        ReserveExchange(address(wavDiamond)).reserveExchangeSingle(
+            publisher,
+            _reserveExchangeToken
+        );
+
+        // Buyer attempts to transfer another instance when remaining supply == '0'
+        vm.prank(owner);
+        vm.expectRevert();
+        ReserveExchange(address(wavDiamond)).reserveExchangeSingle(
+            publisher,
+            _reserveExchangeToken
+        );
+    }
+
+    // forge test --match-test testAllocateUnallocatedCContentTokenSeperateSupplyToWavReserve -vvvv
+
+    function testAllocateUnallocatedCContentTokenSeperateSupplyToWavReserve()
+        public
+    {
+        CreatorTokenStorage.CreatorToken
+            memory _creatorToken = CreatorTokenStorage.CreatorToken({
+                creatorId: publisher,
+                contentId: uint256(0),
+                hashId: bytes32(
+                    0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+                )
+            });
+
+        CContentTokenStorage.CContentToken
+            memory _cContentToken = CContentTokenStorage.CContentToken({
+                numToken: uint16(8),
+                cSupplyVal: EX_CSUPPLY_02,
+                sPriceUsdVal: EX_SPRICE_USD,
+                cPriceUsdVal: EX_CPRICE_USD,
+                sSupplyVal: EX_SSUPPLY_03,
+                sReserveVal: EX_SRESERVE_03,
+                cReleaseVal: EX_CRELEASE
+            });
+
+        uint256[] memory _royaltyMap = new uint256[](1);
+        _royaltyMap[0] = uint256(0);
+
+        CollaboratorStructStorage.Collaborator
+            memory _collaborator = CollaboratorStructStorage.Collaborator({
+                numCollaborator: uint8(0),
+                cRoyaltyVal: uint32(0),
+                sRoyaltyVal: uint128(0),
+                royaltyMap: _royaltyMap
+            });
+
+        uint256[] memory _tierMapPages = new uint256[](1);
+        _tierMapPages[0] = uint256(0x058885580); //01011000100010000101010110000000;
+
+        uint256[] memory _priceMapPages = new uint256[](1);
+        _priceMapPages[0] = uint256(0x5564); //0101010101100100;
+
+        // Publish CContentToken with initialSupply of '1'
+        vm.prank(owner);
+        PublishCContentToken(address(wavDiamond)).publishCContentToken(
+            _creatorToken,
+            _cContentToken,
+            _collaborator,
+            _tierMapPages,
+            _priceMapPages
+        );
+
+        WavSaleToken.WavSale memory _wavSale = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken.hashId,
+            numToken: uint16(8),
+            purchaseQuantity: uint112(1)
+        });
+
+        ReserveExchangeToken.ReserveExchange
+            memory _reserveExchangeToken = ReserveExchangeToken
+                .ReserveExchange({
+                    recipient: buyer,
+                    hashId: _creatorToken.hashId,
+                    numToken: uint16(8),
                     purchaseQuantity: uint112(1)
                 });
 

@@ -75,6 +75,8 @@ contract ReserveExchange {
             ][_wordIndex];
             uint256 _shift = uint256(_within) * 4;
             uint8 _tierId = uint8((_packed >> _shift) & 0xF);
+            _tierId++;
+
             LibWavReserveSupplies.sDebitWavReserve(
                 _reserveExchangeToken.hashId,
                 _tierId,
