@@ -176,6 +176,7 @@ library LibAllocateWavSuppliesBatch {
                     );
 
                     uint112 _allocated = _wavStore + _wavReserve + _preRelease;
+
                     if (_allocated > _totalSupply) {
                         revert AllocateWavSuppliesBatch__NumInputInvalid();
                     }

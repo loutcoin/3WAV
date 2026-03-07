@@ -111,6 +111,8 @@ library ValidateWavSaleBatch {
                     uint256 _shift = uint256(_within) * 4;
                     uint8 _tierId = uint8((_packed >> _shift) & 0xF);
 
+                    _tierId++;
+
                     LibWavSupplies.sDebitWavStoreSupply(
                         _hashId,
                         _tierId,

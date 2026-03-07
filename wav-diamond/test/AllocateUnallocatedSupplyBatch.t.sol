@@ -102,7 +102,15 @@ contract AllocateUnallocatedSupplyBatchTest is Test {
     uint32 constant EX_CPRICE_USD_01 = 1000000349; // 3.49$
     uint224 constant EX_SSUPPLY_01 =
         100000000099900000008880000000000000000033300000002960000000000; // TS1: 999 | TS2: 888 | IS1: 333 | IS2: 296
+    uint224 constant EX_SSUPPLY_02 =
+        100000000000400000000040000000000000000000200000000010000000000; // TS1: 4 | TS2: 4 | IS1: 2 | IS2: 1
+
+    uint224 constant EX_SSUPPLY_03 =
+        100000000000500000000040000000000000000000100000000010000000000; // TS1: 5 | TS2: 4 | IS1: 1 | IS2: 1
+
+    uint160 constant EX_SRESERVE = 100000000000000000000000000000000000000; // WR1: 0%
     uint160 constant EX_SRESERVE_01 = 100050000000000000000000000000000000000; // WR1: 5%
+    uint160 constant EX_SRESERVE_03 = 100000001000000000000000000000000000000; // WR1: 0.0001%
     uint96 constant EX_CRELEASE_01 = 4900560000000000000; // get UNIX stamp, / 3600, use vm.warp // is returning 7 digit integer,
     uint96 constant EX_PURCHASE_STAMP_01 = 4900570000000000000;
     uint96 constant EX_RESERVE_STAMP = 1764205200;
@@ -564,6 +572,178 @@ contract AllocateUnallocatedSupplyBatchTest is Test {
         }
     }
 
+    //
+    //
+    //
+
+    // forge test --match-test testAllocateUnallocatedCContentTokenSeparateSupplyBatchToWavStore -vvvv
+
+    function testAllocateUnallocatedCContentTokenSeparateSupplyBatchToWavStore()
+        public
+    {
+        CreatorTokenStorage.CreatorToken[]
+            memory _creatorToken = new CreatorTokenStorage.CreatorToken[](2);
+        CContentTokenStorage.CContentToken[]
+            memory _cContentToken = new CContentTokenStorage.CContentToken[](2);
+        CollaboratorStructStorage.Collaborator[]
+            memory _collaborator = new CollaboratorStructStorage.Collaborator[](
+                2
+            );
+
+        uint256[] memory _tierPages = new uint256[](2);
+        uint256[] memory _pricePages = new uint256[](2);
+
+        // CContentToken[0]
+        _creatorToken[0] = CreatorTokenStorage.CreatorToken({
+            creatorId: publisher,
+            contentId: uint256(0),
+            hashId: bytes32(
+                0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+            )
+        });
+
+        _cContentToken[0] = CContentTokenStorage.CContentToken({
+            numToken: uint16(8),
+            cSupplyVal: EX_CSUPPLY_01,
+            sPriceUsdVal: EX_SPRICE_USD_01,
+            cPriceUsdVal: EX_CPRICE_USD_01,
+            sSupplyVal: EX_SSUPPLY_02,
+            sReserveVal: EX_SRESERVE,
+            cReleaseVal: EX_CRELEASE_01
+        });
+
+        uint256[] memory _royaltyMap = new uint256[](1);
+        _royaltyMap[0] = uint256(0);
+
+        _collaborator[0] = CollaboratorStructStorage.Collaborator({
+            numCollaborator: uint8(0),
+            cRoyaltyVal: uint32(0),
+            sRoyaltyVal: uint128(0),
+            royaltyMap: _royaltyMap
+        });
+
+        _tierPages[0] = uint256(0x058885580);
+        _pricePages[0] = uint256(0x5564);
+
+        // cContentToken[1]
+        _creatorToken[1] = CreatorTokenStorage.CreatorToken({
+            creatorId: publisher,
+            contentId: uint256(1),
+            hashId: bytes32(
+                0xbe88736984a371e37661d4e74c3ce8b7414b2f8d482b454f172b05c3454a4261
+            )
+        });
+
+        _cContentToken[1] = CContentTokenStorage.CContentToken({
+            numToken: uint16(8),
+            cSupplyVal: EX_CSUPPLY_01,
+            sPriceUsdVal: EX_SPRICE_USD_01,
+            cPriceUsdVal: EX_CPRICE_USD_01,
+            sSupplyVal: EX_SSUPPLY_02,
+            sReserveVal: EX_SRESERVE,
+            cReleaseVal: EX_CRELEASE_01
+        });
+
+        _collaborator[1] = _collaborator[0];
+
+        _tierPages[1] = uint256(0x058885580);
+        _pricePages[1] = uint256(0x5564);
+
+        vm.prank(owner);
+        PublishCContentTokenBatch(address(wavDiamond))
+            .publishCContentTokenBatch(
+                _creatorToken,
+                _cContentToken,
+                _collaborator,
+                _tierPages,
+                _pricePages
+            );
+
+        WavSaleToken.WavSale[]
+            memory _wavSaleToken = new WavSaleToken.WavSale[](2);
+
+        _wavSaleToken[0] = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken[0].hashId,
+            numToken: uint16(8),
+            purchaseQuantity: uint112(2)
+        });
+
+        _wavSaleToken[1] = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken[1].hashId,
+            numToken: uint16(8),
+            purchaseQuantity: uint112(1)
+        });
+
+        uint256 feedAnswer = uint256(3000 * 10 ** 8);
+        uint256 _totalWei = 0;
+
+        {
+            uint256 feedAnswer = uint256(3000 * 10 ** 8);
+            uint256 usdVal = 349; // 3.49$
+            uint256 usd8 = usdVal * 1e6;
+            uint256 _weiZero = (usd8 * 1e18) / feedAnswer;
+            _totalWei += _weiZero;
+
+            usdVal = 349;
+            usd8 = usdVal * 1e6;
+            uint256 _weiOne = (usd8 * 1e18) / feedAnswer;
+            _totalWei += _weiOne;
+
+            vm.deal(buyer, 5 ether);
+            vm.prank(owner);
+            vm.warp(EX_PURCHASE_STAMP_01);
+            WavSaleBatch(address(wavDiamond)).wavSaleBatch{value: _totalWei}(
+                buyer,
+                _wavSaleToken
+            );
+        }
+
+        vm.prank(owner);
+        AllocateWavStoreBatch(address(wavDiamond))
+            .allocateUnallocatedToWavStoreBatch(_wavSaleToken);
+
+        {
+            uint256 feedAnswer = uint256(3000 * 10 ** 8);
+            uint256 usdVal = 349; // 3.49$
+            uint256 usd8 = usdVal * 1e6;
+            uint256 _weiZero = (usd8 * 1e18) / feedAnswer;
+            _totalWei += _weiZero;
+
+            usdVal = 349;
+            usd8 = usdVal * 1e6;
+            uint256 _weiOne = (usd8 * 1e18) / feedAnswer;
+            _totalWei += _weiOne;
+
+            vm.prank(owner);
+            WavSaleBatch(address(wavDiamond)).wavSaleBatch{value: _totalWei}(
+                buyer,
+                _wavSaleToken
+            );
+        }
+
+        {
+            uint256 feedAnswer = uint256(3000 * 10 ** 8);
+            uint256 usdVal = 349; // 3.49$
+            uint256 usd8 = usdVal * 1e6;
+            uint256 _weiZero = (usd8 * 1e18) / feedAnswer;
+            _totalWei += _weiZero;
+
+            usdVal = 349;
+            usd8 = usdVal * 1e6;
+            uint256 _weiOne = (usd8 * 1e18) / feedAnswer;
+            _totalWei += _weiOne;
+
+            vm.prank(owner);
+            vm.expectRevert();
+            WavSaleBatch(address(wavDiamond)).wavSaleBatch{value: _totalWei}(
+                buyer,
+                _wavSaleToken
+            );
+        }
+    }
+
     // forge test --match-test testAllocateUnallocatedSContentTokenSupplyBatchToWavReserve -vvvv
 
     function testAllocateUnallocatedSContentTokenSupplyBatchToWavReserve()
@@ -812,6 +992,154 @@ contract AllocateUnallocatedSupplyBatchTest is Test {
                 0xbe88736984a371e37661d4e74c3ce8b7414b2f8d482b454f172b05c3454a4261
             ),
             numToken: uint16(0),
+            purchaseQuantity: uint112(1)
+        });
+
+        vm.prank(owner);
+        vm.warp(EX_RESERVE_STAMP);
+        ReserveExchangeBatch(address(wavDiamond)).reserveExchangeBatch(
+            publisher,
+            _reserveExchangeToken
+        );
+
+        vm.prank(owner);
+        AllocateWavReserveBatch(address(wavDiamond))
+            .allocateUnallocatedToWavReserveBatch(_wavSaleToken);
+
+        vm.prank(owner);
+        ReserveExchangeBatch(address(wavDiamond)).reserveExchangeBatch(
+            publisher,
+            _reserveExchangeToken
+        );
+
+        vm.prank(owner);
+        vm.expectRevert();
+        ReserveExchangeBatch(address(wavDiamond)).reserveExchangeBatch(
+            publisher,
+            _reserveExchangeToken
+        );
+    }
+
+    // forge test --match-test testAllocateUnallocatedCContentTokenSeparateSupplyBatchToWavReserve -vvvv
+    function testAllocateUnallocatedCContentTokenSeparateSupplyBatchToWavReserve()
+        public
+    {
+        CreatorTokenStorage.CreatorToken[]
+            memory _creatorToken = new CreatorTokenStorage.CreatorToken[](2);
+        CContentTokenStorage.CContentToken[]
+            memory _cContentToken = new CContentTokenStorage.CContentToken[](2);
+        CollaboratorStructStorage.Collaborator[]
+            memory _collaborator = new CollaboratorStructStorage.Collaborator[](
+                2
+            );
+
+        // was both '1' just temporarily modified
+        uint256[] memory _tierPages = new uint256[](2);
+        uint256[] memory _pricePages = new uint256[](2);
+
+        // CContentToken[0]
+        _creatorToken[0] = CreatorTokenStorage.CreatorToken({
+            creatorId: publisher,
+            contentId: uint256(0),
+            hashId: bytes32(
+                0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+            )
+        });
+
+        _cContentToken[0] = CContentTokenStorage.CContentToken({
+            numToken: uint16(8),
+            cSupplyVal: EX_CSUPPLY_02,
+            sPriceUsdVal: EX_SPRICE_USD_01,
+            cPriceUsdVal: EX_CPRICE_USD_01,
+            sSupplyVal: EX_SSUPPLY_03,
+            sReserveVal: EX_SRESERVE_03,
+            cReleaseVal: EX_CRELEASE_01
+        });
+
+        uint256[] memory _royaltyMap = new uint256[](1);
+        _royaltyMap[0] = uint256(0);
+
+        _collaborator[0] = CollaboratorStructStorage.Collaborator({
+            numCollaborator: uint8(0),
+            cRoyaltyVal: uint32(0),
+            sRoyaltyVal: uint128(0),
+            royaltyMap: _royaltyMap
+        });
+
+        _tierPages[0] = uint256(0x058885580);
+        _pricePages[0] = uint256(0x5564);
+
+        // cContentToken[1]
+        _creatorToken[1] = CreatorTokenStorage.CreatorToken({
+            creatorId: publisher,
+            contentId: uint256(1),
+            hashId: bytes32(
+                0xbe88736984a371e37661d4e74c3ce8b7414b2f8d482b454f172b05c3454a4261
+            )
+        });
+
+        _cContentToken[1] = CContentTokenStorage.CContentToken({
+            numToken: uint16(8),
+            cSupplyVal: EX_CSUPPLY_02,
+            sPriceUsdVal: EX_SPRICE_USD_01,
+            cPriceUsdVal: EX_CPRICE_USD_01,
+            sSupplyVal: EX_SSUPPLY_03,
+            sReserveVal: EX_SRESERVE_03,
+            cReleaseVal: EX_CRELEASE_01
+        });
+
+        _collaborator[1] = _collaborator[0];
+
+        _tierPages[1] = uint256(0x058885580);
+        _pricePages[1] = uint256(0x5564);
+
+        vm.prank(owner);
+        PublishCContentTokenBatch(address(wavDiamond))
+            .publishCContentTokenBatch(
+                _creatorToken,
+                _cContentToken,
+                _collaborator,
+                _tierPages,
+                _pricePages
+            );
+
+        WavSaleToken.WavSale[]
+            memory _wavSaleToken = new WavSaleToken.WavSale[](2);
+
+        _wavSaleToken[0] = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken[0].hashId,
+            numToken: uint16(8),
+            purchaseQuantity: uint112(1)
+        });
+
+        _wavSaleToken[1] = WavSaleToken.WavSale({
+            creatorId: publisher,
+            hashId: _creatorToken[1].hashId,
+            numToken: uint16(8),
+            purchaseQuantity: uint112(1)
+        });
+
+        ReserveExchangeToken.ReserveExchange[]
+            memory _reserveExchangeToken = new ReserveExchangeToken.ReserveExchange[](
+                2
+            );
+
+        _reserveExchangeToken[0] = ReserveExchangeToken.ReserveExchange({
+            recipient: buyer,
+            hashId: bytes32(
+                0x5492cbaff8791db03d5ad81c76ff54e38c20485579d006b31018cd9e550924df
+            ),
+            numToken: uint16(8),
+            purchaseQuantity: uint112(1)
+        });
+
+        _reserveExchangeToken[1] = ReserveExchangeToken.ReserveExchange({
+            recipient: buyer,
+            hashId: bytes32(
+                0xbe88736984a371e37661d4e74c3ce8b7414b2f8d482b454f172b05c3454a4261
+            ),
+            numToken: uint16(8),
             purchaseQuantity: uint112(1)
         });
 
