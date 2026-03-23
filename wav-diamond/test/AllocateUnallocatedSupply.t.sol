@@ -100,7 +100,7 @@ contract AllocateUnallocatedSupplyTest is Test {
 
     address public buyer = address(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720);
     uint112 constant EX_CSUPPLY = 100000000030000000001000000000000; // TS: 3 | IS: 1 | WR: 0% | PR: 0%
-    uint112 constant EX_CSUPPLY_02 = 100000000100000000001000001000000; // TS: 10 | IS: 1 | WR: 10% | PR: 0%
+    uint112 constant EX_CSUPPLY_02 = 100000000100000000001100000000000; // TS: 10 | IS: 1 | WR: 10% | PR: 0%
     uint112 constant EX_SPRICE_USD = 100000000074000000069000000000; // SP: 0.74$ | AP: 0.69$
     uint32 constant EX_CPRICE_USD = 1000000349; // 3.49$
     uint224 constant EX_SSUPPLY =
@@ -108,10 +108,10 @@ contract AllocateUnallocatedSupplyTest is Test {
     uint224 constant EX_SSUPPLY_02 =
         100000000000300000000040000000000000000000100000000010000000000; // TS1: 3 | TS2: 4 | IS1: 1 | IS2: 1
     uint224 constant EX_SSUPPLY_03 =
-        100000000000500000000040000000000000000000100000000010000000000; // TS1: 5 | TS2: 4 | IS1: 1 | IS2: 1
+        100000000001000000000040000000000000000000100000000010000000000; // TS1: 10 | TS2: 4 | IS1: 1 | IS2: 1
 
     uint160 constant EX_SRESERVE = 100000000000000000000000000000000000000; // WR1: 0%
-    uint160 constant EX_SRESERVE_03 = 100000001000000000000000000000000000000; // WR1: 0.0001%
+    uint160 constant EX_SRESERVE_03 = 100100000000000000000000000000000000000; // WR1: 10%
     uint96 constant EX_CRELEASE = 4900560000000000000; // get UNIX stamp, / 3600, use vm.warp
     uint96 constant EX_PURCHASE_STAMP = 4900570000000000000;
     uint96 constant EX_RESERVE_STAMP = 1764205200;
@@ -255,6 +255,8 @@ contract AllocateUnallocatedSupplyTest is Test {
 
     // forge test --match-test testAllocateUnallocatedSContentTokenSupplyToWavStore -vvvv
 
+    // ******PASSES*******
+
     function testAllocateUnallocatedSContentTokenSupplyToWavStore() public {
         CreatorTokenStorage.CreatorToken
             memory _creatorToken = CreatorTokenStorage.CreatorToken({
@@ -334,6 +336,7 @@ contract AllocateUnallocatedSupplyTest is Test {
     }
 
     // forge test --match-test testAllocateUnallocatedCContentTokenSupplyToWavStore -vvvv
+    // ******PASSES*******
 
     function testAllocateUnallocatedCContentTokenSupplyToWavStore() public {
         CreatorTokenStorage.CreatorToken

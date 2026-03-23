@@ -8,10 +8,11 @@ This system is fully deployed and verified on the Sepolia testnet. All interacti
 - **WavDiamond (Diamond Proxy)** `0x3F0602E724eAe035a3BaC1FE3853Bcdb3B608aF7`
 - Complete publish -> purchase -> ownership workflows have been executed successfully on-chain.
 
-## What's New (v0.2.0)
+## What's New (v0.2.1)
 - Added functionality enhancing post-publication supply management. Including the internal 'AllocateSupply' and external 'Allocate' function families. 
 - Created 'AllocateUnallocatedSupply.t.sol' to ensure the new single-instance functions are properly integrated.
 - Created 'AllocateUnallocatedSupplyBatch.t.sol' to ensure the new batch functions are properly integrated.
+- Incorporated small patch ensuring reserve supplies are interpreted as a percentage of totalSupply values.
 
 ## Content Tokens
 
